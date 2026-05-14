@@ -134,6 +134,26 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
     return records
 
 
+def apply_cover_cache(records: list[dict], cache_path: Path) -> int:
+    if not cache_path.exists():
+        return 0
+    with cache_path.open() as f:
+        cache = json.load(f)
+    applied = 0
+    for r in records:
+        author = r["authors"][0] if r.get("authors") else ""
+        key = f"{r['title'].strip().lower()}|{author.strip().lower()}"
+        meta = cache.get(key)
+        if not meta:
+            continue
+        for field in ["cover_url", "ol_key", "first_pub_year", "isbn", "pages"]:
+            if meta.get(field):
+                r[field] = meta[field]
+        if meta.get("cover_url"):
+            applied += 1
+    return applied
+
+
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--data", type=Path, default=Path("data"))
@@ -159,6 +179,9 @@ def main() -> None:
             r["id"] = f"{base}-{n}"
         seen[base] = n + 1
 
+    covers = apply_cover_cache(all_records, args.data / "openlib_cache.json")
+    print(f"  Applied {covers} cover URLs from cache")
+
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w") as f:
         json.dump({
@@ -168,7 +191,7 @@ def main() -> None:
                 "by_category": {c: sum(1 for r in all_records if r["category"] == c) for c in set(r["category"] for r in all_records)},
             },
         }, f, indent=2, ensure_ascii=False)
-    print(f"\nWrote {args.out} with {len(all_records)} books")
+    print(f"\nWrote {args.out} with {len(all_records)} books ({covers} with covers)")
 
 
 if __name__ == "__main__":
