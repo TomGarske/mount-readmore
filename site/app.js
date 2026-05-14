@@ -196,7 +196,6 @@ function renderDetail(id) {
           <a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a>
           <a href="${escapeHtml(amazonUrl)}" target="_blank" rel="noopener">Amazon</a>
           <a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a>
-          <a href="https://openlibrary.org/search?q=${searchQ}" target="_blank" rel="noopener">Open Library</a>
           <a href="https://en.wikipedia.org/w/index.php?search=${searchQ}" target="_blank" rel="noopener">Wikipedia</a>
         </div>
       </div>
@@ -280,9 +279,11 @@ function renderStats() {
   }
   nightstandBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
 
-  // ===== Author leaderboard =====
-  const authorAppearances = {};  // name -> {total, winners, tomRead, nikaRead, books: []}
+  // ===== Author leaderboard (last 30 years) =====
+  const leaderboardCutoff = new Date().getFullYear() - 30;
+  const authorAppearances = {};  // name -> {total, winners, tomRead, nikaRead}
   for (const b of DATA.books) {
+    if (!b.year || b.year < leaderboardCutoff) continue;
     for (const a of (b.authors || [])) {
       if (!authorAppearances[a]) authorAppearances[a] = { total: 0, winners: 0, tomRead: 0, nikaRead: 0 };
       authorAppearances[a].total++;
@@ -541,8 +542,8 @@ function renderStats() {
     </div>` : ''}
 
     <div class="progress-section">
-      <h2>Most-awarded authors</h2>
-      <p style="color: var(--muted); font-size: 13px;">Authors with the most appearances on the list (winners + nominees). Bar width = appearances; teal fill = Tom read; purple = Nika read.</p>
+      <h2>Most-awarded authors (last 30 years)</h2>
+      <p style="color: var(--muted); font-size: 13px;">Authors with the most appearances on the list since ${leaderboardCutoff} (winners + nominees). Bar width = appearances.</p>
       <div class="authors-list">${authorRows}</div>
     </div>
 
