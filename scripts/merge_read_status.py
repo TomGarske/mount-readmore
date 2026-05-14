@@ -70,6 +70,17 @@ def strip_series_suffix(title: str) -> str:
     return t
 
 
+def extract_series(gr_title: str) -> str:
+    """'The Tainted Cup (Shadow of the Leviathan, #1)' -> 'Shadow of the Leviathan, #1'"""
+    if not gr_title or "(" not in gr_title or ")" not in gr_title:
+        return ""
+    start = gr_title.rfind("(")
+    end = gr_title.rfind(")")
+    if start >= end:
+        return ""
+    return gr_title[start + 1:end].strip()
+
+
 def find_match(title: str, author: str, gr: pd.DataFrame):
     """Returns the matching row from gr, or None."""
     t = normalize(title)
@@ -120,7 +131,7 @@ def process_sheet(
     stem = sheet_csv.stem
     title_col = TITLE_COLS.get(stem, "Novel")
     author_col = "Author(s)" if "Author(s)" in combined.columns else "Author"
-    for col in ["Tom", "Tom Date Read", "Tom Rating", "Tom Shelf", "Nika", "Nika Shelf"]:
+    for col in ["Tom", "Tom Date Read", "Tom Rating", "Tom Shelf", "Series", "Nika", "Nika Shelf"]:
         if col not in combined.columns:
             combined[col] = ""
 
@@ -140,6 +151,9 @@ def process_sheet(
             rating = m.get("My Rating", "") or ""
             if rating and rating != "0":
                 combined.at[i, "Tom Rating"] = rating
+            series = extract_series(m.get("Title", "") or "")
+            if series and not (row.get("Series") or "").strip():
+                combined.at[i, "Series"] = series
         else:
             # Tom: to-read / currently-reading shelf
             m = find_match(title, author, gr_shelf)
@@ -148,6 +162,9 @@ def process_sheet(
                 combined.at[i, "Tom Shelf"] = m["shelf"]
                 if not (row.get("Tom") or "").strip():
                     combined.at[i, "Tom"] = "In the queue" if m["shelf"] == "to-read" else "In progress"
+                series = extract_series(m.get("Title", "") or "")
+                if series and not (row.get("Series") or "").strip():
+                    combined.at[i, "Series"] = series
 
         # Nika: StoryGraph read list — overwrites stale statuses (In progress / In the queue / etc)
         # but preserves "Read" annotations like "Read (didn't enjoy)"

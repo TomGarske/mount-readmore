@@ -116,6 +116,7 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
         tom_rating = (row.get("Tom Rating", "") or "").strip()
         tom_shelf = (row.get("Tom Shelf", "") or "").strip()
         nika_shelf = (row.get("Nika Shelf", "") or "").strip()
+        series = (row.get("Series", "") or "").strip()
 
         authors = parse_authors(author_raw)
         first_author = authors[0] if authors else "unknown"
@@ -136,16 +137,21 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
             "tom_rating": tom_rating,
             "tom_shelf": tom_shelf,
             "nika_shelf": nika_shelf,
+            "series": series,
         })
 
     return records
 
 
-def apply_cover_cache(records: list[dict], cache_path: Path) -> int:
+def apply_cover_cache(records: list[dict], cache_path: Path, desc_path: Path | None = None) -> int:
     if not cache_path.exists():
         return 0
     with cache_path.open() as f:
         cache = json.load(f)
+    desc_cache = {}
+    if desc_path and desc_path.exists():
+        with desc_path.open() as f:
+            desc_cache = json.load(f)
     applied = 0
     for r in records:
         author = r["authors"][0] if r.get("authors") else ""
@@ -158,6 +164,14 @@ def apply_cover_cache(records: list[dict], cache_path: Path) -> int:
                 r[field] = meta[field]
         if meta.get("cover_url"):
             applied += 1
+        ol_key = meta.get("ol_key", "")
+        if ol_key and ol_key in desc_cache:
+            d = desc_cache[ol_key].get("description", "")
+            if d:
+                r["description"] = d
+            subjects = desc_cache[ol_key].get("subjects", [])
+            if subjects:
+                r["subjects"] = subjects
     return applied
 
 
@@ -186,8 +200,9 @@ def main() -> None:
             r["id"] = f"{base}-{n}"
         seen[base] = n + 1
 
-    covers = apply_cover_cache(all_records, args.data / "openlib_cache.json")
-    print(f"  Applied {covers} cover URLs from cache")
+    covers = apply_cover_cache(all_records, args.data / "openlib_cache.json", args.data / "openlib_descriptions.json")
+    descs = sum(1 for r in all_records if r.get("description"))
+    print(f"  Applied {covers} cover URLs + {descs} descriptions from cache")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w") as f:

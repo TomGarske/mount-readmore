@@ -137,21 +137,46 @@ function renderDetail(id) {
     ? `<img src="${escapeHtml(coverUrl)}" alt="Cover of ${escapeHtml(book.title)}" loading="lazy">`
     : '📖';
 
-  const shelfLine = book.tom_shelf ? `<dt>On Tom's shelf</dt><dd><span class="badge ${book.tom_shelf === 'to-read' ? 'queued' : 'read'}">${book.tom_shelf}</span></dd>` : '';
+  const shelfLine = book.tom_shelf ? `<dt>On Tom's nightstand</dt><dd><span class="badge ${book.tom_shelf === 'to-read' ? 'queued' : 'read'}">${book.tom_shelf}</span></dd>` : '';
+  const seriesLine = book.series ? `<dt>Series</dt><dd>${escapeHtml(book.series)}</dd>` : '';
+  const pagesLine = book.pages ? `<dt>Pages</dt><dd>${book.pages}</dd>` : '';
+  const firstPubLine = book.first_pub_year ? `<dt>First published</dt><dd>${book.first_pub_year}</dd>` : '';
   const addToShelfBtn = (!book.tom_shelf && tomRs !== 'read')
     ? `<a class="btn-primary" href="https://www.goodreads.com/search?q=${searchQ}" target="_blank" rel="noopener" title="Opens Goodreads search — click 'Want to Read' on the result">+ Add to Goodreads shelf</a>`
+    : '';
+
+  // Goodreads link: use book id if we have one (from Goodreads shelf data we don't capture id directly — use search)
+  // Amazon link: ISBN-based if available
+  const amazonUrl = book.isbn
+    ? `https://www.amazon.com/dp/${encodeURIComponent(book.isbn)}`
+    : `https://www.amazon.com/s?k=${searchQ}&i=stripbooks`;
+  const goodreadsUrl = `https://www.goodreads.com/search?q=${searchQ}`;
+
+  // Truncate long descriptions and clean up Open Library markup ([source][1] etc)
+  let description = book.description || '';
+  // Strip OL footnote-style refs like ([source][1]) and [1]: http://... blocks
+  description = description.replace(/\(\[[^\]]+\]\[\d+\]\)/g, '').replace(/^\[\d+\]:.*$/gm, '').trim();
+  const descHtml = description
+    ? `<div class="book-description">${escapeHtml(description).split(/\n\n+/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')}</div>`
+    : '';
+
+  const subjectsHtml = (book.subjects && book.subjects.length > 0)
+    ? `<div class="book-subjects"><h3>Tags from Open Library</h3>${book.subjects.slice(0, 12).map(s => `<span class="subject-tag">${escapeHtml(s)}</span>`).join(' ')}</div>`
     : '';
 
   root.innerHTML = `<div class="detail">
     <a href="#/books" class="back">← back to books</a>
     <h1>${escapeHtml(book.title)}</h1>
-    <div class="author-line">by ${escapeHtml(book.author_raw || book.authors.join(', '))}</div>
+    <div class="author-line">by ${escapeHtml(book.author_raw || book.authors.join(', '))}${book.series ? ` · <span class="series-inline">${escapeHtml(book.series)}</span>` : ''}</div>
     <div class="detail-grid">
       <div class="detail-cover">${coverHtml}</div>
       <div class="detail-info">
         <dl>
           <dt>Category</dt><dd>${escapeHtml(book.category)}</dd>
+          ${seriesLine}
           ${publisherLine}
+          ${firstPubLine}
+          ${pagesLine}
           ${awardRows}
           ${tomLine}
           ${shelfLine}
@@ -159,13 +184,16 @@ function renderDetail(id) {
         </dl>
         ${addToShelfBtn ? `<div style="margin-top: 16px;">${addToShelfBtn}</div>` : ''}
         <div class="detail-links">
-          <a href="https://www.goodreads.com/search?q=${searchQ}" target="_blank" rel="noopener">Goodreads</a>
+          <a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a>
+          <a href="${escapeHtml(amazonUrl)}" target="_blank" rel="noopener">Amazon</a>
           <a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a>
           <a href="https://openlibrary.org/search?q=${searchQ}" target="_blank" rel="noopener">Open Library</a>
           <a href="https://en.wikipedia.org/w/index.php?search=${searchQ}" target="_blank" rel="noopener">Wikipedia</a>
         </div>
       </div>
     </div>
+    ${descHtml ? `<div class="book-section"><h2>Description</h2>${descHtml}</div>` : ''}
+    ${subjectsHtml ? `<div class="book-section">${subjectsHtml}</div>` : ''}
   </div>`;
 }
 
