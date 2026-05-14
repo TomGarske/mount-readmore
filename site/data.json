@@ -7430,13 +7430,13 @@
       "awards": {
         "nebula": "nominee"
       },
-      "tom": "In the queue",
+      "tom": "",
       "nika": "",
       "tom_date_read": "",
       "tom_rating": "",
-      "tom_shelf": "to-read",
+      "tom_shelf": "",
       "nika_shelf": "",
-      "series": "The Last Horizon, #3",
+      "series": "",
       "cover_url": "https://covers.openlibrary.org/b/id/524427-M.jpg",
       "ol_key": "/works/OL14871951W",
       "first_pub_year": 2004,
@@ -26786,9 +26786,9 @@
   "meta": {
     "total": 795,
     "by_category": {
+      "Novelette": 78,
       "Novel": 639,
-      "Novella": 78,
-      "Novelette": 78
+      "Novella": 78
     }
   }
 }

@@ -82,7 +82,11 @@ def extract_series(gr_title: str) -> str:
 
 
 def find_match(title: str, author: str, gr: pd.DataFrame):
-    """Returns the matching row from gr, or None."""
+    """Returns the matching row from gr, or None.
+
+    Requires both title AND author to align — title-only matches are rejected
+    (otherwise generic titles like "The Knight" collide across authors).
+    """
     t = normalize(title)
     a = normalize(author)
     if not t or gr.empty:
@@ -90,19 +94,23 @@ def find_match(title: str, author: str, gr: pd.DataFrame):
 
     gr_stripped = gr.assign(title_stripped=gr["title_n"].apply(strip_series_suffix))
 
+    # Exact title — must also pass author substring check
     exact = gr_stripped[gr_stripped["title_stripped"] == t]
     for _, row in exact.iterrows():
         if a and (a in row["author_n"] or row["author_n"] in a):
             return row
-    if not exact.empty:
-        return exact.iloc[0]
+        if not a:
+            return row  # only when we have no author to check
 
+    # Fuzzy title — must pass author similarity check
     titles = gr_stripped["title_stripped"].tolist()
     hit = process.extractOne(t, titles, scorer=fuzz.ratio, score_cutoff=88)
     if hit:
         _, _, idx = hit
         cand = gr_stripped.iloc[idx]
-        if not a or fuzz.partial_ratio(a, cand["author_n"]) >= 70:
+        if a and fuzz.partial_ratio(a, cand["author_n"]) >= 70:
+            return cand
+        if not a:
             return cand
     return None
 
