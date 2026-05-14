@@ -246,9 +246,57 @@ a:hover { text-decoration: underline; }
   color: var(--muted);
 }
 .recent-read-cover img { width: 100%; height: 100%; object-fit: cover; }
-.recent-read-info { font-size: 13px; line-height: 1.35; }
+.recent-read-info { font-size: 13px; line-height: 1.35; flex: 1; min-width: 0; }
 .recent-read-info .rr-title { color: var(--text); font-weight: 600; }
 .recent-read-info .rr-meta { color: var(--muted); font-size: 12px; }
+.rr-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+.rr-pill {
+  display: inline-block;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  letter-spacing: 0.02em;
+}
+.rr-pill-t { background: rgba(125, 211, 192, 0.15); color: var(--accent); border-color: rgba(125, 211, 192, 0.4); }
+.rr-pill-n { background: rgba(180, 142, 173, 0.15); color: var(--accent-2); border-color: rgba(180, 142, 173, 0.4); }
+
+.year-progress-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+.year-card {
+  background: linear-gradient(135deg, rgba(125, 211, 192, 0.05), rgba(180, 142, 173, 0.05));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.year-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.year-card-name { font-size: 17px; font-weight: 600; color: var(--accent); letter-spacing: -0.01em; }
+.year-card-name.nika { color: var(--accent-2); }
+.year-card-year { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.08em; }
+.year-card-stat { font-size: 14px; color: var(--text); padding: 4px 0; }
+.year-card-stat strong { color: var(--accent); }
+.year-card .year-card-stat:not(:last-child) { border-bottom: 1px solid var(--border); }
+.year-card-stat:last-child { padding-top: 8px; }
+
+@media (max-width: 700px) {
+  .year-progress-grid { grid-template-columns: 1fr; }
+  .awards-banner { grid-template-columns: 1fr; }
+}
 
 .year-bars {
   display: flex;
@@ -378,8 +426,8 @@ fieldset label input { margin-right: 8px; }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 14px;
 }
 
 .card {
@@ -388,29 +436,31 @@ fieldset label input { margin-right: 8px; }
   border-radius: var(--radius);
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   cursor: pointer;
   transition: transform 0.1s ease, border-color 0.1s ease;
+  min-height: 168px;
 }
 .card:hover { transform: translateY(-2px); border-color: var(--accent); }
 .card-cover {
-  width: 100%;
-  height: 180px;
+  width: 110px;
+  flex: 0 0 110px;
   background: var(--bg-3);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  border-bottom: 1px solid var(--border);
+  border-right: 1px solid var(--border);
 }
 .card-cover img { width: 100%; height: 100%; object-fit: cover; }
-.card-cover .cover-placeholder { font-size: 36px; color: var(--muted); }
+.card-cover .cover-placeholder { font-size: 32px; color: var(--muted); }
 .card-body {
-  padding: 12px 14px 14px;
+  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 6px;
   flex: 1;
+  min-width: 0;
 }
 
 .card .title {

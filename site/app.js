@@ -182,12 +182,13 @@ function renderStats() {
   const onShelf = DATA.books.filter(b => b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read');
   const currentlyReading = DATA.books.filter(b => b.tom_shelf === 'currently-reading');
 
-  // "Books to go this year" — books with year = current calendar year that Tom hasn't read
+  // This year (2026) — both readers
   const currentYear = new Date().getFullYear();
   const thisYearAll = DATA.books.filter(b => b.year === currentYear);
-  const thisYearWinners = thisYearAll.filter(b => Object.values(b.awards || {}).includes('winner'));
-  const thisYearUnread = thisYearAll.filter(b => readStatus(b, 'tom') !== 'read');
-  const thisYearWinnersUnread = thisYearWinners.filter(b => readStatus(b, 'tom') !== 'read');
+  const thisYearTomRead = thisYearAll.filter(b => readStatus(b, 'tom') === 'read');
+  const thisYearNikaRead = thisYearAll.filter(b => readStatus(b, 'nika') === 'read');
+  const thisYearTomShelf = thisYearAll.filter(b => b.tom_shelf === 'to-read');
+  const thisYearNikaShelf = thisYearAll.filter(b => b.nika_shelf === 'to-read');
 
   const byAward = {};
   for (const a of Object.keys(AWARD_LABELS)) byAward[a] = { total: 0, tom: 0, nika: 0 };
@@ -211,11 +212,36 @@ function renderStats() {
     .map(b => ({ ...b, _t: new Date(b.tom_date_read.replace(/-/g, '/')) }))
     .sort((a, b) => b._t - a._t);
 
-  // Nika doesn't have read dates — sort her reads by award year desc instead
-  const nikaRecent = [...winnersNika].sort((a, b) => (b.year || 0) - (a.year || 0));
+  // Combined recent reads (Tom or Nika), sorted by year desc, deduped by id
+  const recentEither = [];
+  const seenRecent = new Set();
+  // Prefer items with Tom date read first (more "recent" signal), then fall back to all winners read
+  for (const b of [...dated, ...winnersTom, ...winnersNika]) {
+    if (seenRecent.has(b.id)) continue;
+    seenRecent.add(b.id);
+    recentEither.push(b);
+  }
+  recentEither.sort((a, b) => {
+    // If both have Tom dates, sort by date desc; otherwise by year desc
+    if (a.tom_date_read && b.tom_date_read) return b.tom_date_read.localeCompare(a.tom_date_read);
+    if (a.tom_date_read && !b.tom_date_read) return -1;
+    if (!a.tom_date_read && b.tom_date_read) return 1;
+    return (b.year || 0) - (a.year || 0);
+  });
 
-  // Nika's shelf
-  const nikaOnShelf = DATA.books.filter(b => b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read');
+  // Combined nightstand (Tom shelf + Nika shelf, deduped)
+  const nightstandBooks = [];
+  const seenShelf = new Set();
+  for (const b of DATA.books) {
+    if (seenShelf.has(b.id)) continue;
+    const tomOn = b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read';
+    const nikaOn = b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read';
+    if (tomOn || nikaOn) {
+      seenShelf.add(b.id);
+      nightstandBooks.push(b);
+    }
+  }
+  nightstandBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
 
   // ===== Author leaderboard =====
   const authorAppearances = {};  // name -> {total, winners, tomRead, nikaRead, books: []}
@@ -294,7 +320,20 @@ function renderStats() {
     .sort((a, b) => (b.year || 0) - (a.year || 0))
     .slice(0, 12);
 
-  const tile = (b, metaLine) => {
+  const readerPills = (b, mode) => {
+    // mode = 'read' or 'shelf'
+    const pills = [];
+    if (mode === 'read') {
+      if (readStatus(b, 'tom') === 'read') pills.push(`<span class="rr-pill rr-pill-t">T read</span>`);
+      if (readStatus(b, 'nika') === 'read') pills.push(`<span class="rr-pill rr-pill-n">N read</span>`);
+    } else if (mode === 'shelf') {
+      if (b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read') pills.push(`<span class="rr-pill rr-pill-t">T nightstand</span>`);
+      if (b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read') pills.push(`<span class="rr-pill rr-pill-n">N nightstand</span>`);
+    }
+    return pills.join('');
+  };
+
+  const tile = (b, metaLine, pillsHtml = '') => {
     const coverHtml = b.cover_url
       ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
       : '📖';
@@ -303,25 +342,24 @@ function renderStats() {
       <div class="recent-read-info">
         <div class="rr-title">${escapeHtml(b.title)}</div>
         <div class="rr-meta">${metaLine}</div>
+        ${pillsHtml ? `<div class="rr-pills">${pillsHtml}</div>` : ''}
       </div>
     </div>`;
   };
 
-  const onShelfHtml = onShelf
-    .sort((a, b) => (b.year || 0) - (a.year || 0))
-    .map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).map(([a, s]) => `${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}`).join(' · ')}`))
-    .join('');
+  const recentEitherHtml = recentEither.slice(0, 16).map(b =>
+    tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year || ''}`, readerPills(b, 'read'))
+  ).join('');
 
-  const upNextHtml = upNext.map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]).join(' · ')} winner`)).join('');
+  const nightstandHtml = nightstandBooks.map(b =>
+    tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).map(([a, s]) => `${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}`).join(' · ')}`, readerPills(b, 'shelf'))
+  ).join('');
 
-  const recentReadsHtml = dated.slice(0, 12).map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year || ''}`)).join('');
+  const upNextHtml = upNext.map(b =>
+    tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]).join(' · ')} winner`)
+  ).join('');
 
   const root = $('#view-stats');
-  const recentNikaHtml = nikaRecent.slice(0, 12).map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year || ''}`)).join('');
-  const nikaShelfHtml = nikaOnShelf
-    .sort((a, b) => (b.year || 0) - (a.year || 0))
-    .map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).map(([a, s]) => `${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}`).join(' · ')}`))
-    .join('');
 
   // Mount Readmore climb SVG — left slope: x = 300*(1-p), y = 280 - 230*p
   const climbPos = (p) => {
@@ -379,17 +417,15 @@ function renderStats() {
   // Decade heatmap
   const decadeCells = decades.map(d => {
     const pct = d.total > 0 ? d.tom / d.total : 0;
-    const nikaPct = d.total > 0 ? d.nika / d.total : 0;
     return `<div class="decade-cell" style="background: rgba(125, 211, 192, ${0.1 + pct * 0.8});" title="${d.decade}s: Tom ${d.tom}/${d.total}, Nika ${d.nika}/${d.total}">
-      <div class="decade-label">${d.decade % 100}s</div>
-      <div class="decade-frac">${d.tom}/${d.total}</div>
-      <div class="decade-nika">N ${d.nika}</div>
+      <div class="decade-label">${d.decade % 100}s · ${d.total} winners</div>
+      <div class="decade-frac"><span style="color: var(--accent)">T ${d.tom}</span> · <span style="color: var(--accent-2)">N ${d.nika}</span></div>
     </div>`;
   }).join('');
 
   root.innerHTML = `<div class="detail">
     <div class="awards-banner">
-      <a class="award-pill nebula" href="https://nebulas.sfwa.org/" target="_blank" rel="noopener">
+      <a class="award-pill nebula" href="https://events.sfwa.org/" target="_blank" rel="noopener">
         <span class="award-pill-date">Jun 6, 2026</span>
         <div class="award-pill-body">
           <div class="award-pill-title">2026 Nebula Awards</div>
@@ -415,42 +451,42 @@ function renderStats() {
       ${card('Both read', winnersBoth.length, `${winnersEither.length} read by either`)}
     </div>
 
-    ${dated.length > 0 ? `<div class="progress-section">
-      <h2>Recent winners Tom has read</h2>
-      <div class="recent-reads">${recentReadsHtml}</div>
+    ${recentEither.length > 0 ? `<div class="progress-section">
+      <h2>Recent winners read</h2>
+      <p style="color: var(--muted); font-size: 13px;">Pills show who read each book. Most recent first.</p>
+      <div class="recent-reads">${recentEitherHtml}</div>
     </div>` : ''}
 
-    ${winnersNika.length > 0 ? `<div class="progress-section">
-      <h2>Recent winners Nika has read</h2>
-      <p style="color: var(--muted); font-size: 13px;">By award year (StoryGraph doesn't expose read dates).</p>
-      <div class="recent-reads">${recentNikaHtml}</div>
-    </div>` : ''}
-
-    <div class="eta-card">
-      <div class="eta-headline">${currentYear} on Mount Readmore</div>
-      <div class="eta-sub">${thisYearAll.length} books on the list this year (${thisYearWinners.length} winners · ${thisYearAll.length - thisYearWinners.length} nominees so far). Hugo winners announced Aug 30, Nebulas Jun 6.</div>
-      <ul>
-        <li>${currentYear} books Tom hasn't read: <strong>${thisYearUnread.length} of ${thisYearAll.length}</strong></li>
-        <li>${currentYear} winners Tom hasn't read: <strong>${thisYearWinnersUnread.length} of ${thisYearWinners.length}</strong></li>
-        <li>Currently reading: <strong>${currentlyReading.length === 0 ? 'none from this list' : currentlyReading.map(b => escapeHtml(b.title)).join(', ')}</strong></li>
-      </ul>
+    <div class="year-progress-grid">
+      <div class="year-card">
+        <div class="year-card-header">
+          <span class="year-card-name">Tom</span>
+          <span class="year-card-year">${currentYear}</span>
+        </div>
+        <div class="year-card-stat"><strong>${thisYearTomRead.length}</strong> of ${thisYearAll.length} on the ${currentYear} list read</div>
+        <div class="year-card-stat"><strong>${thisYearTomShelf.length}</strong> on the nightstand from ${currentYear}</div>
+        <div class="year-card-stat">Currently reading: <strong>${currentlyReading.length === 0 ? 'nothing from this list' : currentlyReading.map(b => escapeHtml(b.title)).join(', ')}</strong></div>
+      </div>
+      <div class="year-card">
+        <div class="year-card-header">
+          <span class="year-card-name nika">Nika</span>
+          <span class="year-card-year">${currentYear}</span>
+        </div>
+        <div class="year-card-stat"><strong>${thisYearNikaRead.length}</strong> of ${thisYearAll.length} on the ${currentYear} list read</div>
+        <div class="year-card-stat"><strong>${thisYearNikaShelf.length}</strong> on the nightstand from ${currentYear}</div>
+        <div class="year-card-stat" style="color: var(--muted); font-size: 12px;">StoryGraph doesn't expose currently-reading</div>
+      </div>
     </div>
 
-    ${onShelf.length > 0 ? `<div class="progress-section">
-      <h2>On Tom's shelf, not yet read (${onShelf.length})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Books from this list that are on his Goodreads to-read shelf.</p>
-      <div class="recent-reads">${onShelfHtml}</div>
-    </div>` : ''}
-
-    ${nikaOnShelf.length > 0 ? `<div class="progress-section">
-      <h2>On Nika's shelf, not yet read (${nikaOnShelf.length})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Books from this list that are on her StoryGraph to-read shelf.</p>
-      <div class="recent-reads">${nikaShelfHtml}</div>
+    ${nightstandBooks.length > 0 ? `<div class="progress-section">
+      <h2>On the nightstand (${nightstandBooks.length})</h2>
+      <p style="color: var(--muted); font-size: 13px;">Books from this list waiting on a to-read shelf. Pills show whose.</p>
+      <div class="recent-reads">${nightstandHtml}</div>
     </div>` : ''}
 
     ${upNext.length > 0 ? `<div class="progress-section">
-      <h2>Up next — winners on neither shelf yet</h2>
-      <p style="color: var(--muted); font-size: 13px;">Recent winners by publication year. Open one to add it to a shelf.</p>
+      <h2>Up next — winners on no nightstand yet</h2>
+      <p style="color: var(--muted); font-size: 13px;">Recent winners by publication year. Open one to add it to your shelf.</p>
       <div class="recent-reads">${upNextHtml}</div>
     </div>` : ''}
 
@@ -512,7 +548,7 @@ function renderAbout() {
     <p>A Python pipeline reads the awards spreadsheet and an exported Goodreads CSV, matches them up by title and author, and produces a static JSON the site reads. There's no backend, no tracking, no login — just a list of books rendered in the browser.</p>
     <h2>Upcoming award dates</h2>
     <ul>
-      <li><strong>2026 Nebula Awards</strong> — Saturday, <strong>June 6, 2026</strong> at the SFWA conference in Chicago · <a href="https://nebulas.sfwa.org/" target="_blank" rel="noopener">nebulas.sfwa.org</a> · <a href="https://events.sfwa.org/" target="_blank" rel="noopener">events.sfwa.org</a></li>
+      <li><strong>2026 Nebula Awards</strong> — Saturday, <strong>June 6, 2026</strong> at the SFWA conference in Chicago · <a href="https://events.sfwa.org/" target="_blank" rel="noopener">events.sfwa.org</a> · <a href="https://en.wikipedia.org/wiki/Nebula_Award" target="_blank" rel="noopener">Nebula on Wikipedia</a></li>
       <li><strong>2026 Hugo Awards</strong> — Sunday, <strong>August 30, 2026</strong> at LAcon V (84th WorldCon) in Anaheim · <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a> · <a href="https://www.lacon.org/hugos/" target="_blank" rel="noopener">lacon.org/hugos</a></li>
     </ul>
     <p style="color: var(--muted); font-size: 13px;">Hugo finalists this year were <a href="https://www.thehugoawards.org/2026/04/2026-hugo-award-lodestar-award-and-astounding-finalists-announced/" target="_blank" rel="noopener">announced April 21, 2026</a>. Voting closes August 8.</p>
