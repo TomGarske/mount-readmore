@@ -55,7 +55,7 @@ def load_goodreads(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
 
 
 def load_storygraph(path: Path) -> pd.DataFrame:
-    """StoryGraph read-list CSV scraped from /books-read/<user>. Columns: title, author, year, book_id, cover_url."""
+    """StoryGraph CSV scraped from /books-read/<user> or /to-read/<user>. Columns: title, author, etc."""
     df = pd.read_csv(path, dtype=str).fillna("")
     df["title_n"] = df["title"].apply(normalize)
     df["author_n"] = df["author"].apply(normalize)
@@ -102,6 +102,7 @@ def process_sheet(
     gr_read: pd.DataFrame,
     gr_shelf: pd.DataFrame,
     nika_read: pd.DataFrame | None,
+    nika_shelf: pd.DataFrame | None,
     out_csv: Path,
 ) -> dict:
     base = pd.read_csv(sheet_csv, dtype=str, keep_default_na=False)
@@ -119,11 +120,11 @@ def process_sheet(
     stem = sheet_csv.stem
     title_col = TITLE_COLS.get(stem, "Novel")
     author_col = "Author(s)" if "Author(s)" in combined.columns else "Author"
-    for col in ["Tom", "Tom Date Read", "Tom Rating", "Tom Shelf", "Nika"]:
+    for col in ["Tom", "Tom Date Read", "Tom Rating", "Tom Shelf", "Nika", "Nika Shelf"]:
         if col not in combined.columns:
             combined[col] = ""
 
-    stats = {"matched_read": 0, "matched_shelf": 0, "matched_nika": 0}
+    stats = {"matched_read": 0, "matched_shelf": 0, "matched_nika": 0, "matched_nika_shelf": 0}
     for i, row in combined.iterrows():
         title = row.get(title_col, "")
         author = row.get(author_col, "")
@@ -158,6 +159,16 @@ def process_sheet(
                 if not existing.startswith("read"):
                     combined.at[i, "Nika"] = "Read"
 
+        # Nika: StoryGraph to-read shelf
+        if nika_shelf is not None:
+            m = find_match(title, author, nika_shelf)
+            if m is not None:
+                stats["matched_nika_shelf"] += 1
+                combined.at[i, "Nika Shelf"] = "to-read"
+                existing = (row.get("Nika") or "").strip().lower()
+                if not existing:
+                    combined.at[i, "Nika"] = "In the queue"
+
     combined.to_csv(out_csv, index=False, quoting=csv.QUOTE_MINIMAL)
     stats["rows"] = len(combined)
     stats["title_col"] = title_col
@@ -169,6 +180,7 @@ def main() -> None:
     p.add_argument("--data", type=Path, default=Path("data"))
     p.add_argument("--goodreads", type=Path, required=True)
     p.add_argument("--nika-storygraph", type=Path, help="CSV scraped from Nika's StoryGraph books-read page")
+    p.add_argument("--nika-storygraph-toread", type=Path, help="CSV scraped from Nika's StoryGraph to-read page")
     args = p.parse_args()
 
     gr_read, gr_shelf = load_goodreads(args.goodreads)
@@ -177,7 +189,12 @@ def main() -> None:
     nika_read = None
     if args.nika_storygraph and args.nika_storygraph.exists():
         nika_read = load_storygraph(args.nika_storygraph)
-        print(f"Nika StoryGraph: {len(nika_read)} on read")
+        print(f"Nika StoryGraph reads: {len(nika_read)}")
+
+    nika_shelf = None
+    if args.nika_storygraph_toread and args.nika_storygraph_toread.exists():
+        nika_shelf = load_storygraph(args.nika_storygraph_toread)
+        print(f"Nika StoryGraph to-read: {len(nika_shelf)}")
     print()
 
     for stem in ["best_novel", "best_novella_hugo", "best_novelette_hugo", "favorites"]:
@@ -186,8 +203,8 @@ def main() -> None:
         out = args.data / f"{stem}_updated.csv"
         if not src.exists():
             continue
-        s = process_sheet(src, adds, gr_read, gr_shelf, nika_read, out)
-        print(f"{stem:25s} rows={s['rows']:4d}  tom-read={s['matched_read']:3d}  tom-shelf={s['matched_shelf']:3d}  nika-read={s['matched_nika']:3d}  -> {out.name}")
+        s = process_sheet(src, adds, gr_read, gr_shelf, nika_read, nika_shelf, out)
+        print(f"{stem:25s} rows={s['rows']:4d}  tom-r={s['matched_read']:3d} tom-s={s['matched_shelf']:3d} nika-r={s['matched_nika']:3d} nika-s={s['matched_nika_shelf']:3d}  -> {out.name}")
 
 
 if __name__ == "__main__":

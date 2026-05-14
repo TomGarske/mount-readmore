@@ -115,6 +115,7 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
         tom_date_read = (row.get("Tom Date Read", "") or "").strip()
         tom_rating = (row.get("Tom Rating", "") or "").strip()
         tom_shelf = (row.get("Tom Shelf", "") or "").strip()
+        nika_shelf = (row.get("Nika Shelf", "") or "").strip()
 
         authors = parse_authors(author_raw)
         first_author = authors[0] if authors else "unknown"
@@ -134,6 +135,7 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
             "tom_date_read": tom_date_read,
             "tom_rating": tom_rating,
             "tom_shelf": tom_shelf,
+            "nika_shelf": nika_shelf,
         })
 
     return records

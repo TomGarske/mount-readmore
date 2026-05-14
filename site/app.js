@@ -86,14 +86,20 @@ function bookCard(book) {
     .map(([a, s]) => `<span class="badge ${s}">${AWARD_LABELS[a]} ${s === 'winner' ? '★' : ''}</span>`)
     .join('');
   const readBadges = readerBadge(book, 'tom') + readerBadge(book, 'nika');
+  const coverHtml = book.cover_url
+    ? `<img src="${escapeHtml(book.cover_url)}" alt="" loading="lazy">`
+    : `<span class="cover-placeholder">📖</span>`;
   return `<div class="card" data-id="${escapeHtml(book.id)}">
-    <div class="title">${escapeHtml(book.title)}</div>
-    <div class="author">${escapeHtml(book.author_raw || (book.authors || []).join(', '))}</div>
-    <div class="meta">
-      <span>${book.year || ''}</span>
-      <span class="badge cat">${escapeHtml(book.category)}</span>
+    <div class="card-cover">${coverHtml}</div>
+    <div class="card-body">
+      <div class="title">${escapeHtml(book.title)}</div>
+      <div class="author">${escapeHtml(book.author_raw || (book.authors || []).join(', '))}</div>
+      <div class="meta">
+        <span>${book.year || ''}</span>
+        <span class="badge cat">${escapeHtml(book.category)}</span>
+      </div>
+      <div class="badges">${awardBadges}${readBadges}</div>
     </div>
-    <div class="badges">${awardBadges}${readBadges}</div>
   </div>`;
 }
 
@@ -205,6 +211,47 @@ function renderStats() {
     .map(b => ({ ...b, _t: new Date(b.tom_date_read.replace(/-/g, '/')) }))
     .sort((a, b) => b._t - a._t);
 
+  // Nika doesn't have read dates — sort her reads by award year desc instead
+  const nikaRecent = [...winnersNika].sort((a, b) => (b.year || 0) - (a.year || 0));
+
+  // Nika's shelf
+  const nikaOnShelf = DATA.books.filter(b => b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read');
+
+  // ===== Author leaderboard =====
+  const authorAppearances = {};  // name -> {total, winners, tomRead, nikaRead, books: []}
+  for (const b of DATA.books) {
+    for (const a of (b.authors || [])) {
+      if (!authorAppearances[a]) authorAppearances[a] = { total: 0, winners: 0, tomRead: 0, nikaRead: 0 };
+      authorAppearances[a].total++;
+      if (Object.values(b.awards || {}).includes('winner')) authorAppearances[a].winners++;
+      if (readStatus(b, 'tom') === 'read') authorAppearances[a].tomRead++;
+      if (readStatus(b, 'nika') === 'read') authorAppearances[a].nikaRead++;
+    }
+  }
+  const topAuthors = Object.entries(authorAppearances)
+    .map(([name, s]) => ({ name, ...s }))
+    .sort((a, b) => b.total - a.total || b.winners - a.winners)
+    .slice(0, 12);
+  const maxAppearances = topAuthors[0] ? topAuthors[0].total : 1;
+
+  // ===== Decade heatmap =====
+  const decadeBuckets = {};
+  for (const b of winners) {
+    if (!b.year) continue;
+    const decade = Math.floor(b.year / 10) * 10;
+    if (!decadeBuckets[decade]) decadeBuckets[decade] = { total: 0, tom: 0, nika: 0 };
+    decadeBuckets[decade].total++;
+    if (readStatus(b, 'tom') === 'read') decadeBuckets[decade].tom++;
+    if (readStatus(b, 'nika') === 'read') decadeBuckets[decade].nika++;
+  }
+  const decades = Object.entries(decadeBuckets)
+    .map(([d, s]) => ({ decade: parseInt(d, 10), ...s }))
+    .sort((a, b) => a.decade - b.decade);
+
+  // ===== Mount Readmore climb =====
+  const tomPct = winnersTom.length / winnersTotal;
+  const nikaPct = winnersNika.length / winnersTotal;
+
   const card = (h, v, sub, pct) => `<div class="stat-card">
     <h3>${h}</h3>
     <div class="stat-value">${v}</div>
@@ -270,7 +317,94 @@ function renderStats() {
   const recentReadsHtml = dated.slice(0, 12).map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year || ''}`)).join('');
 
   const root = $('#view-stats');
+  const recentNikaHtml = nikaRecent.slice(0, 12).map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year || ''}`)).join('');
+  const nikaShelfHtml = nikaOnShelf
+    .sort((a, b) => (b.year || 0) - (a.year || 0))
+    .map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).map(([a, s]) => `${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}`).join(' · ')}`))
+    .join('');
+
+  // Mount Readmore climb SVG — left slope: x = 300*(1-p), y = 280 - 230*p
+  const climbPos = (p) => {
+    const x = 300 * (1 - Math.max(0.02, p));
+    const y = 280 - 230 * Math.max(0.02, p);
+    return { x, y };
+  };
+  const tomClimb = climbPos(tomPct);
+  const nikaClimb = climbPos(nikaPct);
+  // Nika on right slope mirror
+  const nikaClimbR = { x: 600 - nikaClimb.x, y: nikaClimb.y };
+
+  const mountainSvg = `<svg viewBox="0 0 600 320" class="mountain-svg">
+    <defs>
+      <linearGradient id="mtn" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="#3a4a5e"/>
+        <stop offset="100%" stop-color="#1d222c"/>
+      </linearGradient>
+      <linearGradient id="snow" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="#e6e8ee"/>
+        <stop offset="100%" stop-color="#7d8aa3"/>
+      </linearGradient>
+    </defs>
+    <polygon points="0,300 300,30 600,300" fill="url(#mtn)" stroke="#2a3140"/>
+    <polygon points="270,60 300,30 330,60 320,75 300,55 280,75" fill="url(#snow)" opacity="0.85"/>
+    <line x1="0" y1="280" x2="600" y2="280" stroke="#2a3140" stroke-dasharray="2 4"/>
+    <text x="300" y="22" text-anchor="middle" fill="#e6e8ee" font-size="12" font-weight="600">PEAK · ${winnersTotal} winners</text>
+    <line x1="${tomClimb.x}" y1="${tomClimb.y}" x2="${tomClimb.x - 80}" y2="${tomClimb.y}" stroke="var(--accent)" stroke-width="1" opacity="0.5"/>
+    <circle cx="${tomClimb.x}" cy="${tomClimb.y}" r="9" fill="var(--accent)" stroke="#0f1115" stroke-width="2"/>
+    <text x="${tomClimb.x - 86}" y="${tomClimb.y + 4}" text-anchor="end" fill="var(--accent)" font-size="12" font-weight="600">Tom · ${winnersTom.length}/${winnersTotal} (${(tomPct * 100).toFixed(1)}%)</text>
+    <line x1="${nikaClimbR.x}" y1="${nikaClimbR.y}" x2="${nikaClimbR.x + 80}" y2="${nikaClimbR.y}" stroke="var(--accent-2)" stroke-width="1" opacity="0.5"/>
+    <circle cx="${nikaClimbR.x}" cy="${nikaClimbR.y}" r="9" fill="var(--accent-2)" stroke="#0f1115" stroke-width="2"/>
+    <text x="${nikaClimbR.x + 86}" y="${nikaClimbR.y + 4}" text-anchor="start" fill="var(--accent-2)" font-size="12" font-weight="600">Nika · ${winnersNika.length}/${winnersTotal} (${(nikaPct * 100).toFixed(1)}%)</text>
+    <text x="300" y="310" text-anchor="middle" fill="var(--muted)" font-size="10">BASE CAMP</text>
+  </svg>`;
+
+  // Top authors leaderboard
+  const authorRows = topAuthors.map(a => {
+    const widthPct = (a.total / maxAppearances) * 100;
+    const tomFill = a.total > 0 ? (a.tomRead / a.total) * 100 : 0;
+    const nikaFill = a.total > 0 ? (a.nikaRead / a.total) * 100 : 0;
+    const filterUrl = `#/books?award=hugo&status=winner`; // placeholder; can't filter by author yet without new param
+    return `<div class="author-row">
+      <div class="author-name">${escapeHtml(a.name)}</div>
+      <div class="author-bar">
+        <div class="author-bar-bg" style="width: ${widthPct}%;">
+          <div class="author-bar-tom" style="width: ${tomFill}%;" title="Tom read ${a.tomRead}"></div>
+          <div class="author-bar-nika" style="width: ${nikaFill}%; left: ${tomFill}%;" title="Nika read ${a.nikaRead}"></div>
+        </div>
+      </div>
+      <div class="author-count">${a.total} · <span style="color:var(--accent)">T ${a.tomRead}</span> · <span style="color:var(--accent-2)">N ${a.nikaRead}</span></div>
+    </div>`;
+  }).join('');
+
+  // Decade heatmap
+  const decadeCells = decades.map(d => {
+    const pct = d.total > 0 ? d.tom / d.total : 0;
+    const nikaPct = d.total > 0 ? d.nika / d.total : 0;
+    return `<div class="decade-cell" style="background: rgba(125, 211, 192, ${0.1 + pct * 0.8});" title="${d.decade}s: Tom ${d.tom}/${d.total}, Nika ${d.nika}/${d.total}">
+      <div class="decade-label">${d.decade % 100}s</div>
+      <div class="decade-frac">${d.tom}/${d.total}</div>
+      <div class="decade-nika">N ${d.nika}</div>
+    </div>`;
+  }).join('');
+
   root.innerHTML = `<div class="detail">
+    <div class="awards-banner">
+      <a class="award-pill nebula" href="https://nebulas.sfwa.org/" target="_blank" rel="noopener">
+        <span class="award-pill-date">Jun 6, 2026</span>
+        <div class="award-pill-body">
+          <div class="award-pill-title">2026 Nebula Awards</div>
+          <div class="award-pill-sub">SFWA conference · Chicago</div>
+        </div>
+      </a>
+      <a class="award-pill hugo" href="https://www.thehugoawards.org/" target="_blank" rel="noopener">
+        <span class="award-pill-date">Aug 30, 2026</span>
+        <div class="award-pill-body">
+          <div class="award-pill-title">2026 Hugo Awards</div>
+          <div class="award-pill-sub">LAcon V (84th WorldCon) · Anaheim</div>
+        </div>
+      </a>
+    </div>
+
     <h1>Progress</h1>
     <p style="color: var(--muted); font-size: 14px; margin-top: -8px;">Counting <strong>winners only</strong> on this page. Browse all nominees on the Books tab.</p>
 
@@ -281,9 +415,21 @@ function renderStats() {
       ${card('Both read', winnersBoth.length, `${winnersEither.length} read by either`)}
     </div>
 
+    <div class="progress-section">
+      <h2>The Mount Readmore climb</h2>
+      <p style="color: var(--muted); font-size: 13px;">Each climber's height = winners they've read out of ${winnersTotal}. There's a long way up.</p>
+      ${mountainSvg}
+    </div>
+
     ${dated.length > 0 ? `<div class="progress-section">
       <h2>Recent winners Tom has read</h2>
       <div class="recent-reads">${recentReadsHtml}</div>
+    </div>` : ''}
+
+    ${winnersNika.length > 0 ? `<div class="progress-section">
+      <h2>Recent winners Nika has read</h2>
+      <p style="color: var(--muted); font-size: 13px;">By award year (StoryGraph doesn't expose read dates).</p>
+      <div class="recent-reads">${recentNikaHtml}</div>
     </div>` : ''}
 
     <div class="eta-card">
@@ -297,22 +443,40 @@ function renderStats() {
     </div>
 
     ${onShelf.length > 0 ? `<div class="progress-section">
-      <h2>On your shelf, not yet read (${onShelf.length})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Books from this list that are on your Goodreads to-read shelf.</p>
+      <h2>On Tom's shelf, not yet read (${onShelf.length})</h2>
+      <p style="color: var(--muted); font-size: 13px;">Books from this list that are on his Goodreads to-read shelf.</p>
       <div class="recent-reads">${onShelfHtml}</div>
     </div>` : ''}
 
+    ${nikaOnShelf.length > 0 ? `<div class="progress-section">
+      <h2>On Nika's shelf, not yet read (${nikaOnShelf.length})</h2>
+      <p style="color: var(--muted); font-size: 13px;">Books from this list that are on her StoryGraph to-read shelf.</p>
+      <div class="recent-reads">${nikaShelfHtml}</div>
+    </div>` : ''}
+
     ${upNext.length > 0 ? `<div class="progress-section">
-      <h2>Up next — winners not on your shelf yet</h2>
-      <p style="color: var(--muted); font-size: 13px;">Recent winners by publication year. Open a book to add it to your shelf.</p>
+      <h2>Up next — winners on neither shelf yet</h2>
+      <p style="color: var(--muted); font-size: 13px;">Recent winners by publication year. Open one to add it to a shelf.</p>
       <div class="recent-reads">${upNextHtml}</div>
     </div>` : ''}
+
+    <div class="progress-section">
+      <h2>Most-awarded authors</h2>
+      <p style="color: var(--muted); font-size: 13px;">Authors with the most appearances on the list (winners + nominees). Bar width = appearances; teal fill = Tom read; purple = Nika read.</p>
+      <div class="authors-list">${authorRows}</div>
+    </div>
 
     <div class="progress-section">
       <h2>Coverage by year (winners only · last 30 years)</h2>
       <p style="color: var(--muted); font-size: 13px;">Each bar = number of Hugo+Nebula winners that year, filled green = books Tom has read. Hover for details.</p>
       <div class="year-bars">${yearBarsHtml}</div>
       <div class="year-axis"><span>${recentYears[0] ? recentYears[0][0] : ''}</span><span>${yearEnd}</span></div>
+    </div>
+
+    <div class="progress-section">
+      <h2>Decade heatmap (winners read)</h2>
+      <p style="color: var(--muted); font-size: 13px;">Deeper green = more of that decade's winners read by Tom.</p>
+      <div class="decade-grid">${decadeCells}</div>
     </div>
 
     <div class="progress-section">

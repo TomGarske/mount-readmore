@@ -89,6 +89,112 @@ a:hover { text-decoration: underline; }
 .profile-dot.sg { background: #7dd3c0; }
 .profile-dot.sg-nika { background: linear-gradient(135deg, #7dd3c0 0%, #b48ead 100%); }
 
+/* Awards banner at top of Progress */
+.awards-banner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0 28px;
+}
+.award-pill {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  color: var(--text);
+  text-decoration: none;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.award-pill:hover { border-color: var(--accent); transform: translateY(-1px); text-decoration: none; }
+.award-pill.nebula { border-left: 4px solid #c084fc; }
+.award-pill.hugo { border-left: 4px solid #f0c674; }
+.award-pill-date {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding: 6px 10px;
+  background: var(--bg-3);
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.award-pill.nebula .award-pill-date { color: #c084fc; }
+.award-pill.hugo .award-pill-date { color: #f0c674; }
+.award-pill-body { flex: 1; }
+.award-pill-title { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+.award-pill-sub { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+/* Mount Readmore climb */
+.mountain-svg {
+  width: 100%;
+  max-width: 720px;
+  height: auto;
+  margin: 12px auto 0;
+  display: block;
+  background: linear-gradient(180deg, rgba(125, 211, 192, 0.04), transparent);
+  border-radius: var(--radius);
+}
+
+/* Author leaderboard */
+.authors-list { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.author-row {
+  display: grid;
+  grid-template-columns: 180px 1fr 160px;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+.author-name { color: var(--text); font-weight: 500; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.author-bar { background: var(--bg-3); border-radius: 4px; height: 18px; overflow: hidden; position: relative; }
+.author-bar-bg {
+  height: 100%;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+.author-bar-tom {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background: var(--accent);
+  opacity: 0.85;
+}
+.author-bar-nika {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--accent-2);
+  opacity: 0.85;
+}
+.author-count { color: var(--muted); font-size: 12px; }
+
+/* Decade heatmap */
+.decade-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+.decade-cell {
+  padding: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  text-align: center;
+  transition: transform 0.1s;
+}
+.decade-cell:hover { transform: translateY(-2px); }
+.decade-label { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.04em; }
+.decade-frac { font-size: 20px; font-weight: 600; margin: 4px 0; color: var(--text); }
+.decade-nika { font-size: 11px; color: var(--accent-2); }
+
 /* Progress / Stats view extras */
 .progress-section { margin-top: 36px; }
 .progress-section h2 { font-size: 18px; margin-bottom: 12px; }
@@ -280,14 +386,32 @@ fieldset label input { margin-right: 8px; }
   background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 14px;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 6px;
   cursor: pointer;
   transition: transform 0.1s ease, border-color 0.1s ease;
 }
 .card:hover { transform: translateY(-2px); border-color: var(--accent); }
+.card-cover {
+  width: 100%;
+  height: 180px;
+  background: var(--bg-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.card-cover img { width: 100%; height: 100%; object-fit: cover; }
+.card-cover .cover-placeholder { font-size: 36px; color: var(--muted); }
+.card-body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
 
 .card .title {
   font-weight: 600;
