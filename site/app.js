@@ -6,6 +6,8 @@ const AWARD_LABELS = {
 };
 
 let DATA = { books: [], meta: {} };
+const SOLO = new URLSearchParams(window.location.search).get('solo') || null;
+const SHOW_NIKA = SOLO !== 'tom';
 let state = {
   search: '',
   readTom: 'all',
@@ -17,6 +19,9 @@ let state = {
   yearMax: null,
   sort: 'year-desc',
 };
+
+// Solo mode is in the real query string (?solo=tom). Hash routing preserves it
+// automatically as you navigate, so internal href="#/..." links just work.
 
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -35,7 +40,8 @@ function matchesFilters(book) {
     const hay = (book.title + ' ' + (book.author_raw || '')).toLowerCase();
     if (!hay.includes(q)) return false;
   }
-  for (const [who, key] of [['tom', 'readTom'], ['nika', 'readNika']]) {
+  const readerKeys = SHOW_NIKA ? [['tom', 'readTom'], ['nika', 'readNika']] : [['tom', 'readTom']];
+  for (const [who, key] of readerKeys) {
     const wanted = state[key];
     if (wanted === 'all') continue;
     const rs = readStatus(book, who);
@@ -68,14 +74,17 @@ function escapeHtml(s) {
 }
 
 function readerBadge(book, who) {
+  if (who === 'nika' && !SHOW_NIKA) return '';
   const rs = readStatus(book, who);
   const initial = who === 'tom' ? 'T' : 'N';
   const cls = who === 'tom' ? 'reader-t' : 'reader-n';
+  // In solo mode, drop the T prefix since there's only one reader
+  const label = SOLO === 'tom' && who === 'tom' ? escapeHtml(book[who]) : `<span class="reader-initial">${initial}</span>${escapeHtml(book[who])}`;
   if (rs === 'read') {
-    return `<span class="badge read ${cls}"><span class="reader-initial">${initial}</span>${escapeHtml(book[who])}</span>`;
+    return `<span class="badge read ${cls}">${label}</span>`;
   }
   if (rs === 'started') {
-    return `<span class="badge queued ${cls}"><span class="reader-initial">${initial}</span>${escapeHtml(book[who])}</span>`;
+    return `<span class="badge queued ${cls}">${label}</span>`;
   }
   return '';
 }
@@ -127,8 +136,8 @@ function renderDetail(id) {
   ).join('');
   const tomRs = readStatus(book, 'tom');
   const nikaRs = readStatus(book, 'nika');
-  const tomLine = book.tom ? `<dt>Tom</dt><dd><span class="badge ${tomRs === 'read' ? 'read' : 'queued'}">${escapeHtml(book.tom)}</span></dd>` : '';
-  const nikaLine = book.nika ? `<dt>Nika</dt><dd><span class="badge ${nikaRs === 'read' ? 'read' : 'queued'} reader-n">${escapeHtml(book.nika)}</span></dd>` : '';
+  const tomLine = book.tom ? `<dt>${SOLO === 'tom' ? 'Status' : 'Tom'}</dt><dd><span class="badge ${tomRs === 'read' ? 'read' : 'queued'}">${escapeHtml(book.tom)}</span></dd>` : '';
+  const nikaLine = (book.nika && SHOW_NIKA) ? `<dt>Nika</dt><dd><span class="badge ${nikaRs === 'read' ? 'read' : 'queued'} reader-n">${escapeHtml(book.nika)}</span></dd>` : '';
   const publisherLine = book.publisher ? `<dt>Publisher</dt><dd>${escapeHtml(book.publisher)}</dd>` : '';
 
   const searchQ = encodeURIComponent(`${book.title} ${book.authors[0] || ''}`);
@@ -243,8 +252,8 @@ function renderStats() {
   // Combined recent reads (Tom or Nika), sorted by year desc, deduped by id
   const recentEither = [];
   const seenRecent = new Set();
-  // Prefer items with Tom date read first (more "recent" signal), then fall back to all winners read
-  for (const b of [...dated, ...winnersTom, ...winnersNika]) {
+  const recentSources = SHOW_NIKA ? [...dated, ...winnersTom, ...winnersNika] : [...dated, ...winnersTom];
+  for (const b of recentSources) {
     if (seenRecent.has(b.id)) continue;
     seenRecent.add(b.id);
     recentEither.push(b);
@@ -257,13 +266,13 @@ function renderStats() {
     return (b.year || 0) - (a.year || 0);
   });
 
-  // Combined nightstand (Tom shelf + Nika shelf, deduped)
+  // Combined nightstand (Tom shelf + Nika shelf, deduped). In solo mode, Tom only.
   const nightstandBooks = [];
   const seenShelf = new Set();
   for (const b of DATA.books) {
     if (seenShelf.has(b.id)) continue;
     const tomOn = b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read';
-    const nikaOn = b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read';
+    const nikaOn = SHOW_NIKA && b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read';
     if (tomOn || nikaOn) {
       seenShelf.add(b.id);
       nightstandBooks.push(b);
@@ -349,7 +358,12 @@ function renderStats() {
     .slice(0, 12);
 
   const readerPills = (b, mode) => {
-    // mode = 'read' or 'shelf'
+    // mode = 'read' or 'shelf'. In solo mode, drop reader labels entirely.
+    if (SOLO === 'tom') {
+      if (mode === 'read' && readStatus(b, 'tom') === 'read') return `<span class="rr-pill rr-pill-t">read</span>`;
+      if (mode === 'shelf' && b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read') return `<span class="rr-pill rr-pill-t">on nightstand</span>`;
+      return '';
+    }
     const pills = [];
     if (mode === 'read') {
       if (readStatus(b, 'tom') === 'read') pills.push(`<span class="rr-pill rr-pill-t">T read</span>`);
@@ -429,25 +443,33 @@ function renderStats() {
     const widthPct = (a.total / maxAppearances) * 100;
     const tomFill = a.total > 0 ? (a.tomRead / a.total) * 100 : 0;
     const nikaFill = a.total > 0 ? (a.nikaRead / a.total) * 100 : 0;
-    const filterUrl = `#/books?award=hugo&status=winner`; // placeholder; can't filter by author yet without new param
+    const countCol = SHOW_NIKA
+      ? `${a.total} · <span style="color:var(--accent)">T ${a.tomRead}</span> · <span style="color:var(--accent-2)">N ${a.nikaRead}</span>`
+      : `${a.total} appearances · <span style="color:var(--accent)">read ${a.tomRead}</span>`;
     return `<div class="author-row">
       <div class="author-name">${escapeHtml(a.name)}</div>
       <div class="author-bar">
         <div class="author-bar-bg" style="width: ${widthPct}%;">
           <div class="author-bar-tom" style="width: ${tomFill}%;" title="Tom read ${a.tomRead}"></div>
-          <div class="author-bar-nika" style="width: ${nikaFill}%; left: ${tomFill}%;" title="Nika read ${a.nikaRead}"></div>
+          ${SHOW_NIKA ? `<div class="author-bar-nika" style="width: ${nikaFill}%; left: ${tomFill}%;" title="Nika read ${a.nikaRead}"></div>` : ''}
         </div>
       </div>
-      <div class="author-count">${a.total} · <span style="color:var(--accent)">T ${a.tomRead}</span> · <span style="color:var(--accent-2)">N ${a.nikaRead}</span></div>
+      <div class="author-count">${countCol}</div>
     </div>`;
   }).join('');
 
   // Decade heatmap
   const decadeCells = decades.map(d => {
     const pct = d.total > 0 ? d.tom / d.total : 0;
-    return `<div class="decade-cell" style="background: rgba(125, 211, 192, ${0.1 + pct * 0.8});" title="${d.decade}s: Tom ${d.tom}/${d.total}, Nika ${d.nika}/${d.total}">
+    const titleText = SHOW_NIKA
+      ? `${d.decade}s: Tom ${d.tom}/${d.total}, Nika ${d.nika}/${d.total}`
+      : `${d.decade}s: ${d.tom}/${d.total} winners read`;
+    const innerText = SHOW_NIKA
+      ? `<span style="color: var(--accent)">T ${d.tom}</span> · <span style="color: var(--accent-2)">N ${d.nika}</span>`
+      : `<span style="color: var(--accent)">${d.tom} / ${d.total}</span>`;
+    return `<div class="decade-cell" style="background: rgba(125, 211, 192, ${0.1 + pct * 0.8});" title="${titleText}">
       <div class="decade-label">${d.decade % 100}s · ${d.total} winners</div>
-      <div class="decade-frac"><span style="color: var(--accent)">T ${d.tom}</span> · <span style="color: var(--accent-2)">N ${d.nika}</span></div>
+      <div class="decade-frac">${innerText}</div>
     </div>`;
   }).join('');
 
@@ -474,9 +496,9 @@ function renderStats() {
 
     <div class="headline-grid">
       ${card('Winners on the list', winnersTotal, 'Hugo + Nebula combined')}
-      ${card('Tom read', winnersTom.length, `${(winnersTom.length / winnersTotal * 100).toFixed(1)}% of winners`, winnersTom.length / winnersTotal * 100)}
-      ${card('Nika read', winnersNika.length, `${(winnersNika.length / winnersTotal * 100).toFixed(1)}% of winners`, winnersNika.length / winnersTotal * 100)}
-      ${card('Both read', winnersBoth.length, `${winnersEither.length} read by either`)}
+      ${card(SOLO === 'tom' ? 'Read' : 'Tom read', winnersTom.length, `${(winnersTom.length / winnersTotal * 100).toFixed(1)}% of winners`, winnersTom.length / winnersTotal * 100)}
+      ${SHOW_NIKA ? card('Nika read', winnersNika.length, `${(winnersNika.length / winnersTotal * 100).toFixed(1)}% of winners`, winnersNika.length / winnersTotal * 100) : card('On the nightstand', onShelf.length, 'from this list')}
+      ${SHOW_NIKA ? card('Both read', winnersBoth.length, `${winnersEither.length} read by either`) : card('Queued / started', DATA.books.filter(b => readStatus(b, 'tom') === 'started').length, 'across all categories')}
     </div>
 
     ${recentEither.length > 0 ? `<div class="progress-section">
@@ -485,17 +507,17 @@ function renderStats() {
       <div class="recent-reads">${recentEitherHtml}</div>
     </div>` : ''}
 
-    <div class="year-progress-grid">
+    <div class="year-progress-grid${SHOW_NIKA ? '' : ' solo'}">
       <div class="year-card">
         <div class="year-card-header">
-          <span class="year-card-name">Tom</span>
+          <span class="year-card-name">${SOLO === 'tom' ? `${currentYear} on the list` : 'Tom'}</span>
           <span class="year-card-year">${currentYear}</span>
         </div>
         <div class="year-card-stat"><strong>${thisYearTomRead.length}</strong> of ${thisYearAll.length} on the ${currentYear} list read</div>
         <div class="year-card-stat"><strong>${thisYearTomShelf.length}</strong> on the nightstand from ${currentYear}</div>
         <div class="year-card-stat">Currently reading: <strong>${currentlyReading.length === 0 ? 'nothing from this list' : currentlyReading.map(b => escapeHtml(b.title)).join(', ')}</strong></div>
       </div>
-      <div class="year-card">
+      ${SHOW_NIKA ? `<div class="year-card">
         <div class="year-card-header">
           <span class="year-card-name nika">Nika</span>
           <span class="year-card-year">${currentYear}</span>
@@ -503,7 +525,7 @@ function renderStats() {
         <div class="year-card-stat"><strong>${thisYearNikaRead.length}</strong> of ${thisYearAll.length} on the ${currentYear} list read</div>
         <div class="year-card-stat"><strong>${thisYearNikaShelf.length}</strong> on the nightstand from ${currentYear}</div>
         <div class="year-card-stat" style="color: var(--muted); font-size: 12px;">StoryGraph doesn't expose currently-reading</div>
-      </div>
+      </div>` : ''}
     </div>
 
     ${nightstandBooks.length > 0 ? `<div class="progress-section">
@@ -543,7 +565,7 @@ function renderStats() {
       <div class="stats-grid">
         ${Object.entries(byAward).map(([a, s]) => s.total > 0
           ? linkCard(`#/books?award=${a}&status=winner`, AWARD_LABELS[a], `${s.tom} / ${s.total}`,
-              `Tom: ${Math.round(s.tom / s.total * 100)}% · Nika: ${s.nika} (${Math.round(s.nika / s.total * 100)}%)`,
+              SHOW_NIKA ? `Tom: ${Math.round(s.tom / s.total * 100)}% · Nika: ${s.nika} (${Math.round(s.nika / s.total * 100)}%)` : `${Math.round(s.tom / s.total * 100)}% complete`,
               s.tom / s.total * 100)
           : '').join('')}
       </div>
@@ -555,7 +577,7 @@ function renderStats() {
       <div class="stats-grid">
         ${Object.entries(byCategory).map(([c, s]) =>
           linkCard(`#/books?category=${encodeURIComponent(c)}&status=winner`, c, `${s.tom} / ${s.total}`,
-            `Tom: ${Math.round(s.tom / s.total * 100)}% · Nika: ${s.nika} (${Math.round(s.nika / s.total * 100)}%)`,
+            SHOW_NIKA ? `Tom: ${Math.round(s.tom / s.total * 100)}% · Nika: ${s.nika} (${Math.round(s.nika / s.total * 100)}%)` : `${Math.round(s.tom / s.total * 100)}% complete`,
             s.tom / s.total * 100)
         ).join('')}
       </div>
@@ -696,7 +718,31 @@ function wireFilters() {
   });
 }
 
+function applySoloUI() {
+  if (SOLO === 'tom') {
+    document.body.classList.add('solo-tom');
+    document.title = "Mount Readmore · Tom only";
+    const brandParen = document.querySelector('.brand-paren');
+    if (brandParen) brandParen.textContent = "Tom's view · Hugo & Nebula winners";
+  }
+  const toggle = $('#solo-toggle');
+  if (toggle) {
+    if (SOLO === 'tom') {
+      // Strip ?solo=tom to go back to the full view
+      toggle.href = window.location.pathname + window.location.hash;
+      toggle.textContent = '← Back to full view';
+      toggle.title = 'Show Tom + Nika';
+    } else {
+      // Add ?solo=tom while keeping the current hash route
+      toggle.href = '?solo=tom' + window.location.hash;
+      toggle.textContent = 'Tom-only view';
+      toggle.title = 'Hide Nika from the site';
+    }
+  }
+}
+
 async function init() {
+  applySoloUI();
   try {
     const res = await fetch('data.json');
     DATA = await res.json();
@@ -706,7 +752,7 @@ async function init() {
   }
   wireFilters();
   renderList();
-  window.addEventListener('hashchange', route);
+  window.addEventListener('hashchange', () => { applySoloUI(); route(); });
   route();
 }
 

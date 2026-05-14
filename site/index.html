@@ -25,9 +25,10 @@
     <a class="profile-link" href="https://app.thestorygraph.com/profile/tdgarske" target="_blank" rel="noopener" title="Tom on StoryGraph">
       <span class="profile-dot sg"></span>Tom · StoryGraph
     </a>
-    <a class="profile-link" href="https://app.thestorygraph.com/profile/nmcgill" target="_blank" rel="noopener" title="Nika on StoryGraph">
+    <a class="profile-link nika-only" href="https://app.thestorygraph.com/profile/nmcgill" target="_blank" rel="noopener" title="Nika on StoryGraph">
       <span class="profile-dot sg-nika"></span>Nika · StoryGraph
     </a>
+    <a class="profile-link solo-toggle" id="solo-toggle" href="?solo=tom" title="Switch to Tom-only view"></a>
   </nav>
 </header>
 
@@ -46,7 +47,7 @@
         <label><input type="radio" name="read-tom" value="started"> Started/queued</label>
       </fieldset>
 
-      <fieldset>
+      <fieldset class="nika-only">
         <legend>Nika</legend>
         <label><input type="radio" name="read-nika" value="all" checked> All</label>
         <label><input type="radio" name="read-nika" value="read"> Read</label>
