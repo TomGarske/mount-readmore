@@ -37,14 +37,21 @@ def normalize(s: object) -> str:
     return str(s).strip().lower()
 
 
-def load_goodreads_read(path: Path) -> pd.DataFrame:
+def load_goodreads(path: Path) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Return (read_df, shelf_df) — shelf_df includes to-read + currently-reading."""
     df = pd.read_csv(path, dtype=str).fillna("")
-    df = df[df["Exclusive Shelf"].str.lower() == "read"].copy()
     df["title_n"] = df["Title"].apply(normalize)
     df["author_n"] = df["Author"].apply(normalize)
-    # Goodreads uses YYYY/MM/DD; normalize to YYYY-MM-DD where possible
     df["Date Read Norm"] = df["Date Read"].str.replace("/", "-", regex=False)
-    return df[["Title", "Author", "title_n", "author_n", "Date Read Norm", "My Rating"]].rename(columns={"Date Read Norm": "date_read"})
+
+    read = df[df["Exclusive Shelf"].str.lower() == "read"].copy()
+    read = read[["Title", "Author", "title_n", "author_n", "Date Read Norm", "My Rating"]].rename(columns={"Date Read Norm": "date_read"})
+
+    shelf = df[df["Exclusive Shelf"].str.lower().isin(["to-read", "currently-reading"])].copy()
+    shelf["shelf"] = shelf["Exclusive Shelf"].str.lower()
+    shelf = shelf[["Title", "Author", "title_n", "author_n", "shelf"]]
+
+    return read, shelf
 
 
 def strip_series_suffix(title: str) -> str:
@@ -55,41 +62,37 @@ def strip_series_suffix(title: str) -> str:
     return t
 
 
-def match_row(title: str, author: str, gr: pd.DataFrame) -> tuple[bool, str, str, str]:
-    """Returns (matched, note, date_read, rating). note='' for clean match."""
+def find_match(title: str, author: str, gr: pd.DataFrame):
+    """Returns the matching row from gr, or None."""
     t = normalize(title)
     a = normalize(author)
-    if not t:
-        return False, "", "", ""
+    if not t or gr.empty:
+        return None
 
     gr_stripped = gr.assign(title_stripped=gr["title_n"].apply(strip_series_suffix))
 
     exact = gr_stripped[gr_stripped["title_stripped"] == t]
     for _, row in exact.iterrows():
         if a and (a in row["author_n"] or row["author_n"] in a):
-            return True, "", row.get("date_read", "") or "", row.get("My Rating", "") or ""
+            return row
     if not exact.empty:
-        cand = exact.iloc[0]
-        return True, f"(title match: {cand['Title']})", cand.get("date_read", "") or "", cand.get("My Rating", "") or ""
+        return exact.iloc[0]
 
     titles = gr_stripped["title_stripped"].tolist()
-    if not titles:
-        return False, "", "", ""
     hit = process.extractOne(t, titles, scorer=fuzz.ratio, score_cutoff=88)
     if hit:
         _, _, idx = hit
         cand = gr_stripped.iloc[idx]
         if not a or fuzz.partial_ratio(a, cand["author_n"]) >= 70:
-            return True, f"(fuzzy: {cand['Title']})", cand.get("date_read", "") or "", cand.get("My Rating", "") or ""
-    return False, "", "", ""
+            return cand
+    return None
 
 
-def process_sheet(sheet_csv: Path, additions_csv: Path | None, gr: pd.DataFrame, out_csv: Path) -> dict:
+def process_sheet(sheet_csv: Path, additions_csv: Path | None, gr_read: pd.DataFrame, gr_shelf: pd.DataFrame, out_csv: Path) -> dict:
     base = pd.read_csv(sheet_csv, dtype=str, keep_default_na=False)
 
     if additions_csv and additions_csv.exists():
         adds = pd.read_csv(additions_csv, dtype=str, keep_default_na=False)
-        # Align columns
         for col in base.columns:
             if col not in adds.columns:
                 adds[col] = ""
@@ -101,31 +104,41 @@ def process_sheet(sheet_csv: Path, additions_csv: Path | None, gr: pd.DataFrame,
     stem = sheet_csv.stem
     title_col = TITLE_COLS.get(stem, "Novel")
     author_col = "Author(s)" if "Author(s)" in combined.columns else "Author"
-    if "Tom" not in combined.columns:
-        combined["Tom"] = ""
-    if "Tom Date Read" not in combined.columns:
-        combined["Tom Date Read"] = ""
-    if "Tom Rating" not in combined.columns:
-        combined["Tom Rating"] = ""
+    for col in ["Tom", "Tom Date Read", "Tom Rating", "Tom Shelf"]:
+        if col not in combined.columns:
+            combined[col] = ""
 
-    matched = 0
+    matched_read = 0
+    matched_shelf = 0
     for i, row in combined.iterrows():
         title = row.get(title_col, "")
         author = row.get(author_col, "")
-        is_match, note, date_read, rating = match_row(title, author, gr)
-        if is_match:
-            matched += 1
+
+        # Try read shelf first
+        m = find_match(title, author, gr_read)
+        if m is not None:
+            matched_read += 1
             existing = (row.get("Tom") or "").strip()
             if not existing:
-                combined.at[i, "Tom"] = "Read" + (f" {note}" if note else "")
-            # Always populate date_read + rating even if a manual note exists
-            if date_read:
-                combined.at[i, "Tom Date Read"] = date_read
+                combined.at[i, "Tom"] = "Read"
+            if m.get("date_read", ""):
+                combined.at[i, "Tom Date Read"] = m["date_read"]
+            rating = m.get("My Rating", "") or ""
             if rating and rating != "0":
                 combined.at[i, "Tom Rating"] = rating
+            continue  # don't also check shelf
+
+        # Otherwise check to-read / currently-reading
+        m = find_match(title, author, gr_shelf)
+        if m is not None:
+            matched_shelf += 1
+            combined.at[i, "Tom Shelf"] = m["shelf"]
+            existing = (row.get("Tom") or "").strip()
+            if not existing:
+                combined.at[i, "Tom"] = "In the queue" if m["shelf"] == "to-read" else "In progress"
 
     combined.to_csv(out_csv, index=False, quoting=csv.QUOTE_MINIMAL)
-    return {"rows": len(combined), "matched": matched, "title_col": title_col}
+    return {"rows": len(combined), "matched_read": matched_read, "matched_shelf": matched_shelf, "title_col": title_col}
 
 
 def main() -> None:
@@ -134,17 +147,17 @@ def main() -> None:
     p.add_argument("--goodreads", type=Path, required=True)
     args = p.parse_args()
 
-    gr = load_goodreads_read(args.goodreads)
-    print(f"Goodreads: {len(gr)} books on the 'read' shelf\n")
+    gr_read, gr_shelf = load_goodreads(args.goodreads)
+    print(f"Goodreads: {len(gr_read)} on read · {len(gr_shelf)} on to-read/currently-reading\n")
 
-    for stem in ["best_novel", "best_novella_hugo", "best_novelette_hugo", "best_series_hugo", "favorites"]:
+    for stem in ["best_novel", "best_novella_hugo", "best_novelette_hugo", "favorites"]:
         src = args.data / f"{stem}.csv"
         adds = args.data / f"{stem}_additions.csv"
         out = args.data / f"{stem}_updated.csv"
         if not src.exists():
             continue
-        stats = process_sheet(src, adds, gr, out)
-        print(f"{stem:25s} rows={stats['rows']:4d}  read-matches={stats['matched']:3d}  -> {out.name}")
+        s = process_sheet(src, adds, gr_read, gr_shelf, out)
+        print(f"{stem:25s} rows={s['rows']:4d}  read={s['matched_read']:3d}  shelf={s['matched_shelf']:3d}  -> {out.name}")
 
 
 if __name__ == "__main__":

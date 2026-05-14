@@ -32,7 +32,6 @@ CATEGORY_FOR_SHEET = {
     "best_novel": "Novel",
     "best_novella_hugo": "Novella",
     "best_novelette_hugo": "Novelette",
-    "best_series_hugo": "Series",
     "favorites": "Favorite",
 }
 
@@ -40,7 +39,6 @@ TITLE_COL_FOR_SHEET = {
     "best_novel": "Novel",
     "best_novella_hugo": "Novel",
     "best_novelette_hugo": "Novelette",
-    "best_series_hugo": "Series",
     "favorites": "Novel",
 }
 
@@ -116,6 +114,7 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
         nika = (row.get("Nika", "") or "").strip()
         tom_date_read = (row.get("Tom Date Read", "") or "").strip()
         tom_rating = (row.get("Tom Rating", "") or "").strip()
+        tom_shelf = (row.get("Tom Shelf", "") or "").strip()
 
         authors = parse_authors(author_raw)
         first_author = authors[0] if authors else "unknown"
@@ -134,6 +133,7 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
             "nika": nika,
             "tom_date_read": tom_date_read,
             "tom_rating": tom_rating,
+            "tom_shelf": tom_shelf,
         })
 
     return records
