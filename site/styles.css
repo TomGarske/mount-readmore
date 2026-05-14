@@ -89,19 +89,9 @@ a:hover { text-decoration: underline; }
 .profile-dot.sg { background: #7dd3c0; }
 .profile-dot.sg-nika { background: linear-gradient(135deg, #7dd3c0 0%, #b48ead 100%); }
 
-/* Solo-mode toggle */
-.solo-toggle {
-  font-size: 12px;
-  color: var(--muted);
-  padding: 4px 10px;
-  background: transparent;
-  border: 1px dashed var(--border);
-  border-radius: 999px;
-}
-.solo-toggle:hover { color: var(--text); border-color: var(--accent); }
-
-/* When body has solo-tom class, hide all Nika elements */
+/* Solo modes — body class hides the other reader's elements */
 body.solo-tom .nika-only { display: none !important; }
+body.solo-nika .tom-only { display: none !important; }
 
 /* Awards banner at top of Progress */
 .awards-banner {
