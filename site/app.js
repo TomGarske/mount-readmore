@@ -44,10 +44,9 @@ function matchesFilters(book) {
     if (wanted === 'started' && rs !== 'started') return false;
   }
   if (!state.categories.has(book.category)) return false;
-  const bookAwards = Object.keys(book.awards || {});
-  if (!bookAwards.some(a => state.awards.has(a))) return false;
-  const bookStatuses = Object.values(book.awards || {});
-  if (!bookStatuses.some(s => state.statuses.has(s))) return false;
+  // Conjunctive: book must have at least one (award, status) pair where both match the filter
+  const hasMatchingAward = Object.entries(book.awards || {}).some(([a, s]) => state.awards.has(a) && state.statuses.has(s));
+  if (!hasMatchingAward) return false;
   if (state.yearMin != null && (book.year == null || book.year < state.yearMin)) return false;
   if (state.yearMax != null && (book.year == null || book.year > state.yearMax)) return false;
   return true;
@@ -122,7 +121,7 @@ function renderDetail(id) {
   ).join('');
   const tomRs = readStatus(book, 'tom');
   const nikaRs = readStatus(book, 'nika');
-  const tomLine = book.tom ? `<dt>Tom</dt><dd><span class="badge ${tomRs === 'read' ? 'read' : 'queued'}">${escapeHtml(book.tom)}</span>${book.tom_date_read ? ` · ${escapeHtml(book.tom_date_read)}` : ''}</dd>` : '';
+  const tomLine = book.tom ? `<dt>Tom</dt><dd><span class="badge ${tomRs === 'read' ? 'read' : 'queued'}">${escapeHtml(book.tom)}</span></dd>` : '';
   const nikaLine = book.nika ? `<dt>Nika</dt><dd><span class="badge ${nikaRs === 'read' ? 'read' : 'queued'} reader-n">${escapeHtml(book.nika)}</span></dd>` : '';
   const publisherLine = book.publisher ? `<dt>Publisher</dt><dd>${escapeHtml(book.publisher)}</dd>` : '';
 
@@ -213,6 +212,13 @@ function renderStats() {
     ${pct != null ? `<div class="progress"><div class="progress-bar" style="width: ${Math.min(100, pct)}%"></div></div>` : ''}
   </div>`;
 
+  const linkCard = (href, h, v, sub, pct) => `<a class="stat-card stat-card-link" href="${href}">
+    <h3>${h}</h3>
+    <div class="stat-value">${v}</div>
+    <div class="stat-sub">${sub}</div>
+    ${pct != null ? `<div class="progress"><div class="progress-bar" style="width: ${Math.min(100, pct)}%"></div></div>` : ''}
+  </a>`;
+
   // Year bars — winners only
   const yearEnd = Math.max(...DATA.books.map(b => b.year).filter(y => y));
   const yearBuckets = {};
@@ -261,7 +267,7 @@ function renderStats() {
 
   const upNextHtml = upNext.map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]).join(' · ')} winner`)).join('');
 
-  const recentReadsHtml = dated.slice(0, 8).map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · read ${escapeHtml(b.tom_date_read)}`)).join('');
+  const recentReadsHtml = dated.slice(0, 12).map(b => tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year || ''}`)).join('');
 
   const root = $('#view-stats');
   root.innerHTML = `<div class="detail">
@@ -269,11 +275,16 @@ function renderStats() {
     <p style="color: var(--muted); font-size: 14px; margin-top: -8px;">Counting <strong>winners only</strong> on this page. Browse all nominees on the Books tab.</p>
 
     <div class="headline-grid">
-      ${card('Winners on the list', winnersTotal, `Hugo + Nebula combined`)}
+      ${card('Winners on the list', winnersTotal, 'Hugo + Nebula combined')}
       ${card('Tom read', winnersTom.length, `${(winnersTom.length / winnersTotal * 100).toFixed(1)}% of winners`, winnersTom.length / winnersTotal * 100)}
       ${card('Nika read', winnersNika.length, `${(winnersNika.length / winnersTotal * 100).toFixed(1)}% of winners`, winnersNika.length / winnersTotal * 100)}
       ${card('Both read', winnersBoth.length, `${winnersEither.length} read by either`)}
     </div>
+
+    ${dated.length > 0 ? `<div class="progress-section">
+      <h2>Recent winners Tom has read</h2>
+      <div class="recent-reads">${recentReadsHtml}</div>
+    </div>` : ''}
 
     <div class="eta-card">
       <div class="eta-headline">${currentYear} on Mount Readmore</div>
@@ -304,16 +315,12 @@ function renderStats() {
       <div class="year-axis"><span>${recentYears[0] ? recentYears[0][0] : ''}</span><span>${yearEnd}</span></div>
     </div>
 
-    ${dated.length > 0 ? `<div class="progress-section">
-      <h2>Recent winners Tom has read</h2>
-      <div class="recent-reads">${recentReadsHtml}</div>
-    </div>` : ''}
-
     <div class="progress-section">
       <h2>By award (winners)</h2>
+      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those winners in the Books tab.</p>
       <div class="stats-grid">
         ${Object.entries(byAward).map(([a, s]) => s.total > 0
-          ? card(AWARD_LABELS[a], `${s.tom} / ${s.total}`,
+          ? linkCard(`#/books?award=${a}&status=winner`, AWARD_LABELS[a], `${s.tom} / ${s.total}`,
               `Tom: ${Math.round(s.tom / s.total * 100)}% · Nika: ${s.nika} (${Math.round(s.nika / s.total * 100)}%)`,
               s.tom / s.total * 100)
           : '').join('')}
@@ -322,9 +329,10 @@ function renderStats() {
 
     <div class="progress-section">
       <h2>By category (winners)</h2>
+      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those winners in the Books tab.</p>
       <div class="stats-grid">
         ${Object.entries(byCategory).map(([c, s]) =>
-          card(c, `${s.tom} / ${s.total}`,
+          linkCard(`#/books?category=${encodeURIComponent(c)}&status=winner`, c, `${s.tom} / ${s.total}`,
             `Tom: ${Math.round(s.tom / s.total * 100)}% · Nika: ${s.nika} (${Math.round(s.nika / s.total * 100)}%)`,
             s.tom / s.total * 100)
         ).join('')}
@@ -361,27 +369,66 @@ function showView(name) {
   $$('.nav a').forEach(a => a.classList.toggle('active', a.dataset.route === name));
 }
 
+function resetFilterState() {
+  state.search = '';
+  state.readTom = 'all';
+  state.readNika = 'all';
+  state.awards = new Set(Object.keys(AWARD_LABELS));
+  state.statuses = new Set(['winner', 'nominee']);
+  state.categories = new Set(['Novel', 'Novella', 'Novelette']);
+  state.yearMin = null;
+  state.yearMax = null;
+}
+
+function applyFilterParams(params) {
+  resetFilterState();
+  const award = params.get('award');
+  if (award) state.awards = new Set([award]);
+  const status = params.get('status');
+  if (status) state.statuses = new Set([status]);
+  const category = params.get('category');
+  if (category) state.categories = new Set([category]);
+  const readTom = params.get('readTom');
+  if (readTom) state.readTom = readTom;
+  syncFiltersToDom();
+}
+
+function syncFiltersToDom() {
+  $('#search').value = state.search;
+  $('#year-min').value = state.yearMin == null ? '' : String(state.yearMin);
+  $('#year-max').value = state.yearMax == null ? '' : String(state.yearMax);
+  $$('input[name="read-tom"]').forEach(el => { el.checked = el.value === state.readTom; });
+  $$('input[name="read-nika"]').forEach(el => { el.checked = el.value === state.readNika; });
+  $$('input[name="award"]').forEach(el => { el.checked = state.awards.has(el.value); });
+  $$('input[name="status"]').forEach(el => { el.checked = state.statuses.has(el.value); });
+  $$('input[name="category"]').forEach(el => { el.checked = state.categories.has(el.value); });
+  $('#sort').value = state.sort;
+}
+
 function route() {
   const h = location.hash || '#/';
-  if (h.startsWith('#/book/')) {
-    const id = h.slice('#/book/'.length);
+  const [path, qs] = h.split('?');
+  if (path.startsWith('#/book/')) {
+    const id = path.slice('#/book/'.length);
     renderDetail(id);
     showView('detail');
     window.scrollTo(0, 0);
     return;
   }
-  if (h === '#/books') {
+  if (path === '#/books') {
+    const params = new URLSearchParams(qs || '');
+    if (qs) applyFilterParams(params);
+    renderList();
     showView('list');
     window.scrollTo(0, 0);
     return;
   }
-  if (h === '#/about') {
+  if (path === '#/about') {
     renderAbout();
     showView('about');
     window.scrollTo(0, 0);
     return;
   }
-  // Default (#/, #, anything else) — Progress page
   renderStats();
   showView('stats');
   window.scrollTo(0, 0);

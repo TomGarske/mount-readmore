@@ -429,6 +429,28 @@ fieldset label input { margin-right: 8px; }
   border-radius: var(--radius);
   padding: 18px;
 }
+.stat-card-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.1s, transform 0.1s;
+}
+.stat-card-link:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+.stat-card-link h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.stat-card-link h3::after {
+  content: "→";
+  color: var(--muted);
+  font-size: 14px;
+  opacity: 0.6;
+}
 .stat-card h3 {
   margin: 0 0 6px;
   font-size: 12px;
