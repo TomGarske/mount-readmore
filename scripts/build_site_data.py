@@ -85,7 +85,8 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
     title_col = TITLE_COL_FOR_SHEET.get(sheet_stem)
     author_col = "Author(s)" if "Author(s)" in df.columns else "Author"
 
-    award_cols = [c for c in ["Hugo", "Nebula", "WFA", "Mythopoeic", "Kitschies"] if c in df.columns]
+    # Only track Hugo and Nebula. WFA/Mythopoeic/Kitschies columns are ignored.
+    award_cols = [c for c in ["Hugo", "Nebula"] if c in df.columns]
 
     records = []
     for _, row in df.iterrows():

@@ -3,9 +3,6 @@
 const AWARD_LABELS = {
   hugo: 'Hugo',
   nebula: 'Nebula',
-  wfa: 'World Fantasy',
-  mythopoeic: 'Mythopoeic',
-  kitschies: 'Kitschies',
 };
 
 let DATA = { books: [], meta: {} };
@@ -325,13 +322,13 @@ function renderAbout() {
   const root = $('#view-about');
   root.innerHTML = `<div class="about">
     <h1>About</h1>
-    <p>This is a personal reading log focused on award-winning and award-nominated science fiction and fantasy. It's built from a long-running spreadsheet of Hugo, Nebula, World Fantasy, Mythopoeic, and Kitschies winners and finalists, with my own read/unread status overlaid from Goodreads.</p>
+    <p>This is a personal reading log focused on Hugo and Nebula winners and finalists, with my own read/unread status overlaid from Goodreads.</p>
     <h2>How it works</h2>
-    <p>The data comes from a Python pipeline that reads the source spreadsheet plus an exported Goodreads "read" shelf, matches them up by title and author, and produces a static JSON file the site reads. There's no backend, no tracking, and no login — just a list of books rendered in the browser.</p>
+    <p>The data comes from a Python pipeline that reads a personal awards spreadsheet plus an exported Goodreads "read" shelf, matches them up by title and author, and produces a static JSON file the site reads. There's no backend, no tracking, and no login — just a list of books rendered in the browser.</p>
     <h2>Update cadence</h2>
-    <p>New winners are added when they're announced. Hugo Awards are presented at the World Science Fiction Convention each August; Nebulas are announced at the SFWA conference in May or June. World Fantasy Awards drop in the fall.</p>
+    <p>New winners are added when they're announced. Hugo Awards are presented at the World Science Fiction Convention each August; Nebulas are announced at the SFWA conference in May or June.</p>
     <h2>Source</h2>
-    <p>The project lives at <a href="https://github.com/" target="_blank">GitHub</a>. The data file is committed alongside the site so anyone can see exactly what's tracked.</p>
+    <p>The project lives on <a href="https://github.com/TomGarske/sff-awards" target="_blank">GitHub</a>. The data file is committed alongside the site so anyone can see exactly what's tracked.</p>
   </div>`;
 }
 
