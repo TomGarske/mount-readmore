@@ -593,9 +593,9 @@ function renderAbout() {
   const root = $('#view-about');
   root.innerHTML = `<div class="about">
     <h1>About Mount Readmore</h1>
-    <p>A personal reading mountain of Hugo and Nebula winners and finalists, tracking Tom's and Nika's progress side by side. Read status comes from a long-running spreadsheet plus Tom's Goodreads "read" shelf, matched by title and author.</p>
+    <p>A personal reading mountain of Hugo and Nebula winners and finalists, with read status overlaid from Goodreads and StoryGraph.</p>
     <h2>How it works</h2>
-    <p>A Python pipeline reads the awards spreadsheet and an exported Goodreads CSV, matches them up by title and author, and produces a static JSON the site reads. There's no backend, no tracking, no login — just a list of books rendered in the browser.</p>
+    <p>A Python pipeline reads an awards spreadsheet and exported reader CSVs, matches them by title and author, and produces a static JSON file the site reads. There's no backend, no tracking, no login — just a list of books rendered in the browser.</p>
     <h2>Upcoming award dates</h2>
     <ul>
       <li><strong>2026 Nebula Awards</strong> — Saturday, <strong>June 6, 2026</strong> at the SFWA conference in Chicago · <a href="https://events.sfwa.org/" target="_blank" rel="noopener">events.sfwa.org</a> · <a href="https://en.wikipedia.org/wiki/Nebula_Award" target="_blank" rel="noopener">Nebula on Wikipedia</a></li>
@@ -728,10 +728,8 @@ function applySoloUI() {
   const toggle = $('#solo-toggle');
   if (toggle) {
     if (SOLO === 'tom') {
-      // Strip ?solo=tom to go back to the full view
-      toggle.href = window.location.pathname + window.location.hash;
-      toggle.textContent = '← Back to full view';
-      toggle.title = 'Show Tom + Nika';
+      // No toggle in solo mode — strip from DOM
+      toggle.remove();
     } else {
       // Add ?solo=tom while keeping the current hash route
       toggle.href = '?solo=tom' + window.location.hash;
