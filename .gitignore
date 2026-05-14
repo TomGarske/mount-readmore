@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.DS_Store
+.idea/
+.vscode/
+
+# Raw user exports (personal reading data — keep local)
+exports/*.csv
+!exports/.gitkeep
+
+# Regenerated artifacts
+data/*.xlsx

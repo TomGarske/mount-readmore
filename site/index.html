@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hugo &amp; Nebula (&amp; WFA too?) winners/nominees</title>
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark">📚</span>
+    <a href="#/" class="brand-name">Hugo &amp; Nebula <span class="brand-paren">(&amp; WFA too?)</span> winners/nominees</a>
+  </div>
+  <nav class="nav">
+    <a href="#/" data-route="list">Books</a>
+    <a href="#/stats" data-route="stats">Stats</a>
+    <a href="#/about" data-route="about">About</a>
+  </nav>
+</header>
+
+<main id="main">
+  <div id="view-list" class="view">
+    <aside class="filters">
+      <div class="search-box">
+        <input type="search" id="search" placeholder="Search title or author…" autocomplete="off">
+      </div>
+
+      <fieldset>
+        <legend>Read status</legend>
+        <label><input type="radio" name="read" value="all" checked> All</label>
+        <label><input type="radio" name="read" value="read"> Read</label>
+        <label><input type="radio" name="read" value="unread"> Unread</label>
+        <label><input type="radio" name="read" value="started"> Started/queued</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Award</legend>
+        <label><input type="checkbox" name="award" value="hugo" checked> Hugo</label>
+        <label><input type="checkbox" name="award" value="nebula" checked> Nebula</label>
+        <label><input type="checkbox" name="award" value="wfa" checked> World Fantasy</label>
+        <label><input type="checkbox" name="award" value="mythopoeic" checked> Mythopoeic</label>
+        <label><input type="checkbox" name="award" value="kitschies" checked> Kitschies</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Status</legend>
+        <label><input type="checkbox" name="status" value="winner" checked> Winner</label>
+        <label><input type="checkbox" name="status" value="nominee" checked> Nominee</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Category</legend>
+        <label><input type="checkbox" name="category" value="Novel" checked> Novel</label>
+        <label><input type="checkbox" name="category" value="Novella" checked> Novella</label>
+        <label><input type="checkbox" name="category" value="Novelette" checked> Novelette</label>
+        <label><input type="checkbox" name="category" value="Series" checked> Series</label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Year range</legend>
+        <div class="year-row">
+          <input type="number" id="year-min" placeholder="from" min="1900" max="2100">
+          <span>–</span>
+          <input type="number" id="year-max" placeholder="to" min="1900" max="2100">
+        </div>
+      </fieldset>
+
+      <button id="reset" type="button">Reset filters</button>
+    </aside>
+
+    <section class="results">
+      <div class="results-header">
+        <span id="result-count"></span>
+        <select id="sort">
+          <option value="year-desc">Year ↓</option>
+          <option value="year-asc">Year ↑</option>
+          <option value="title">Title A–Z</option>
+          <option value="author">Author A–Z</option>
+        </select>
+      </div>
+      <div id="grid" class="grid"></div>
+    </section>
+  </div>
+
+  <div id="view-detail" class="view hidden"></div>
+  <div id="view-stats" class="view hidden"></div>
+  <div id="view-about" class="view hidden"></div>
+</main>
+
+<footer class="footer">
+  <span>Built from a personal awards spreadsheet · static site, no tracking</span>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
