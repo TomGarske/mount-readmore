@@ -14,7 +14,7 @@
         "hugo": "nominee"
       },
       "tom": "Read",
-      "nika": "",
+      "nika": "Read",
       "tom_date_read": "2026-04-02",
       "tom_rating": "5",
       "tom_shelf": "",
@@ -272,7 +272,7 @@
         "hugo": "winner"
       },
       "tom": "Read",
-      "nika": "",
+      "nika": "Read",
       "tom_date_read": "2025-11-23",
       "tom_rating": "5",
       "tom_shelf": "",
@@ -1006,7 +1006,7 @@
         "hugo": "nominee"
       },
       "tom": "Read",
-      "nika": "In the queue",
+      "nika": "Read",
       "tom_date_read": "2022-02-13",
       "tom_rating": "5",
       "tom_shelf": "",
@@ -15627,7 +15627,7 @@
         "hugo": "winner"
       },
       "tom": "Read",
-      "nika": "In progress",
+      "nika": "Read",
       "tom_date_read": "2023-05-26",
       "tom_rating": "",
       "tom_shelf": "",
@@ -18605,9 +18605,9 @@
   "meta": {
     "total": 795,
     "by_category": {
-      "Novella": 78,
+      "Novelette": 78,
       "Novel": 639,
-      "Novelette": 78
+      "Novella": 78
     }
   }
 }
