@@ -722,8 +722,6 @@ function applySoloUI() {
   if (SOLO === 'tom') {
     document.body.classList.add('solo-tom');
     document.title = "Mount Readmore · Tom only";
-    const brandParen = document.querySelector('.brand-paren');
-    if (brandParen) brandParen.textContent = "Tom's view · Hugo & Nebula winners";
   }
   const toggle = $('#solo-toggle');
   if (toggle) {
