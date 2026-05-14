@@ -87,6 +87,7 @@ a:hover { text-decoration: underline; }
 }
 .profile-dot.gr { background: #b48ead; }
 .profile-dot.sg { background: #7dd3c0; }
+.profile-dot.sg-nika { background: linear-gradient(135deg, #7dd3c0 0%, #b48ead 100%); }
 
 /* Progress / Stats view extras */
 .progress-section { margin-top: 36px; }
