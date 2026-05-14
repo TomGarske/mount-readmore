@@ -1,6 +1,6 @@
-# sff-awards
+# Mount Readmore
 
-Personal tracker for science-fiction and fantasy award winners (Hugo, Nebula, World Fantasy, Mythopoeic, Kitschies) with a "have I read it?" column synced from Goodreads CSV exports — and a static site published at [tomgarske.github.io/sff-awards](https://tomgarske.github.io/sff-awards).
+Personal tracker for Hugo and Nebula winners and finalists, comparing Tom's and Nika's reading progress. Read status comes from the awards spreadsheet plus Tom's exported Goodreads "read" shelf. Static site: [tomgarske.github.io/mount-readmore](https://tomgarske.github.io/mount-readmore).
 
 ## Why
 
@@ -9,7 +9,7 @@ Goodreads' public API is deprecated (no new keys since Dec 2020) and StoryGraph 
 ## Layout
 
 ```
-sff-awards/
+mount-readmore/
 ├── data/             # source per-sheet CSVs, additions, merged outputs, cache
 ├── exports/          # raw exports from Goodreads / StoryGraph (gitignored)
 ├── scripts/          # Python pipeline (merge, build xlsx, build site JSON, enrich)

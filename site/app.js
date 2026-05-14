@@ -8,7 +8,8 @@ const AWARD_LABELS = {
 let DATA = { books: [], meta: {} };
 let state = {
   search: '',
-  read: 'all',
+  readTom: 'all',
+  readNika: 'all',
   awards: new Set(Object.keys(AWARD_LABELS)),
   statuses: new Set(['winner', 'nominee']),
   categories: new Set(['Novel', 'Novella', 'Novelette', 'Series']),
@@ -20,11 +21,11 @@ let state = {
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-function readStatus(book) {
-  const tom = (book.tom || '').toLowerCase();
-  if (!tom) return 'unread';
-  if (tom.startsWith('read')) return 'read';
-  if (/queue|progress|started|struggling/.test(tom)) return 'started';
+function readStatus(book, who = 'tom') {
+  const val = (book[who] || '').toLowerCase();
+  if (!val) return 'unread';
+  if (val.startsWith('read')) return 'read';
+  if (/queue|progress|started|struggling/.test(val)) return 'started';
   return 'started';
 }
 
@@ -34,11 +35,13 @@ function matchesFilters(book) {
     const hay = (book.title + ' ' + (book.author_raw || '')).toLowerCase();
     if (!hay.includes(q)) return false;
   }
-  if (state.read !== 'all') {
-    const rs = readStatus(book);
-    if (state.read === 'read' && rs !== 'read') return false;
-    if (state.read === 'unread' && rs !== 'unread') return false;
-    if (state.read === 'started' && rs !== 'started') return false;
+  for (const [who, key] of [['tom', 'readTom'], ['nika', 'readNika']]) {
+    const wanted = state[key];
+    if (wanted === 'all') continue;
+    const rs = readStatus(book, who);
+    if (wanted === 'read' && rs !== 'read') return false;
+    if (wanted === 'unread' && rs !== 'unread') return false;
+    if (wanted === 'started' && rs !== 'started') return false;
   }
   if (!state.categories.has(book.category)) return false;
   const bookAwards = Object.keys(book.awards || {});
@@ -65,15 +68,25 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+function readerBadge(book, who) {
+  const rs = readStatus(book, who);
+  const initial = who === 'tom' ? 'T' : 'N';
+  const cls = who === 'tom' ? 'reader-t' : 'reader-n';
+  if (rs === 'read') {
+    return `<span class="badge read ${cls}"><span class="reader-initial">${initial}</span>${escapeHtml(book[who])}</span>`;
+  }
+  if (rs === 'started') {
+    return `<span class="badge queued ${cls}"><span class="reader-initial">${initial}</span>${escapeHtml(book[who])}</span>`;
+  }
+  return '';
+}
+
 function bookCard(book) {
-  const rs = readStatus(book);
   const awardBadges = Object.entries(book.awards || {})
     .filter(([a]) => state.awards.has(a))
     .map(([a, s]) => `<span class="badge ${s}">${AWARD_LABELS[a]} ${s === 'winner' ? '★' : ''}</span>`)
     .join('');
-  const readBadge = rs === 'read'
-    ? `<span class="badge read">${escapeHtml(book.tom)}</span>`
-    : (rs === 'started' ? `<span class="badge queued">${escapeHtml(book.tom)}</span>` : '');
+  const readBadges = readerBadge(book, 'tom') + readerBadge(book, 'nika');
   return `<div class="card" data-id="${escapeHtml(book.id)}">
     <div class="title">${escapeHtml(book.title)}</div>
     <div class="author">${escapeHtml(book.author_raw || (book.authors || []).join(', '))}</div>
@@ -81,7 +94,7 @@ function bookCard(book) {
       <span>${book.year || ''}</span>
       <span class="badge cat">${escapeHtml(book.category)}</span>
     </div>
-    <div class="badges">${awardBadges}${readBadge}</div>
+    <div class="badges">${awardBadges}${readBadges}</div>
   </div>`;
 }
 
@@ -107,9 +120,10 @@ function renderDetail(id) {
   const awardRows = Object.entries(book.awards || {}).map(([a, s]) =>
     `<dt>${AWARD_LABELS[a]}</dt><dd><span class="badge ${s}">${s}${s === 'winner' ? ' ★' : ''}</span> · ${book.year || ''}</dd>`
   ).join('');
-  const rs = readStatus(book);
-  const tomLine = book.tom ? `<dt>My status</dt><dd><span class="badge ${rs === 'read' ? 'read' : 'queued'}">${escapeHtml(book.tom)}</span></dd>` : '';
-  const nikaLine = book.nika ? `<dt>Nika's status</dt><dd>${escapeHtml(book.nika)}</dd>` : '';
+  const tomRs = readStatus(book, 'tom');
+  const nikaRs = readStatus(book, 'nika');
+  const tomLine = book.tom ? `<dt>Tom</dt><dd><span class="badge ${tomRs === 'read' ? 'read' : 'queued'}">${escapeHtml(book.tom)}</span>${book.tom_date_read ? ` · ${escapeHtml(book.tom_date_read)}` : ''}</dd>` : '';
+  const nikaLine = book.nika ? `<dt>Nika</dt><dd><span class="badge ${nikaRs === 'read' ? 'read' : 'queued'} reader-n">${escapeHtml(book.nika)}</span></dd>` : '';
   const publisherLine = book.publisher ? `<dt>Publisher</dt><dd>${escapeHtml(book.publisher)}</dd>` : '';
 
   const searchQ = encodeURIComponent(`${book.title} ${book.authors[0] || ''}`);
@@ -145,28 +159,34 @@ function renderDetail(id) {
 
 function renderStats() {
   const total = DATA.books.length;
-  const readBooks = DATA.books.filter(b => readStatus(b) === 'read');
-  const read = readBooks.length;
-  const started = DATA.books.filter(b => readStatus(b) === 'started').length;
+  const tomRead = DATA.books.filter(b => readStatus(b, 'tom') === 'read');
+  const nikaRead = DATA.books.filter(b => readStatus(b, 'nika') === 'read');
+  const bothRead = DATA.books.filter(b => readStatus(b, 'tom') === 'read' && readStatus(b, 'nika') === 'read');
+  const eitherRead = DATA.books.filter(b => readStatus(b, 'tom') === 'read' || readStatus(b, 'nika') === 'read');
+  const read = tomRead.length;
+  const started = DATA.books.filter(b => readStatus(b, 'tom') === 'started').length;
 
   const byAward = {};
-  for (const a of Object.keys(AWARD_LABELS)) byAward[a] = { total: 0, read: 0 };
+  for (const a of Object.keys(AWARD_LABELS)) byAward[a] = { total: 0, tom: 0, nika: 0 };
   for (const b of DATA.books) {
     for (const a of Object.keys(b.awards || {})) {
       byAward[a].total++;
-      if (readStatus(b) === 'read') byAward[a].read++;
+      if (readStatus(b, 'tom') === 'read') byAward[a].tom++;
+      if (readStatus(b, 'nika') === 'read') byAward[a].nika++;
     }
   }
   const byCategory = {};
   for (const b of DATA.books) {
-    byCategory[b.category] = byCategory[b.category] || { total: 0, read: 0 };
+    byCategory[b.category] = byCategory[b.category] || { total: 0, tom: 0, nika: 0 };
     byCategory[b.category].total++;
-    if (readStatus(b) === 'read') byCategory[b.category].read++;
+    if (readStatus(b, 'tom') === 'read') byCategory[b.category].tom++;
+    if (readStatus(b, 'nika') === 'read') byCategory[b.category].nika++;
   }
   const winners = DATA.books.filter(b => Object.values(b.awards || {}).includes('winner'));
-  const winnersRead = winners.filter(b => readStatus(b) === 'read').length;
+  const winnersRead = winners.filter(b => readStatus(b, 'tom') === 'read').length;
+  const winnersReadNika = winners.filter(b => readStatus(b, 'nika') === 'read').length;
 
-  const dated = readBooks.filter(b => b.tom_date_read && /^\d{4}/.test(b.tom_date_read))
+  const dated = tomRead.filter(b => b.tom_date_read && /^\d{4}/.test(b.tom_date_read))
     .map(b => ({ ...b, _t: new Date(b.tom_date_read.replace(/-/g, '/')) }))
     .sort((a, b) => b._t - a._t);
 
@@ -200,7 +220,7 @@ function renderStats() {
   for (const b of DATA.books) {
     if (b.year && yearBuckets[b.year]) {
       yearBuckets[b.year].total++;
-      if (readStatus(b) === 'read') yearBuckets[b.year].read++;
+      if (readStatus(b, 'tom') === 'read') yearBuckets[b.year].read++;
     }
   }
   // Render bars from the last 30 award years
@@ -218,9 +238,9 @@ function renderStats() {
     </div>`;
   }).join('');
 
-  // Up-next: recent winners not yet read, sorted by award year desc
+  // Up-next: recent winners not yet read by either, sorted by award year desc
   const upNext = DATA.books
-    .filter(b => Object.values(b.awards || {}).includes('winner') && readStatus(b) !== 'read')
+    .filter(b => Object.values(b.awards || {}).includes('winner') && readStatus(b, 'tom') !== 'read' && readStatus(b, 'nika') !== 'read')
     .sort((a, b) => (b.year || 0) - (a.year || 0))
     .slice(0, 8);
 
@@ -260,9 +280,15 @@ function renderStats() {
 
     <div class="headline-grid">
       ${card('Books on the list', total, `${winners.length} winners · ${total - winners.length} nominees`)}
-      ${card('Books read', read, `${(read / total * 100).toFixed(1)}% of list`, read / total * 100)}
-      ${card('Winners read', winnersRead, `${(winnersRead / winners.length * 100).toFixed(1)}% of winners`, winnersRead / winners.length * 100)}
-      ${card('Currently reading / queued', started, 'on the to-read pile')}
+      ${card('Tom read', read, `${(read / total * 100).toFixed(1)}% of list`, read / total * 100)}
+      ${card('Nika read', nikaRead.length, `${(nikaRead.length / total * 100).toFixed(1)}% of list`, nikaRead.length / total * 100)}
+      ${card('Both read', bothRead.length, `${eitherRead.length} read by either`)}
+    </div>
+
+    <div class="headline-grid" style="margin-top: 12px;">
+      ${card('Tom: winners read', winnersRead, `${(winnersRead / winners.length * 100).toFixed(1)}% of winners`, winnersRead / winners.length * 100)}
+      ${card('Nika: winners read', winnersReadNika, `${(winnersReadNika / winners.length * 100).toFixed(1)}% of winners`, winnersReadNika / winners.length * 100)}
+      ${card('Tom queued / started', started, 'on the to-read pile')}
     </div>
 
     <div class="eta-card">
@@ -297,7 +323,9 @@ function renderStats() {
       <h2>By award</h2>
       <div class="stats-grid">
         ${Object.entries(byAward).map(([a, s]) => s.total > 0
-          ? card(AWARD_LABELS[a], `${s.read} / ${s.total}`, `${Math.round(s.read / s.total * 100)}% complete`, s.read / s.total * 100)
+          ? card(AWARD_LABELS[a], `${s.tom} / ${s.total}`,
+              `Tom: ${Math.round(s.tom / s.total * 100)}% · Nika: ${s.nika} (${Math.round(s.nika / s.total * 100)}%)`,
+              s.tom / s.total * 100)
           : '').join('')}
       </div>
     </div>
@@ -306,7 +334,9 @@ function renderStats() {
       <h2>By category</h2>
       <div class="stats-grid">
         ${Object.entries(byCategory).map(([c, s]) =>
-          card(c, `${s.read} / ${s.total}`, `${Math.round(s.read / s.total * 100)}% complete`, s.read / s.total * 100)
+          card(c, `${s.tom} / ${s.total}`,
+            `Tom: ${Math.round(s.tom / s.total * 100)}% · Nika: ${s.nika} (${Math.round(s.nika / s.total * 100)}%)`,
+            s.tom / s.total * 100)
         ).join('')}
       </div>
     </div>
@@ -321,14 +351,14 @@ function renderStats() {
 function renderAbout() {
   const root = $('#view-about');
   root.innerHTML = `<div class="about">
-    <h1>About</h1>
-    <p>This is a personal reading log focused on Hugo and Nebula winners and finalists, with my own read/unread status overlaid from Goodreads.</p>
+    <h1>About Mount Readmore</h1>
+    <p>A personal reading mountain of Hugo and Nebula winners and finalists, tracking Tom's and Nika's progress side by side. Read status comes from a long-running spreadsheet plus Tom's Goodreads "read" shelf, matched by title and author.</p>
     <h2>How it works</h2>
-    <p>The data comes from a Python pipeline that reads a personal awards spreadsheet plus an exported Goodreads "read" shelf, matches them up by title and author, and produces a static JSON file the site reads. There's no backend, no tracking, and no login — just a list of books rendered in the browser.</p>
+    <p>A Python pipeline reads the awards spreadsheet and an exported Goodreads CSV, matches them up by title and author, and produces a static JSON the site reads. There's no backend, no tracking, no login — just a list of books rendered in the browser.</p>
     <h2>Update cadence</h2>
     <p>New winners are added when they're announced. Hugo Awards are presented at the World Science Fiction Convention each August; Nebulas are announced at the SFWA conference in May or June.</p>
     <h2>Source</h2>
-    <p>The project lives on <a href="https://github.com/TomGarske/sff-awards" target="_blank">GitHub</a>. The data file is committed alongside the site so anyone can see exactly what's tracked.</p>
+    <p>The project lives on <a href="https://github.com/TomGarske/mount-readmore" target="_blank">GitHub</a>.</p>
   </div>`;
 }
 
@@ -364,7 +394,8 @@ function route() {
 
 function wireFilters() {
   $('#search').addEventListener('input', e => { state.search = e.target.value.trim(); renderList(); });
-  $$('input[name="read"]').forEach(el => el.addEventListener('change', e => { state.read = e.target.value; renderList(); }));
+  $$('input[name="read-tom"]').forEach(el => el.addEventListener('change', e => { state.readTom = e.target.value; renderList(); }));
+  $$('input[name="read-nika"]').forEach(el => el.addEventListener('change', e => { state.readNika = e.target.value; renderList(); }));
   $$('input[name="award"]').forEach(el => el.addEventListener('change', e => {
     if (e.target.checked) state.awards.add(e.target.value); else state.awards.delete(e.target.value);
     renderList();
@@ -382,7 +413,7 @@ function wireFilters() {
   $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderList(); });
   $('#reset').addEventListener('click', () => {
     state = {
-      search: '', read: 'all',
+      search: '', readTom: 'all', readNika: 'all',
       awards: new Set(Object.keys(AWARD_LABELS)),
       statuses: new Set(['winner', 'nominee']),
       categories: new Set(['Novel', 'Novella', 'Novelette', 'Series']),
@@ -391,7 +422,8 @@ function wireFilters() {
     $('#search').value = '';
     $('#year-min').value = '';
     $('#year-max').value = '';
-    $('input[name="read"][value="all"]').checked = true;
+    $('input[name="read-tom"][value="all"]').checked = true;
+    $('input[name="read-nika"][value="all"]').checked = true;
     $$('input[name="award"]').forEach(el => el.checked = true);
     $$('input[name="status"]').forEach(el => el.checked = true);
     $$('input[name="category"]').forEach(el => el.checked = true);
