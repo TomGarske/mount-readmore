@@ -42,7 +42,9 @@ def load_goodreads_read(path: Path) -> pd.DataFrame:
     df = df[df["Exclusive Shelf"].str.lower() == "read"].copy()
     df["title_n"] = df["Title"].apply(normalize)
     df["author_n"] = df["Author"].apply(normalize)
-    return df[["Title", "Author", "title_n", "author_n", "Date Read", "My Rating"]]
+    # Goodreads uses YYYY/MM/DD; normalize to YYYY-MM-DD where possible
+    df["Date Read Norm"] = df["Date Read"].str.replace("/", "-", regex=False)
+    return df[["Title", "Author", "title_n", "author_n", "Date Read Norm", "My Rating"]].rename(columns={"Date Read Norm": "date_read"})
 
 
 def strip_series_suffix(title: str) -> str:
@@ -53,35 +55,33 @@ def strip_series_suffix(title: str) -> str:
     return t
 
 
-def match_row(title: str, author: str, gr: pd.DataFrame) -> tuple[bool, str]:
-    """Returns (matched, note). note = '' for clean match, otherwise the matched title."""
+def match_row(title: str, author: str, gr: pd.DataFrame) -> tuple[bool, str, str, str]:
+    """Returns (matched, note, date_read, rating). note='' for clean match."""
     t = normalize(title)
     a = normalize(author)
     if not t:
-        return False, ""
+        return False, "", "", ""
 
-    # Goodreads stripped: 'the tainted cup (shadow of...)' -> 'the tainted cup'
     gr_stripped = gr.assign(title_stripped=gr["title_n"].apply(strip_series_suffix))
 
-    # Exact match on stripped Goodreads title
     exact = gr_stripped[gr_stripped["title_stripped"] == t]
     for _, row in exact.iterrows():
         if a and (a in row["author_n"] or row["author_n"] in a):
-            return True, ""
+            return True, "", row.get("date_read", "") or "", row.get("My Rating", "") or ""
     if not exact.empty:
-        return True, f"(title match: {exact.iloc[0]['Title']})"
+        cand = exact.iloc[0]
+        return True, f"(title match: {cand['Title']})", cand.get("date_read", "") or "", cand.get("My Rating", "") or ""
 
-    # Fuzzy match against stripped titles
     titles = gr_stripped["title_stripped"].tolist()
     if not titles:
-        return False, ""
+        return False, "", "", ""
     hit = process.extractOne(t, titles, scorer=fuzz.ratio, score_cutoff=88)
     if hit:
         _, _, idx = hit
         cand = gr_stripped.iloc[idx]
         if not a or fuzz.partial_ratio(a, cand["author_n"]) >= 70:
-            return True, f"(fuzzy: {cand['Title']})"
-    return False, ""
+            return True, f"(fuzzy: {cand['Title']})", cand.get("date_read", "") or "", cand.get("My Rating", "") or ""
+    return False, "", "", ""
 
 
 def process_sheet(sheet_csv: Path, additions_csv: Path | None, gr: pd.DataFrame, out_csv: Path) -> dict:
@@ -103,20 +103,26 @@ def process_sheet(sheet_csv: Path, additions_csv: Path | None, gr: pd.DataFrame,
     author_col = "Author(s)" if "Author(s)" in combined.columns else "Author"
     if "Tom" not in combined.columns:
         combined["Tom"] = ""
+    if "Tom Date Read" not in combined.columns:
+        combined["Tom Date Read"] = ""
+    if "Tom Rating" not in combined.columns:
+        combined["Tom Rating"] = ""
 
     matched = 0
-    overwritten = 0
     for i, row in combined.iterrows():
         title = row.get(title_col, "")
         author = row.get(author_col, "")
-        is_match, note = match_row(title, author, gr)
+        is_match, note, date_read, rating = match_row(title, author, gr)
         if is_match:
             matched += 1
             existing = (row.get("Tom") or "").strip()
             if not existing:
                 combined.at[i, "Tom"] = "Read" + (f" {note}" if note else "")
-            else:
-                overwritten += 0  # leave existing note alone
+            # Always populate date_read + rating even if a manual note exists
+            if date_read:
+                combined.at[i, "Tom Date Read"] = date_read
+            if rating and rating != "0":
+                combined.at[i, "Tom Rating"] = rating
 
     combined.to_csv(out_csv, index=False, quoting=csv.QUOTE_MINIMAL)
     return {"rows": len(combined), "matched": matched, "title_col": title_col}

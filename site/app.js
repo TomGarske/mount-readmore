@@ -148,7 +148,8 @@ function renderDetail(id) {
 
 function renderStats() {
   const total = DATA.books.length;
-  const read = DATA.books.filter(b => readStatus(b) === 'read').length;
+  const readBooks = DATA.books.filter(b => readStatus(b) === 'read');
+  const read = readBooks.length;
   const started = DATA.books.filter(b => readStatus(b) === 'started').length;
 
   const byAward = {};
@@ -168,37 +169,156 @@ function renderStats() {
   const winners = DATA.books.filter(b => Object.values(b.awards || {}).includes('winner'));
   const winnersRead = winners.filter(b => readStatus(b) === 'read').length;
 
+  const dated = readBooks.filter(b => b.tom_date_read && /^\d{4}/.test(b.tom_date_read))
+    .map(b => ({ ...b, _t: new Date(b.tom_date_read.replace(/-/g, '/')) }))
+    .sort((a, b) => b._t - a._t);
+
+  // Reading pace: books per year over the last 5 years (longer window since dated reads are sparse)
+  const now = new Date();
+  const windowYears = 5;
+  const windowStart = new Date(now.getFullYear() - windowYears, now.getMonth(), 1);
+  const recentReads = dated.filter(b => b._t >= windowStart);
+  const monthsCovered = windowYears * 12;
+  const perMonth = recentReads.length / monthsCovered;
+  const perYear = perMonth * 12;
+
+  // ETA at current pace
+  const remaining = total - read;
+  const remainingWinners = winners.length - winnersRead;
+  const yearsToComplete = perYear > 0 ? remaining / perYear : null;
+  const yearsForWinners = perYear > 0 ? remainingWinners / perYear : null;
+
   const card = (h, v, sub, pct) => `<div class="stat-card">
     <h3>${h}</h3>
     <div class="stat-value">${v}</div>
     <div class="stat-sub">${sub}</div>
-    ${pct != null ? `<div class="progress"><div class="progress-bar" style="width: ${pct}%"></div></div>` : ''}
+    ${pct != null ? `<div class="progress"><div class="progress-bar" style="width: ${Math.min(100, pct)}%"></div></div>` : ''}
   </div>`;
+
+  // Reads-per-publish-year bars (last ~25 years, since older years have spotty Date Read data)
+  const yearStart = Math.min(...DATA.books.map(b => b.year).filter(y => y));
+  const yearEnd = Math.max(...DATA.books.map(b => b.year).filter(y => y));
+  const yearBuckets = {};
+  for (let y = yearStart; y <= yearEnd; y++) yearBuckets[y] = { total: 0, read: 0 };
+  for (const b of DATA.books) {
+    if (b.year && yearBuckets[b.year]) {
+      yearBuckets[b.year].total++;
+      if (readStatus(b) === 'read') yearBuckets[b.year].read++;
+    }
+  }
+  // Render bars from the last 30 award years
+  const recentYears = Object.entries(yearBuckets)
+    .map(([y, v]) => [parseInt(y, 10), v])
+    .filter(([y]) => y >= yearEnd - 29 && y <= yearEnd)
+    .sort((a, b) => a[0] - b[0]);
+  const maxBucket = Math.max(1, ...recentYears.map(([, v]) => v.total));
+  const yearBarsHtml = recentYears.map(([y, v]) => {
+    const totalH = (v.total / maxBucket) * 100;
+    const readH = v.total > 0 ? (v.read / v.total) * totalH : 0;
+    return `<div class="year-bar empty" style="height: ${totalH}%;">
+      <div class="year-bar-tooltip">${y}: ${v.read}/${v.total} read</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:${(v.read/Math.max(1,v.total))*100}%;background:var(--accent);border-radius:3px 3px 0 0;"></div>
+    </div>`;
+  }).join('');
+
+  // Up-next: recent winners not yet read, sorted by award year desc
+  const upNext = DATA.books
+    .filter(b => Object.values(b.awards || {}).includes('winner') && readStatus(b) !== 'read')
+    .sort((a, b) => (b.year || 0) - (a.year || 0))
+    .slice(0, 8);
+
+  const recentReadsHtml = dated.slice(0, 8).map(b => {
+    const coverHtml = b.cover_url
+      ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
+      : '📖';
+    return `<div class="recent-read" data-id="${escapeHtml(b.id)}">
+      <div class="recent-read-cover">${coverHtml}</div>
+      <div class="recent-read-info">
+        <div class="rr-title">${escapeHtml(b.title)}</div>
+        <div class="rr-meta">${escapeHtml(b.authors[0] || '')} · read ${escapeHtml(b.tom_date_read)}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const upNextHtml = upNext.map(b => {
+    const coverHtml = b.cover_url
+      ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
+      : '📖';
+    const awardNames = Object.entries(b.awards).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]).join(' · ');
+    return `<div class="recent-read" data-id="${escapeHtml(b.id)}">
+      <div class="recent-read-cover">${coverHtml}</div>
+      <div class="recent-read-info">
+        <div class="rr-title">${escapeHtml(b.title)}</div>
+        <div class="rr-meta">${escapeHtml(b.authors[0] || '')} · ${b.year} ${awardNames} winner</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const fmtYears = y => y == null ? 'unknown pace' : y > 100 ? `${Math.round(y)} years (yikes)` : `${y.toFixed(1)} years`;
+  const lastReadDate = dated[0] ? dated[0].tom_date_read : 'none';
 
   const root = $('#view-stats');
   root.innerHTML = `<div class="detail">
-    <h1>Stats</h1>
-    <div class="stats-grid">
-      ${card('Total books tracked', total, `${winners.length} winners · ${total - winners.length} nominees`)}
-      ${card('Books read', read, `${Math.round(read / total * 100)}% of list`, read / total * 100)}
-      ${card('Winners read', winnersRead, `${Math.round(winnersRead / winners.length * 100)}% of winners`, winnersRead / winners.length * 100)}
-      ${card('In progress / queued', started, 'on the to-read pile')}
+    <h1>Progress</h1>
+
+    <div class="headline-grid">
+      ${card('Books on the list', total, `${winners.length} winners · ${total - winners.length} nominees`)}
+      ${card('Books read', read, `${(read / total * 100).toFixed(1)}% of list`, read / total * 100)}
+      ${card('Winners read', winnersRead, `${(winnersRead / winners.length * 100).toFixed(1)}% of winners`, winnersRead / winners.length * 100)}
+      ${card('Currently reading / queued', started, 'on the to-read pile')}
     </div>
 
-    <h2 style="margin-top: 36px;">By award</h2>
-    <div class="stats-grid">
-      ${Object.entries(byAward).map(([a, s]) => s.total > 0
-        ? card(AWARD_LABELS[a], `${s.read} / ${s.total}`, `${Math.round(s.read / s.total * 100)}% complete`, s.read / s.total * 100)
-        : '').join('')}
+    <div class="eta-card">
+      <div class="eta-headline">At your recent pace of ${perYear.toFixed(1)} award books/year…</div>
+      <div class="eta-sub">based on ${recentReads.length} reads from this list in the last ${windowYears} years · only counting Goodreads entries with a Date Read · last dated read: ${lastReadDate}</div>
+      <ul>
+        <li>Read everything (${remaining} books left): <strong>${fmtYears(yearsToComplete)}</strong></li>
+        <li>Read just remaining winners (${remainingWinners} left): <strong>${fmtYears(yearsForWinners)}</strong></li>
+        <li>Read 1 winner per month → done with winners in <strong>${(remainingWinners / 12).toFixed(1)} years</strong></li>
+        <li>Read 1 book from this list per month → done in <strong>${(remaining / 12).toFixed(1)} years</strong></li>
+      </ul>
     </div>
 
-    <h2 style="margin-top: 36px;">By category</h2>
-    <div class="stats-grid">
-      ${Object.entries(byCategory).map(([c, s]) =>
-        card(c, `${s.read} / ${s.total}`, `${Math.round(s.read / s.total * 100)}% complete`, s.read / s.total * 100)
-      ).join('')}
+    <div class="progress-section">
+      <h2>Coverage by award year (last 30 years)</h2>
+      <p style="color: var(--muted); font-size: 13px;">Each bar = number of nominees+winners that year, filled portion = books you've read. Hover for details.</p>
+      <div class="year-bars">${yearBarsHtml}</div>
+      <div class="year-axis"><span>${recentYears[0] ? recentYears[0][0] : ''}</span><span>${yearEnd}</span></div>
+    </div>
+
+    ${dated.length > 0 ? `<div class="progress-section">
+      <h2>Recent reads from this list</h2>
+      <div class="recent-reads">${recentReadsHtml}</div>
+    </div>` : ''}
+
+    ${upNext.length > 0 ? `<div class="progress-section">
+      <h2>Up next — recent winners you haven't read</h2>
+      <div class="recent-reads">${upNextHtml}</div>
+    </div>` : ''}
+
+    <div class="progress-section">
+      <h2>By award</h2>
+      <div class="stats-grid">
+        ${Object.entries(byAward).map(([a, s]) => s.total > 0
+          ? card(AWARD_LABELS[a], `${s.read} / ${s.total}`, `${Math.round(s.read / s.total * 100)}% complete`, s.read / s.total * 100)
+          : '').join('')}
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <h2>By category</h2>
+      <div class="stats-grid">
+        ${Object.entries(byCategory).map(([c, s]) =>
+          card(c, `${s.read} / ${s.total}`, `${Math.round(s.read / s.total * 100)}% complete`, s.read / s.total * 100)
+        ).join('')}
+      </div>
     </div>
   </div>`;
+
+  // Wire up clicks on recent-read tiles
+  $$('.recent-read', root).forEach(el => {
+    el.addEventListener('click', () => { location.hash = `#/book/${el.dataset.id}`; });
+  });
 }
 
 function renderAbout() {
