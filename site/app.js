@@ -415,12 +415,6 @@ function renderStats() {
       ${card('Both read', winnersBoth.length, `${winnersEither.length} read by either`)}
     </div>
 
-    <div class="progress-section">
-      <h2>The Mount Readmore climb</h2>
-      <p style="color: var(--muted); font-size: 13px;">Each climber's height = winners they've read out of ${winnersTotal}. There's a long way up.</p>
-      ${mountainSvg}
-    </div>
-
     ${dated.length > 0 ? `<div class="progress-section">
       <h2>Recent winners Tom has read</h2>
       <div class="recent-reads">${recentReadsHtml}</div>
