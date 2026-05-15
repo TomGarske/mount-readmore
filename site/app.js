@@ -292,6 +292,31 @@ function renderStats() {
   }
   nightstandBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
 
+  // ===== Genre breakdown (winners only) =====
+  const genreBuckets = {};
+  for (const b of winners) {
+    for (const g of (b.genres || [])) {
+      if (!genreBuckets[g]) genreBuckets[g] = { total: 0, tom: 0, nika: 0 };
+      genreBuckets[g].total++;
+      if (readStatus(b, 'tom') === 'read') genreBuckets[g].tom++;
+      if (readStatus(b, 'nika') === 'read') genreBuckets[g].nika++;
+    }
+  }
+  const genres = Object.entries(genreBuckets)
+    .map(([name, s]) => ({ name, ...s }))
+    .sort((a, b) => b.total - a.total);
+
+  // ===== Author-gender breakdown (winners only) =====
+  const genderBuckets = { male: 0, female: 0, unknown: 0 };
+  const genderRead = { male: 0, female: 0, unknown: 0 };
+  const genderReadActive = SOLO === 'nika' ? 'nika' : 'tom';
+  for (const b of winners) {
+    const g = b.primary_author_gender || 'unknown';
+    if (!(g in genderBuckets)) continue;
+    genderBuckets[g]++;
+    if (readStatus(b, genderReadActive) === 'read') genderRead[g]++;
+  }
+
   // ===== Author leaderboard (last 30 years) =====
   const leaderboardCutoff = new Date().getFullYear() - 30;
   const authorAppearances = {};  // name -> {total, winners, tomRead, nikaRead}
@@ -343,25 +368,39 @@ function renderStats() {
     ${pct != null ? `<div class="progress"><div class="progress-bar" style="width: ${Math.min(100, pct)}%"></div></div>` : ''}
   </a>`;
 
-  // Year bars — winners only
+  // Era bars — bucket winners by decade so each era's mass is comparable
   const yearEnd = Math.max(...DATA.books.map(b => b.year).filter(y => y));
-  const yearBuckets = {};
-  for (let y = yearEnd - 29; y <= yearEnd; y++) yearBuckets[y] = { total: 0, read: 0 };
+  const yearStart = Math.min(...DATA.books.map(b => b.year).filter(y => y));
+  const eraBuckets = {};
+  const firstDecade = Math.floor(yearStart / 10) * 10;
+  const lastDecade = Math.floor(yearEnd / 10) * 10;
+  for (let d = firstDecade; d <= lastDecade; d += 10) eraBuckets[d] = { total: 0, read: 0, nikaRead: 0 };
   for (const b of winners) {
-    if (b.year && yearBuckets[b.year]) {
-      yearBuckets[b.year].total++;
-      if (readStatus(b, 'tom') === 'read') yearBuckets[b.year].read++;
-    }
+    if (!b.year) continue;
+    const dec = Math.floor(b.year / 10) * 10;
+    if (!eraBuckets[dec]) continue;
+    eraBuckets[dec].total++;
+    if (readStatus(b, 'tom') === 'read') eraBuckets[dec].read++;
+    if (readStatus(b, 'nika') === 'read') eraBuckets[dec].nikaRead++;
   }
-  const recentYears = Object.entries(yearBuckets)
-    .map(([y, v]) => [parseInt(y, 10), v])
-    .sort((a, b) => a[0] - b[0]);
-  const maxBucket = Math.max(1, ...recentYears.map(([, v]) => v.total));
-  const yearBarsHtml = recentYears.map(([y, v]) => {
-    const totalH = (v.total / maxBucket) * 100;
-    return `<div class="year-bar empty" style="height: ${Math.max(2, totalH)}%;">
-      <div class="year-bar-tooltip">${y}: ${v.read}/${v.total} winners read</div>
-      <div style="position:absolute;bottom:0;left:0;right:0;height:${(v.read/Math.max(1,v.total))*100}%;background:var(--accent);border-radius:3px 3px 0 0;"></div>
+  const eras = Object.entries(eraBuckets).map(([d, v]) => [parseInt(d, 10), v]).sort((a, b) => a[0] - b[0]);
+  const maxEra = Math.max(1, ...eras.map(([, v]) => v.total));
+  const activeReader = SOLO === 'nika' ? 'nikaRead' : 'read';
+  const fillColor = SOLO === 'nika' ? 'var(--accent-2)' : 'var(--accent)';
+  const eraBarsHtml = eras.map(([d, v]) => {
+    const totalH = (v.total / maxEra) * 100;
+    const readCount = v[activeReader];
+    const readH = v.total > 0 ? (readCount / v.total) * 100 : 0;
+    const tomLabel = SHOW_TOM ? `Tom ${v.read}/${v.total}` : '';
+    const nikaLabel = SHOW_NIKA ? `Nika ${v.nikaRead}/${v.total}` : '';
+    const tooltip = SOLO ? `${d}s: ${readCount} / ${v.total} winners read` : `${d}s: ${tomLabel}${tomLabel && nikaLabel ? ' · ' : ''}${nikaLabel}`;
+    return `<div class="era-bar-col">
+      <div class="era-bar empty" style="height: ${Math.max(2, totalH)}%;">
+        <div class="era-bar-tooltip">${tooltip}</div>
+        <div style="position:absolute;bottom:0;left:0;right:0;height:${readH}%;background:${fillColor};border-radius:3px 3px 0 0;"></div>
+      </div>
+      <div class="era-bar-label">${d % 100}s</div>
+      <div class="era-bar-count">${readCount}/${v.total}</div>
     </div>`;
   }).join('');
 
@@ -519,7 +558,7 @@ function renderStats() {
     </div>
 
     <h1>Progress</h1>
-    <p style="color: var(--muted); font-size: 14px; margin-top: -8px;">Counting <strong>winners only</strong> on this page. Browse all nominees on the Books tab.</p>
+    <p style="color: var(--muted); font-size: 14px; margin-top: -8px;">Counting <strong>${winnersTotal} winners only</strong> on this page (the Books tab covers all ${DATA.books.length - winnersTotal} nominees too).</p>
 
     <div class="headline-grid">
       ${SOLO === 'nika' ? `
@@ -586,16 +625,48 @@ function renderStats() {
     </div>
 
     <div class="progress-section">
-      <h2>Coverage by year (winners only · last 30 years)</h2>
-      <p style="color: var(--muted); font-size: 13px;">Each bar = number of Hugo+Nebula winners that year, filled green = books Tom has read. Hover for details.</p>
-      <div class="year-bars">${yearBarsHtml}</div>
-      <div class="year-axis"><span>${recentYears[0] ? recentYears[0][0] : ''}</span><span>${yearEnd}</span></div>
+      <h2>Coverage by era (winners only)</h2>
+      <p style="color: var(--muted); font-size: 13px;">Bar height = winners that decade · filled portion = books ${SOLO === 'nika' ? 'Nika' : (SOLO === 'tom' ? '' : 'Tom')} read. Hover for details.</p>
+      <div class="era-bars">${eraBarsHtml}</div>
+    </div>
+
+
+    <div class="progress-section">
+      <h2>By genre (winners)</h2>
+      <p style="color: var(--muted); font-size: 13px;">Genre tags inferred from Open Library subject lists. A book can be tagged with multiple (e.g. Space Opera + Hard SF).</p>
+      <div class="genre-bars">
+        ${genres.map(g => {
+          const activeRead = SOLO === 'nika' ? g.nika : g.tom;
+          const pct = g.total > 0 ? (activeRead / g.total) * 100 : 0;
+          const sub = SOLO ? `${activeRead} read` : `Tom ${g.tom} · Nika ${g.nika}`;
+          return `<div class="genre-row">
+            <div class="genre-name">${escapeHtml(g.name)}</div>
+            <div class="genre-bar">
+              <div class="genre-bar-fill" style="width: ${pct}%;"></div>
+            </div>
+            <div class="genre-count">${activeRead} / ${g.total}<span style="color:var(--muted)"> · ${sub}</span></div>
+          </div>`;
+        }).join('')}
+      </div>
     </div>
 
     <div class="progress-section">
-      <h2>Decade heatmap (winners read)</h2>
-      <p style="color: var(--muted); font-size: 13px;">Deeper green = more of that decade's winners read by Tom.</p>
-      <div class="decade-grid">${decadeCells}</div>
+      <h2>By author gender (winners)</h2>
+      <p style="color: var(--muted); font-size: 13px;">Primary author of each winning work, inferred from first name. Lead-character gender isn't tracked yet — no reliable data source.</p>
+      <div class="gender-grid">
+        ${['female', 'male', 'unknown'].map(g => {
+          const total = genderBuckets[g];
+          const read = genderRead[g];
+          const pct = total > 0 ? Math.round(read / total * 100) : 0;
+          const label = g === 'female' ? 'Female-authored' : g === 'male' ? 'Male-authored' : 'Unknown / non-binary / pen name';
+          return `<div class="gender-card gender-${g}">
+            <div class="gender-card-label">${label}</div>
+            <div class="gender-card-stat"><strong>${total}</strong> winners</div>
+            <div class="gender-card-sub">${SOLO === 'nika' ? 'Nika' : (SOLO === 'tom' ? '' : 'Tom')} read ${read} (${pct}%)</div>
+            <div class="progress"><div class="progress-bar" style="width: ${pct}%; background: ${g === 'female' ? 'var(--accent-2)' : g === 'male' ? 'var(--accent)' : 'var(--muted)'};"></div></div>
+          </div>`;
+        }).join('')}
+      </div>
     </div>
 
     <div class="progress-section">

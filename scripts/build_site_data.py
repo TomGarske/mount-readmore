@@ -43,6 +43,41 @@ TITLE_COL_FOR_SHEET = {
 }
 
 
+GENRE_RULES = [
+    ("Space Opera",      [r"space opera", r"interplanetary", r"galactic empire"]),
+    ("Hard SF",          [r"hard science fiction", r"hard sf", r"hard sci"]),
+    ("Time Travel",      [r"time travel", r"time-travel"]),
+    ("Cyberpunk",        [r"cyberpunk", r"cyber-punk"]),
+    ("Dystopian",        [r"dystopia", r"post-apocalyp", r"postapocalyp"]),
+    ("First Contact",    [r"human-alien", r"first contact"]),
+    ("Military SF",      [r"military science fiction", r"military sf", r"space war"]),
+    ("Horror",           [r"\bhorror\b"]),
+    ("Urban Fantasy",    [r"urban fantasy"]),
+    ("Epic Fantasy",     [r"epic fantasy", r"heroic fantasy", r"sword and sorcery"]),
+    ("Magical Realism",  [r"magical realism", r"magic realism"]),
+    ("Fairy Tale",       [r"fairy tale", r"folklore", r"folk tale"]),
+    ("Alternate History", [r"alternate history", r"alternative history"]),
+    ("Fantasy",          [r"\bfantasy\b", r"\bmagic\b", r"dragon", r"wizard", r"witch"]),
+    ("Science Fiction",  [r"science[ -]?fiction", r"\bsf\b", r"science-fiction"]),
+]
+
+import re as _re
+_GENRE_RES = [(label, [_re.compile(p, _re.IGNORECASE) for p in pats]) for label, pats in GENRE_RULES]
+
+
+def categorize_genres(subjects: list[str]) -> list[str]:
+    """Map a list of Open Library subjects into a small set of genre labels."""
+    if not subjects:
+        return []
+    text = " | ".join(subjects).lower()
+    found = []
+    for label, regexes in _GENRE_RES:
+        if any(rx.search(text) for rx in regexes):
+            found.append(label)
+    # Dedupe overlapping (Hard SF, Space Opera, etc. imply Science Fiction; keep both)
+    return found
+
+
 def slugify(s: str) -> str:
     s = unicodedata.normalize("NFKD", s).encode("ascii", "ignore").decode()
     s = re.sub(r"[^a-zA-Z0-9]+", "-", s).strip("-").lower()
@@ -143,6 +178,25 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
     return records
 
 
+def apply_author_gender(records: list[dict], path: Path) -> int:
+    if not path.exists():
+        return 0
+    with path.open() as f:
+        lookup = json.load(f)
+    applied = 0
+    for r in records:
+        authors = r.get("authors") or []
+        if not authors:
+            continue
+        # Per-author genders + primary (first author)
+        per = [lookup.get(a, "unknown") for a in authors]
+        r["author_genders"] = per
+        r["primary_author_gender"] = per[0] if per else "unknown"
+        if r["primary_author_gender"] != "unknown":
+            applied += 1
+    return applied
+
+
 def apply_cover_cache(records: list[dict], cache_path: Path, desc_path: Path | None = None) -> int:
     if not cache_path.exists():
         return 0
@@ -172,6 +226,7 @@ def apply_cover_cache(records: list[dict], cache_path: Path, desc_path: Path | N
             subjects = desc_cache[ol_key].get("subjects", [])
             if subjects:
                 r["subjects"] = subjects
+                r["genres"] = categorize_genres(subjects)
     return applied
 
 
@@ -202,7 +257,9 @@ def main() -> None:
 
     covers = apply_cover_cache(all_records, args.data / "openlib_cache.json", args.data / "openlib_descriptions.json")
     descs = sum(1 for r in all_records if r.get("description"))
-    print(f"  Applied {covers} cover URLs + {descs} descriptions from cache")
+    gend = apply_author_gender(all_records, args.data / "author_gender.json")
+    genres = sum(1 for r in all_records if r.get("genres"))
+    print(f"  Applied {covers} cover URLs + {descs} descriptions + {genres} genre sets + {gend} author genders")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w") as f:

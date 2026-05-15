@@ -180,7 +180,86 @@ body.solo-nika .tom-only { display: none !important; }
 }
 .author-count { color: var(--muted); font-size: 12px; }
 
-/* Decade heatmap */
+/* Era bars (was year bars) */
+.era-bars {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 12px;
+  height: 200px;
+  align-items: end;
+  margin-top: 14px;
+}
+.era-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.era-bar {
+  width: 100%;
+  background: var(--bg-3);
+  border-radius: 3px 3px 0 0;
+  position: relative;
+  min-height: 4px;
+}
+.era-bar-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-3);
+  color: var(--text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  white-space: nowrap;
+  margin-bottom: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.1s;
+  z-index: 5;
+}
+.era-bar:hover .era-bar-tooltip { opacity: 1; }
+.era-bar-label { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.04em; }
+.era-bar-count { font-size: 11px; color: var(--text); }
+
+/* Genre breakdown */
+.genre-bars { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; }
+.genre-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 180px;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.genre-name { color: var(--text); font-weight: 500; text-align: right; }
+.genre-bar { height: 18px; background: var(--bg-3); border: 1px solid var(--border); border-radius: 4px; overflow: hidden; }
+.genre-bar-fill { height: 100%; background: var(--accent); opacity: 0.85; }
+.genre-count { font-size: 12px; color: var(--text); }
+
+/* Author gender cards */
+.gender-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+.gender-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+}
+.gender-card.gender-female { border-left: 3px solid var(--accent-2); }
+.gender-card.gender-male { border-left: 3px solid var(--accent); }
+.gender-card-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.gender-card-stat { font-size: 24px; font-weight: 600; margin: 6px 0 4px; }
+.gender-card-sub { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+
+/* Decade heatmap (kept for backwards compat — no longer rendered) */
 .decade-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
