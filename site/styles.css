@@ -240,6 +240,116 @@ body.solo-nika .tom-only { display: none !important; }
 .genre-bar-fill { height: 100%; background: var(--accent); opacity: 0.85; }
 .genre-count { font-size: 12px; color: var(--text); }
 
+/* Genre vector table */
+.vector-table {
+  margin-top: 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.vector-row {
+  display: grid;
+  grid-template-columns: 2fr 80px 80px 100px 1fr;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.vector-row:last-child { border-bottom: none; }
+.vector-row.vector-head {
+  background: var(--bg-3);
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.vector-combo {
+  color: var(--text);
+  font-weight: 500;
+  word-break: break-word;
+}
+.vector-pct {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(125, 211, 192, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(125, 211, 192, 0.4);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Swimlanes */
+.swimlane { margin-top: 22px; }
+.swimlane-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.swimlane-header h3 { font-size: 16px; margin: 0; color: var(--text); }
+.swimlane-count { font-size: 12px; color: var(--muted); }
+.swimlane-strip {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding: 4px 2px 16px;
+  scroll-snap-type: x proximity;
+}
+.swimlane-strip::-webkit-scrollbar { height: 6px; }
+.swimlane-strip::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.swimlane-card {
+  flex: 0 0 124px;
+  cursor: pointer;
+  scroll-snap-align: start;
+  transition: transform 0.1s;
+}
+.swimlane-card:hover { transform: translateY(-2px); }
+.swimlane-cover {
+  width: 124px;
+  height: 184px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.swimlane-cover.is-winner { box-shadow: 0 0 0 2px rgba(240, 198, 116, 0.4); border-color: rgba(240, 198, 116, 0.55); }
+.swimlane-cover img { width: 100%; height: 100%; object-fit: cover; }
+.swimlane-placeholder { font-size: 32px; color: var(--muted); }
+.swimlane-pill {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(136, 192, 160, 0.85);
+  color: var(--bg);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+.swimlane-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  margin-top: 6px;
+  line-height: 1.25;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.swimlane-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+@media (max-width: 700px) {
+  .vector-row { grid-template-columns: 1.5fr 50px 50px 70px 80px; font-size: 12px; padding: 8px 10px; }
+}
+
 /* Author gender cards */
 .gender-grid {
   display: grid;

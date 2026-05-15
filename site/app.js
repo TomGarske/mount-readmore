@@ -306,6 +306,35 @@ function renderStats() {
     .map(([name, s]) => ({ name, ...s }))
     .sort((a, b) => b.total - a.total);
 
+  // ===== Genre-combination "vectors" =====
+  // Group ALL books (winners + nominees) by sorted genre tuple, compute win rate.
+  const comboBuckets = {};
+  for (const b of DATA.books) {
+    const gs = (b.genres || []).slice().sort();
+    if (gs.length === 0) continue;
+    const key = gs.join(' + ');
+    if (!comboBuckets[key]) comboBuckets[key] = { total: 0, winners: 0, tomRead: 0, nikaRead: 0 };
+    comboBuckets[key].total++;
+    if (Object.values(b.awards || {}).includes('winner')) comboBuckets[key].winners++;
+    if (readStatus(b, 'tom') === 'read') comboBuckets[key].tomRead++;
+    if (readStatus(b, 'nika') === 'read') comboBuckets[key].nikaRead++;
+  }
+  // Keep combos with >= 3 samples; sort by win rate desc, then by total desc
+  const genreVectors = Object.entries(comboBuckets)
+    .filter(([, v]) => v.total >= 3)
+    .map(([combo, v]) => ({ combo, ...v, winRate: v.winners / v.total }))
+    .sort((a, b) => b.winRate - a.winRate || b.total - a.total)
+    .slice(0, 15);
+
+  // ===== Swimlanes — featured genres =====
+  const swimlaneGenres = ['Time Travel', 'Horror', 'Military SF', 'Space Opera', 'Hard SF', 'Dystopian', 'First Contact', 'Cyberpunk'];
+  const swimlanes = swimlaneGenres.map(g => {
+    const books = DATA.books
+      .filter(b => (b.genres || []).includes(g))
+      .sort((a, b) => (b.year || 0) - (a.year || 0));
+    return { genre: g, books };
+  }).filter(s => s.books.length > 0);
+
   // ===== Author-gender breakdown (winners only) =====
   const genderBuckets = { male: 0, female: 0, unknown: 0 };
   const genderRead = { male: 0, female: 0, unknown: 0 };
@@ -651,6 +680,62 @@ function renderStats() {
     </div>
 
     <div class="progress-section">
+      <h2>Genre vectors — which combinations win most?</h2>
+      <p style="color: var(--muted); font-size: 13px;">Each row is a unique combination of genre tags across a book's whole population (winners + nominees). Sorted by win rate. Filtered to combos with at least 3 books.</p>
+      <div class="vector-table">
+        <div class="vector-row vector-head">
+          <div>Genre vector</div>
+          <div>Books</div>
+          <div>Winners</div>
+          <div>Win rate</div>
+          <div>${SHOW_TOM ? 'T read' : ''}${SHOW_TOM && SHOW_NIKA ? ' · ' : ''}${SHOW_NIKA ? 'N read' : ''}</div>
+        </div>
+        ${genreVectors.map(v => {
+          const winRatePct = Math.round(v.winRate * 100);
+          const readCol = [
+            SHOW_TOM ? `<span style="color:var(--accent)">T ${v.tomRead}</span>` : '',
+            SHOW_NIKA ? `<span style="color:var(--accent-2)">N ${v.nikaRead}</span>` : ''
+          ].filter(Boolean).join(' · ');
+          return `<div class="vector-row">
+            <div class="vector-combo">${escapeHtml(v.combo)}</div>
+            <div>${v.total}</div>
+            <div>${v.winners}</div>
+            <div><span class="vector-pct">${winRatePct}%</span></div>
+            <div>${readCol}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <h2>Browse by genre</h2>
+      <p style="color: var(--muted); font-size: 13px;">Scroll any row sideways. Click a cover for details. Each row is sorted by publication year, newest first.</p>
+      ${swimlanes.map(lane => `
+        <div class="swimlane">
+          <div class="swimlane-header">
+            <h3>${escapeHtml(lane.genre)}</h3>
+            <span class="swimlane-count">${lane.books.length} books</span>
+          </div>
+          <div class="swimlane-strip">
+            ${lane.books.map(b => {
+              const cover = b.cover_url
+                ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
+                : `<span class="swimlane-placeholder">📖</span>`;
+              const isWinner = Object.values(b.awards || {}).includes('winner');
+              const readPill = readStatus(b, 'tom') === 'read' || readStatus(b, 'nika') === 'read'
+                ? `<span class="swimlane-pill">read</span>` : '';
+              return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
+                <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}${readPill}</div>
+                <div class="swimlane-title">${escapeHtml(b.title)}</div>
+                <div class="swimlane-meta">${escapeHtml(b.authors[0] || '')} · ${b.year || ''}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="progress-section">
       <h2>By author gender (winners)</h2>
       <p style="color: var(--muted); font-size: 13px;">Primary author of each winning work, inferred from first name. Lead-character gender isn't tracked yet — no reliable data source.</p>
       <div class="gender-grid">
@@ -702,7 +787,7 @@ function renderStats() {
     </div>
   </div>`;
 
-  $$('.recent-read', root).forEach(el => {
+  $$('.recent-read, .swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/book/${el.dataset.id}`; });
   });
 }
