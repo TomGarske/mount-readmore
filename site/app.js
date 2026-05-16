@@ -898,6 +898,8 @@ function renderAbout() {
     </p>
     <h2>How it works</h2>
     <p>A Python pipeline reads an awards spreadsheet and exported reader CSVs, matches them by title and author, and produces a static JSON file the site reads. There's no backend, no tracking, no login — just a list of books rendered in the browser.</p>
+    <h2>Multiple readers</h2>
+    <p>The site defaults to Tom's view. Add another reader via the URL query string: <code>?reader=tom,nika</code> shows both readers side by side; <code>?reader=nika</code> shows just Nika; <code>?reader=tom,nika,westdac</code> shows all three.</p>
     <h2>Upcoming award dates</h2>
     <ul>
       <li><strong>2026 Nebula Awards</strong> — Saturday, <strong>June 6, 2026</strong> at the SFWA conference in Chicago · <a href="https://events.sfwa.org/" target="_blank" rel="noopener">events.sfwa.org</a> · <a href="https://en.wikipedia.org/wiki/Nebula_Award" target="_blank" rel="noopener">Nebula on Wikipedia</a></li>
