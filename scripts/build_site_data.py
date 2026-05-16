@@ -151,6 +151,10 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
         tom_rating = (row.get("Tom Rating", "") or "").strip()
         tom_shelf = (row.get("Tom Shelf", "") or "").strip()
         nika_shelf = (row.get("Nika Shelf", "") or "").strip()
+        westdac = (row.get("Westdac", "") or "").strip()
+        westdac_shelf = (row.get("Westdac Shelf", "") or "").strip()
+        westdac_date_read = (row.get("Westdac Date Read", "") or "").strip()
+        westdac_rating = (row.get("Westdac Rating", "") or "").strip()
         series = (row.get("Series", "") or "").strip()
 
         authors = parse_authors(author_raw)
@@ -172,6 +176,10 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
             "tom_rating": tom_rating,
             "tom_shelf": tom_shelf,
             "nika_shelf": nika_shelf,
+            "westdac": westdac,
+            "westdac_shelf": westdac_shelf,
+            "westdac_date_read": westdac_date_read,
+            "westdac_rating": westdac_rating,
             "series": series,
         })
 

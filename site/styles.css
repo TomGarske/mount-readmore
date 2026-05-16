@@ -11,6 +11,7 @@
   --nominee: #6a93c4;
   --read: #88c0a0;
   --queued: #d08770;
+  --accent-3: #d4a070;
   --radius: 8px;
 }
 
@@ -105,9 +106,13 @@ a:hover { text-decoration: underline; }
 .about-profile-link:hover { border-color: var(--accent); text-decoration: none; }
 .about-profile-link .profile-dot { width: 10px; height: 10px; }
 
-/* Solo modes — body class hides the other reader's elements */
-body.solo-tom .nika-only { display: none !important; }
-body.solo-nika .tom-only { display: none !important; }
+/* Solo modes — body class hides every other reader's elements */
+body.solo-tom .nika-only,
+body.solo-tom .westdac-only { display: none !important; }
+body.solo-nika .tom-only,
+body.solo-nika .westdac-only { display: none !important; }
+body.solo-westdac .tom-only,
+body.solo-westdac .nika-only { display: none !important; }
 
 /* Awards banner at top of Progress */
 .awards-banner {
@@ -192,6 +197,13 @@ body.solo-nika .tom-only { display: none !important; }
   top: 0;
   height: 100%;
   background: var(--accent-2);
+  opacity: 0.85;
+}
+.author-bar-westdac {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background: var(--accent-3);
   opacity: 0.85;
 }
 .author-count { color: var(--muted); font-size: 12px; }
@@ -475,6 +487,7 @@ body.solo-nika .tom-only { display: none !important; }
 }
 .rr-pill-t { background: rgba(125, 211, 192, 0.15); color: var(--accent); border-color: rgba(125, 211, 192, 0.4); }
 .rr-pill-n { background: rgba(180, 142, 173, 0.15); color: var(--accent-2); border-color: rgba(180, 142, 173, 0.4); }
+.rr-pill-w { background: rgba(212, 160, 112, 0.15); color: var(--accent-3); border-color: rgba(212, 160, 112, 0.4); }
 
 .year-progress-grid {
   display: grid;
@@ -496,6 +509,7 @@ body.solo-nika .tom-only { display: none !important; }
 }
 .year-card-name { font-size: 17px; font-weight: 600; color: var(--accent); letter-spacing: -0.01em; }
 .year-card-name.nika { color: var(--accent-2); }
+.year-card-name.westdac { color: var(--accent-3); }
 .year-card-year { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.08em; }
 .year-card-stat { font-size: 14px; color: var(--text); padding: 4px 0; }
 .year-card-stat strong { color: var(--accent); }
@@ -725,7 +739,9 @@ fieldset label input { margin-right: 8px; }
 }
 .badge.reader-t .reader-initial { background: var(--accent); }
 .badge.reader-n .reader-initial { background: var(--accent-2); }
+.badge.reader-w .reader-initial { background: var(--accent-3); }
 .badge.reader-n { color: var(--accent-2); border-color: rgba(180, 142, 173, 0.4); background: rgba(180, 142, 173, 0.12); }
+.badge.reader-w { color: var(--accent-3); border-color: rgba(212, 160, 112, 0.4); background: rgba(212, 160, 112, 0.12); }
 
 /* Detail view */
 .detail {
