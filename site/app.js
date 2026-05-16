@@ -35,6 +35,8 @@ let state = {
   yearMin: null,
   yearMax: null,
   sort: 'year-desc',
+  // Progress-page filter: 'winner' | 'nominee' | 'both'
+  progressStatus: 'winner',
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
@@ -229,9 +231,26 @@ function renderDetail(id) {
 }
 
 function renderStats() {
-  // Winners-only universe for the main stats
-  const winners = DATA.books.filter(b => Object.values(b.awards || {}).includes('winner'));
+  // Status filter for everything on this page
+  const STATUS = state.progressStatus;  // 'winner' | 'nominee' | 'both'
+  const isWinner = (b) => Object.values(b.awards || {}).includes('winner');
+  const winnersAll = DATA.books.filter(isWinner);
+  const nomineesAll = DATA.books.filter(b => !isWinner(b));
+  const allWinnersCount = winnersAll.length;
+  const allNomineesCount = nomineesAll.length;
+  const allBooksCount = DATA.books.length;
+
+  // Which subset drives this render
+  const winners = STATUS === 'winner' ? winnersAll
+    : STATUS === 'nominee' ? nomineesAll
+    : DATA.books;
   const winnersTotal = winners.length;
+  // Labels that adapt to filter
+  const SUBSET = STATUS === 'winner' ? 'winners'
+    : STATUS === 'nominee' ? 'nominees'
+    : 'books';
+  const SUBSET_CAP = SUBSET.charAt(0).toUpperCase() + SUBSET.slice(1);
+
   const winnersTom = winners.filter(b => readStatus(b, 'tom') === 'read');
   const winnersNika = winners.filter(b => readStatus(b, 'nika') === 'read');
   const winnersWestdac = winners.filter(b => readStatus(b, 'westdac') === 'read');
@@ -262,7 +281,11 @@ function renderStats() {
   for (const a of Object.keys(AWARD_LABELS)) byAward[a] = emptyBucket();
   for (const b of winners) {
     for (const a of Object.keys(b.awards || {})) {
-      if (b.awards[a] !== 'winner') continue;
+      // When filtering to 'winner', only count this award if it was a winner status.
+      // For 'nominee' subset, only count nominee statuses. For 'both', count any award.
+      const s = b.awards[a];
+      if (STATUS === 'winner' && s !== 'winner') continue;
+      if (STATUS === 'nominee' && s !== 'nominee') continue;
       byAward[a].total++;
       if (readStatus(b, 'tom') === 'read') byAward[a].tom++;
       if (readStatus(b, 'nika') === 'read') byAward[a].nika++;
@@ -602,7 +625,7 @@ function renderStats() {
       innerText = ACTIVE_READERS.map(r => `<span style="color: ${r.colorVar}">${r.initial} ${d[r.id]}</span>`).join(' · ');
     }
     return `<div class="decade-cell" style="background: rgba(${colorRgb}, ${0.1 + pct * 0.8});" title="${titleText}">
-      <div class="decade-label">${d.decade % 100}s · ${d.total} winners</div>
+      <div class="decade-label">${d.decade % 100}s · ${d.total} ${SUBSET}</div>
       <div class="decade-frac">${innerText}</div>
     </div>`;
   }).join('');
@@ -626,33 +649,38 @@ function renderStats() {
     </div>
 
     <h1>Progress</h1>
-    <p style="color: var(--muted); font-size: 14px; margin-top: -8px;">Counting <strong>${winnersTotal} winners only</strong> on this page (the Books tab covers all ${DATA.books.length - winnersTotal} nominees too).</p>
+    <div class="status-toggle" data-status="${STATUS}">
+      <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
+      <button class="status-tab${STATUS === 'nominee' ? ' active' : ''}" data-status="nominee">Nominees <span class="status-count">${allNomineesCount}</span></button>
+      <button class="status-tab${STATUS === 'both' ? ' active' : ''}" data-status="both">Both <span class="status-count">${allBooksCount}</span></button>
+    </div>
 
     <div class="headline-grid">
       ${(() => {
+        const totalLabel = STATUS === 'both' ? 'Books on the list' : `${SUBSET_CAP} on the list`;
+        const totalSub = STATUS === 'both' ? `${allWinnersCount} winners + ${allNomineesCount} nominees` : 'Hugo + Nebula combined';
         if (SOLO) {
           const r = SOLO;
           const readBooks = winnersByReader[r];
           const shelfCount = r === 'tom' ? onShelf.length : (r === 'nika' ? nikaOnShelfCount : westdacOnShelfCount);
           const startedCount = DATA.books.filter(b => readStatus(b, r) === 'started').length;
           return `
-            ${card('Winners on the list', winnersTotal, 'Hugo + Nebula combined')}
-            ${card('Read', readBooks.length, `${(readBooks.length / winnersTotal * 100).toFixed(1)}% of winners`, readBooks.length / winnersTotal * 100)}
+            ${card(totalLabel, winnersTotal, totalSub)}
+            ${card('Read', readBooks.length, `${(readBooks.length / winnersTotal * 100).toFixed(1)}% of ${SUBSET}`, readBooks.length / winnersTotal * 100)}
             ${card('On the nightstand', shelfCount, 'from this list')}
             ${card('Queued / started', startedCount, 'across all categories')}
           `;
         }
-        // Multi-reader: total + one card per reader
         const readerCards = ACTIVE_READERS.map(r => {
           const n = winnersByReader[r.id].length;
-          return card(`${r.label} read`, n, `${(n / winnersTotal * 100).toFixed(1)}% of winners`, n / winnersTotal * 100);
+          return card(`${r.label} read`, n, `${(n / winnersTotal * 100).toFixed(1)}% of ${SUBSET}`, n / winnersTotal * 100);
         }).join('');
-        return `${card('Winners on the list', winnersTotal, 'Hugo + Nebula combined')}${readerCards}`;
+        return `${card(totalLabel, winnersTotal, totalSub)}${readerCards}`;
       })()}
     </div>
 
     ${recentEither.length > 0 ? `<div class="progress-section">
-      <h2>Recent winners read</h2>
+      <h2>Recent ${SUBSET} read</h2>
       <p style="color: var(--muted); font-size: 13px;">Pills show who read each book. Most recent first.</p>
       <div class="recent-reads">${recentEitherHtml}</div>
     </div>` : ''}
@@ -693,8 +721,8 @@ function renderStats() {
     </div>` : ''}
 
     ${upNext.length > 0 ? `<div class="progress-section">
-      <h2>Up next — winners on no nightstand yet</h2>
-      <p style="color: var(--muted); font-size: 13px;">Recent winners by publication year. Open one to add it to your shelf.</p>
+      <h2>Up next — ${SUBSET} on no nightstand yet</h2>
+      <p style="color: var(--muted); font-size: 13px;">Recent ${SUBSET} by publication year. Open one to add it to your shelf.</p>
       <div class="recent-reads">${upNextHtml}</div>
     </div>` : ''}
 
@@ -705,14 +733,14 @@ function renderStats() {
     </div>
 
     <div class="progress-section">
-      <h2>Coverage by era (winners only)</h2>
-      <p style="color: var(--muted); font-size: 13px;">Bar height = winners that decade · filled portion = books ${SOLO === 'nika' ? 'Nika' : (SOLO === 'tom' ? '' : 'Tom')} read. Hover for details.</p>
+      <h2>Coverage by era (${SUBSET})</h2>
+      <p style="color: var(--muted); font-size: 13px;">Bar height = ${SUBSET} that decade · filled portion = books ${SOLO === 'nika' ? 'Nika' : (SOLO === 'tom' ? '' : (SOLO === 'westdac' ? 'Westdac' : 'Tom'))} read. Hover for details.</p>
       <div class="era-bars">${eraBarsHtml}</div>
     </div>
 
 
     <div class="progress-section">
-      <h2>By genre (winners)</h2>
+      <h2>By genre (${SUBSET})</h2>
       <p style="color: var(--muted); font-size: 13px;">Genre tags inferred from Open Library subject lists. A book can be tagged with multiple (e.g. Space Opera + Hard SF).</p>
       <div class="genre-bars">
         ${genres.map(g => {
@@ -786,7 +814,7 @@ function renderStats() {
     </div>
 
     <div class="progress-section">
-      <h2>By author gender (winners)</h2>
+      <h2>By author gender (${SUBSET})</h2>
       <p style="color: var(--muted); font-size: 13px;">Primary author of each winning work, inferred from first name. Lead-character gender isn't tracked yet — no reliable data source.</p>
       <div class="gender-grid">
         ${['female', 'male', 'unknown'].map(g => {
@@ -797,7 +825,7 @@ function renderStats() {
           const readerLabel = SOLO ? '' : (READER_CONFIG[genderReadActive] ? READER_CONFIG[genderReadActive].label : 'Reader');
           return `<div class="gender-card gender-${g}">
             <div class="gender-card-label">${label}</div>
-            <div class="gender-card-stat"><strong>${total}</strong> winners</div>
+            <div class="gender-card-stat"><strong>${total}</strong> ${SUBSET}</div>
             <div class="gender-card-sub">${readerLabel} read ${read} (${pct}%)</div>
             <div class="progress"><div class="progress-bar" style="width: ${pct}%; background: ${g === 'female' ? 'var(--accent-2)' : g === 'male' ? 'var(--accent)' : 'var(--muted)'};"></div></div>
           </div>`;
@@ -806,8 +834,8 @@ function renderStats() {
     </div>
 
     <div class="progress-section">
-      <h2>By award (winners)</h2>
-      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those winners in the Books tab.</p>
+      <h2>By award (${SUBSET})</h2>
+      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those ${SUBSET} in the Books tab.</p>
       <div class="stats-grid">
         ${Object.entries(byAward).map(([a, s]) => {
           if (s.total === 0) return '';
@@ -816,14 +844,15 @@ function renderStats() {
           const sub = SOLO
             ? `${pct}% complete`
             : ACTIVE_READERS.map(r => `${r.label}: ${Math.round(s[r.id] / s.total * 100)}%`).join(' · ');
-          return linkCard(`#/books?award=${a}&status=winner`, AWARD_LABELS[a], `${activeCount} / ${s.total}`, sub, activeCount / s.total * 100);
+          const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
+          return linkCard(`#/books?award=${a}${statusParam}`, AWARD_LABELS[a], `${activeCount} / ${s.total}`, sub, activeCount / s.total * 100);
         }).join('')}
       </div>
     </div>
 
     <div class="progress-section">
-      <h2>By category (winners)</h2>
-      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those winners in the Books tab.</p>
+      <h2>By category (${SUBSET})</h2>
+      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those ${SUBSET} in the Books tab.</p>
       <div class="stats-grid">
         ${Object.entries(byCategory).map(([c, s]) => {
           const activeCount = SOLO ? s[SOLO] : s.tom;
@@ -831,7 +860,8 @@ function renderStats() {
           const sub = SOLO
             ? `${pct}% complete`
             : ACTIVE_READERS.map(r => `${r.label}: ${Math.round(s[r.id] / s.total * 100)}%`).join(' · ');
-          return linkCard(`#/books?category=${encodeURIComponent(c)}&status=winner`, c, `${activeCount} / ${s.total}`, sub, activeCount / s.total * 100);
+          const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
+          return linkCard(`#/books?category=${encodeURIComponent(c)}${statusParam}`, c, `${activeCount} / ${s.total}`, sub, activeCount / s.total * 100);
         }).join('')}
       </div>
     </div>
@@ -839,6 +869,16 @@ function renderStats() {
 
   $$('.recent-read, .swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/book/${el.dataset.id}`; });
+  });
+  $$('.status-tab', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const newStatus = btn.dataset.status;
+      if (state.progressStatus !== newStatus) {
+        state.progressStatus = newStatus;
+        renderStats();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
   });
 }
 

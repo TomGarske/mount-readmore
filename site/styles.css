@@ -208,6 +208,49 @@ body.solo-westdac .nika-only { display: none !important; }
 }
 .author-count { color: var(--muted); font-size: 12px; }
 
+/* Status toggle on Progress page (Winners / Nominees / Both) */
+.status-toggle {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 8px;
+  margin-bottom: 24px;
+  padding: 4px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.status-tab {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.status-tab:hover { color: var(--text); }
+.status-tab.active {
+  background: var(--bg-3);
+  color: var(--text);
+}
+.status-count {
+  font-size: 11px;
+  color: var(--muted);
+  background: var(--bg-3);
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-weight: 500;
+}
+.status-tab.active .status-count {
+  background: var(--bg-2);
+  color: var(--text);
+}
+
 /* Era bars (was year bars) */
 .era-bars {
   display: grid;
