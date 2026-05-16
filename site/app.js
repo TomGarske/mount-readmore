@@ -762,22 +762,25 @@ function renderStats() {
 
     <div class="progress-section">
       <h2>Genre vectors — which combinations win most?</h2>
-      <p style="color: var(--muted); font-size: 13px;">Each row is a unique combination of genre tags across a book's whole population (winners + nominees). Sorted by win rate. Filtered to combos with at least 3 books.</p>
+      <p style="color: var(--muted); font-size: 13px;">Every book on the list (winners + nominees) bucketed by its sorted genre tuple. Win rate = winners ÷ (winners + nominees). Filtered to combos with at least 3 books and sorted by win rate.</p>
       <div class="vector-table">
         <div class="vector-row vector-head">
           <div>Genre vector</div>
           <div>Books</div>
           <div>Winners</div>
+          <div>Nominees</div>
           <div>Win rate</div>
           <div>${ACTIVE_READERS.map(r => `${r.initial} read`).join(' · ')}</div>
         </div>
         ${genreVectors.map(v => {
           const winRatePct = Math.round(v.winRate * 100);
+          const nominees = v.total - v.winners;
           const readCol = ACTIVE_READERS.map(r => `<span style="color:${r.colorVar}">${r.initial} ${v[r.id + 'Read']}</span>`).join(' · ');
           return `<div class="vector-row">
             <div class="vector-combo">${escapeHtml(v.combo)}</div>
             <div>${v.total}</div>
-            <div>${v.winners}</div>
+            <div><span style="color: var(--winner)">${v.winners}</span></div>
+            <div><span style="color: var(--nominee)">${nominees}</span></div>
             <div><span class="vector-pct">${winRatePct}%</span></div>
             <div>${readCol}</div>
           </div>`;
