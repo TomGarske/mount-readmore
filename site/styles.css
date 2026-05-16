@@ -352,6 +352,33 @@ body.solo-westdac .nika-only { display: none !important; }
   font-size: 12px;
 }
 
+/* Reader comparison section */
+.comparison-block { margin-top: 36px; }
+.comparison-quadrant {
+  margin-top: 18px;
+  padding: 14px 18px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.comparison-quadrant-head { margin-bottom: 8px; }
+.comparison-quadrant-head h3 {
+  font-size: 15px;
+  margin: 0;
+  color: var(--text);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.comparison-count {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 500;
+  background: var(--bg-3);
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+
 /* Swimlanes */
 .swimlane { margin-top: 22px; }
 .swimlane-header {

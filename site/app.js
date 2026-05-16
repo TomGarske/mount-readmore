@@ -355,6 +355,68 @@ function renderStats() {
     .map(([name, s]) => ({ name, ...s }))
     .sort((a, b) => b.total - a.total);
 
+  // ===== Reader comparison (only when exactly 2 readers active) =====
+  let comparisonHtml = '';
+  if (ACTIVE_READERS.length === 2) {
+    const [rA, rB] = ACTIVE_READERS;
+    const both = [];
+    const aOnly = [];
+    const bOnly = [];
+    const neither = [];
+    for (const book of winners) {
+      const aRead = readStatus(book, rA.id) === 'read';
+      const bRead = readStatus(book, rB.id) === 'read';
+      if (aRead && bRead) both.push(book);
+      else if (aRead) aOnly.push(book);
+      else if (bRead) bOnly.push(book);
+      else neither.push(book);
+    }
+    [both, aOnly, bOnly, neither].forEach(arr => arr.sort((x, y) => (y.year || 0) - (x.year || 0)));
+
+    const compTile = (b) => {
+      const cover = b.cover_url
+        ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
+        : `<span class="swimlane-placeholder">📖</span>`;
+      const isWinner = Object.values(b.awards || {}).includes('winner');
+      return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
+        <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
+        <div class="swimlane-title">${escapeHtml(b.title)}</div>
+        <div class="swimlane-meta">${escapeHtml(b.authors[0] || '')} · ${b.year || ''}</div>
+      </div>`;
+    };
+
+    const section = (title, items, sub, extraClass = '') => `
+      <div class="comparison-quadrant ${extraClass}">
+        <div class="comparison-quadrant-head">
+          <h3>${title} <span class="comparison-count">${items.length}</span></h3>
+          ${sub ? `<p style="color: var(--muted); font-size: 12px; margin: 2px 0 0;">${sub}</p>` : ''}
+        </div>
+        ${items.length === 0
+          ? `<p style="color: var(--muted); font-size: 13px; padding: 12px 0;">— nothing here —</p>`
+          : `<div class="swimlane-strip">${items.map(compTile).join('')}</div>`}
+      </div>
+    `;
+
+    comparisonHtml = `
+      <div class="progress-section comparison-block">
+        <h2>${rA.label} vs ${rB.label} — set comparison</h2>
+        <p style="color: var(--muted); font-size: 13px;">Across ${winnersTotal} ${SUBSET} on the list. Books with covers, sorted by publication year (newest first). Click any cover for details.</p>
+        ${section(`<span style="color: ${rA.colorVar}">${rA.label}</span> ∩ <span style="color: ${rB.colorVar}">${rB.label}</span> — both have read`, both, 'Common ground — shared experience to talk about.')}
+        ${section(`<span style="color: ${rA.colorVar}">${rA.label}</span> only`, aOnly, `Read by ${rA.label}, not ${rB.label} — what ${rA.label} could recommend.`)}
+        ${section(`<span style="color: ${rB.colorVar}">${rB.label}</span> only`, bOnly, `Read by ${rB.label}, not ${rA.label} — what ${rB.label} could recommend.`, 'flip')}
+        ${section(`Neither has read`, neither, 'The gap — uncovered ' + SUBSET + ' on the list, ready to be picked.')}
+      </div>
+    `;
+  } else if (ACTIVE_READERS.length >= 3) {
+    // 3+ readers: show pairwise comparison hint
+    comparisonHtml = `
+      <div class="progress-section">
+        <h2>Reader comparison</h2>
+        <p style="color: var(--muted); font-size: 13px;">Pairwise set-comparison view is available when exactly two readers are active. Try <code>?reader=tom,westdac</code> or <code>?reader=tom,nika</code>.</p>
+      </div>
+    `;
+  }
+
   // ===== Genre-combination "vectors" =====
   const comboBuckets = {};
   for (const b of DATA.books) {
@@ -759,6 +821,8 @@ function renderStats() {
         }).join('')}
       </div>
     </div>
+
+    ${comparisonHtml}
 
     <div class="progress-section">
       <h2>Genre vectors — which combinations win most?</h2>
