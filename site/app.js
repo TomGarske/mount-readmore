@@ -90,6 +90,77 @@ function sortBooks(books) {
   return arr;
 }
 
+function buildRadar(axes, readerValues) {
+  // axes: string[]   readerValues: { tom: number[], nika: number[], westdac: number[] }  (each 0..1)
+  // Wider viewBox so right-side axis labels (e.g. "Space Opera") don't clip.
+  const w = 600, h = 480, cx = w / 2, cy = h / 2 - 6, R = 150;
+  const n = axes.length;
+  const angle = i => -Math.PI / 2 + (2 * Math.PI * i) / n;
+
+  // Auto-scale: round the largest data value up to a clean step.
+  const allVals = Object.values(readerValues).flatMap(arr => arr);
+  const dataMax = Math.max(0.05, ...allVals);
+  // Step depends on magnitude: use 5% steps below 30%, 10% steps above.
+  const step = dataMax <= 0.30 ? 0.05 : 0.10;
+  const scaleMax = Math.ceil(dataMax / step) * step;
+  const normalize = v => v / scaleMax; // 0..1 within the radar's outer ring
+
+  const pt = (i, v) => [cx + R * normalize(v) * Math.cos(angle(i)), cy + R * normalize(v) * Math.sin(angle(i))];
+  const gridPt = (i, lv) => [cx + R * lv * Math.cos(angle(i)), cy + R * lv * Math.sin(angle(i))];
+
+  // Grid: 4 concentric polygons (at quartiles of the scale max)
+  const gridLevels = [0.25, 0.5, 0.75, 1.0];
+  const gridPolys = gridLevels.map(lv => {
+    const pts = Array.from({ length: n }, (_, i) => gridPt(i, lv).map(x => x.toFixed(1)).join(','));
+    return `<polygon points="${pts.join(' ')}" fill="none" stroke="var(--border)" stroke-width="${lv === 1 ? 1.4 : 0.8}" opacity="${lv === 1 ? 0.9 : 0.5}"/>`;
+  }).join('');
+  // Spokes
+  const spokes = Array.from({ length: n }, (_, i) => {
+    const [x, y] = gridPt(i, 1.0);
+    return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="0.6" opacity="0.5"/>`;
+  }).join('');
+  // Grid percent labels along the top axis (reflect absolute % not normalized)
+  const gridLabels = gridLevels.map(lv => {
+    const [, y] = gridPt(0, lv);
+    return `<text x="${cx + 4}" y="${(y + 3).toFixed(1)}" fill="var(--muted)" font-size="9">${Math.round(lv * scaleMax * 100)}%</text>`;
+  }).join('');
+  // Axis labels
+  const axisLabels = axes.map((label, i) => {
+    const [x, y] = gridPt(i, 1.18);
+    let anchor = 'middle';
+    const c = Math.cos(angle(i));
+    if (Math.abs(c) > 0.3) anchor = c > 0 ? 'start' : 'end';
+    return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" alignment-baseline="middle" fill="var(--muted)" font-size="11" font-weight="600">${label}</text>`;
+  }).join('');
+  // Reader polygons + dots
+  const colorRgb = { tom: '125,211,192', nika: '180,142,173', westdac: '212,160,112' };
+  const polys = Object.entries(readerValues).map(([id, vals]) => {
+    const cfg = READER_CONFIG[id];
+    if (!cfg) return '';
+    const pts = vals.map((v, i) => pt(i, v).map(x => x.toFixed(1)).join(',')).join(' ');
+    const rgb = colorRgb[id];
+    const dots = vals.map((v, i) => {
+      const [x, y] = pt(i, v);
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="${cfg.colorVar}" stroke="#0f1115" stroke-width="1"/>`;
+    }).join('');
+    return `<polygon points="${pts}" fill="rgba(${rgb}, 0.18)" stroke="${cfg.colorVar}" stroke-width="2" stroke-linejoin="round"/>${dots}`;
+  }).join('');
+  // Legend
+  const legend = Object.entries(readerValues).map(([id]) => {
+    const cfg = READER_CONFIG[id];
+    if (!cfg) return '';
+    return `<div class="radar-legend-item"><span class="radar-legend-dot" style="background: ${cfg.colorVar};"></span>${cfg.label}</div>`;
+  }).join('');
+
+  return `<div class="radar-wrap">
+    <svg viewBox="0 0 ${w} ${h}" class="radar-svg" preserveAspectRatio="xMidYMid meet">
+      ${gridPolys}${spokes}${gridLabels}${polys}${axisLabels}
+    </svg>
+    <div class="radar-legend">${legend}</div>
+    <div class="radar-scale-note">Outer ring = ${Math.round(scaleMax * 100)}% (auto-scaled to fit)</div>
+  </div>`;
+}
+
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
@@ -351,6 +422,17 @@ function renderStats() {
       if (readStatus(b, 'westdac') === 'read') genreBuckets[g].westdac++;
     }
   }
+
+  // ===== Genre radar (spider) per active reader =====
+  const RADAR_GENRES = ['Science Fiction', 'Fantasy', 'Space Opera', 'Hard SF', 'First Contact', 'Horror', 'Time Travel', 'Military SF'];
+  const radarValues = {};
+  for (const r of ACTIVE_READERS) {
+    radarValues[r.id] = RADAR_GENRES.map(g => {
+      const bucket = genreBuckets[g] || { total: 0, tom: 0, nika: 0, westdac: 0 };
+      return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
+    });
+  }
+  const radarHtml = buildRadar(RADAR_GENRES, radarValues);
   const genres = Object.entries(genreBuckets)
     .map(([name, s]) => ({ name, ...s }))
     .sort((a, b) => b.total - a.total);
@@ -802,6 +884,12 @@ function renderStats() {
 
 
     <div class="progress-section">
+      <h2>Genre fingerprint</h2>
+      <p style="color: var(--muted); font-size: 13px;">Each axis = a genre. Distance from center = % of that genre's ${SUBSET} this reader has finished. Bigger / more even shape = broader coverage.</p>
+      ${radarHtml}
+    </div>
+
+    <div class="progress-section">
       <h2>By genre (${SUBSET})</h2>
       <p style="color: var(--muted); font-size: 13px;">Genre tags inferred from Open Library subject lists. A book can be tagged with multiple (e.g. Space Opera + Hard SF).</p>
       <div class="genre-bars">
@@ -954,6 +1042,10 @@ function renderAbout() {
   root.innerHTML = `<div class="about">
     <h1>About Mount Readmore</h1>
     <p>A personal reading mountain of Hugo and Nebula winners and finalists, with read status overlaid from Goodreads and StoryGraph.</p>
+    <h2>The awards</h2>
+    <p><strong>Hugo Awards</strong> — the oldest annual literary award in science fiction and fantasy, presented since <strong>1953</strong> by members of the World Science Fiction Convention (Worldcon). Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. The current Hugo Awards site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.</p>
+    <p><strong>Nebula Awards</strong> — peer-voted award presented annually since <strong>1965</strong> by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.</p>
+    <p>Mount Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Mount Readmore.</p>
     <h2>Tom's reading profiles</h2>
     <p>
       <a href="https://www.goodreads.com/user/show/71075928-tom-garske" target="_blank" rel="noopener" class="about-profile-link"><span class="profile-dot gr"></span>Goodreads</a>
