@@ -36,7 +36,7 @@ let state = {
   yearMax: null,
   sort: 'year-desc',
   // Progress-page filter: 'winner' | 'nominee' | 'both'
-  progressStatus: 'winner',
+  progressStatus: 'both',
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
