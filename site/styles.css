@@ -89,6 +89,22 @@ a:hover { text-decoration: underline; }
 .profile-dot.sg { background: #7dd3c0; }
 .profile-dot.sg-nika { background: linear-gradient(135deg, #7dd3c0 0%, #b48ead 100%); }
 
+/* About page profile inline links */
+.about-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 14px;
+  color: var(--text);
+  margin-right: 4px;
+}
+.about-profile-link:hover { border-color: var(--accent); text-decoration: none; }
+.about-profile-link .profile-dot { width: 10px; height: 10px; }
+
 /* Solo modes — body class hides the other reader's elements */
 body.solo-tom .nika-only { display: none !important; }
 body.solo-nika .tom-only { display: none !important; }

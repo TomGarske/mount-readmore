@@ -6,10 +6,14 @@ const AWARD_LABELS = {
 };
 
 let DATA = { books: [], meta: {} };
-const SOLO = new URLSearchParams(window.location.search).get('solo') || null;
-// SOLO is 'tom', 'nika', or null. In solo mode, hide the other reader entirely.
-const SHOW_TOM = SOLO !== 'nika';
-const SHOW_NIKA = SOLO !== 'tom';
+// Reader visibility — driven by ?reader=tom,nika (comma-separated).
+// Default: just Tom. ?reader=nika hides Tom. ?reader=tom,nika shows both.
+const READERS = ((new URLSearchParams(window.location.search).get('reader')) || 'tom')
+  .split(',').map(r => r.trim().toLowerCase()).filter(Boolean);
+const SHOW_TOM = READERS.includes('tom');
+const SHOW_NIKA = READERS.includes('nika');
+// SOLO is the single-reader name when only one reader is selected, else null.
+const SOLO = (READERS.length === 1) ? READERS[0] : null;
 let state = {
   search: '',
   readTom: 'all',
@@ -797,8 +801,16 @@ function renderAbout() {
   root.innerHTML = `<div class="about">
     <h1>About Mount Readmore</h1>
     <p>A personal reading mountain of Hugo and Nebula winners and finalists, with read status overlaid from Goodreads and StoryGraph.</p>
+    <h2>Tom's reading profiles</h2>
+    <p>
+      <a href="https://www.goodreads.com/user/show/71075928-tom-garske" target="_blank" rel="noopener" class="about-profile-link"><span class="profile-dot gr"></span>Goodreads</a>
+      &nbsp;&nbsp;
+      <a href="https://app.thestorygraph.com/profile/tdgarske" target="_blank" rel="noopener" class="about-profile-link"><span class="profile-dot sg"></span>StoryGraph</a>
+    </p>
     <h2>How it works</h2>
     <p>A Python pipeline reads an awards spreadsheet and exported reader CSVs, matches them by title and author, and produces a static JSON file the site reads. There's no backend, no tracking, no login — just a list of books rendered in the browser.</p>
+    <h2>Multiple readers</h2>
+    <p>The site defaults to Tom's view. Add another reader via the URL query string: <code>?reader=tom,nika</code> shows both readers side by side; <code>?reader=nika</code> shows just Nika.</p>
     <h2>Upcoming award dates</h2>
     <ul>
       <li><strong>2026 Nebula Awards</strong> — Saturday, <strong>June 6, 2026</strong> at the SFWA conference in Chicago · <a href="https://events.sfwa.org/" target="_blank" rel="noopener">events.sfwa.org</a> · <a href="https://en.wikipedia.org/wiki/Nebula_Award" target="_blank" rel="noopener">Nebula on Wikipedia</a></li>
@@ -922,12 +934,16 @@ function wireFilters() {
 }
 
 function applySoloUI() {
+  // Default (just Tom) keeps the plain "Mount Readmore" title. Explicit
+  // multi-reader or Nika-only views get a subtitle hint.
   if (SOLO === 'tom') {
     document.body.classList.add('solo-tom');
-    document.title = "Mount Readmore · Tom only";
+    document.title = "Mount Readmore";
   } else if (SOLO === 'nika') {
     document.body.classList.add('solo-nika');
-    document.title = "Mount Readmore · Nika only";
+    document.title = "Mount Readmore · Nika";
+  } else {
+    document.title = "Mount Readmore · " + READERS.map(r => r[0].toUpperCase() + r.slice(1)).join(' + ');
   }
 }
 
