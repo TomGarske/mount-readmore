@@ -1416,7 +1416,44 @@ function renderNebula2026() {
 // URL shape: #/compare?u=tom&u=nika  (alias: ?reader=tom,nika or initials T,N)
 // Reads the legacy CSV columns in data.json for the requested readers. Future:
 // pull from Supabase user_books for arbitrary @handle pairs.
-function renderCompare(params) {
+// Resolve a URL-parameter id to a "side" of the comparison:
+//   { handle, label, colorVar, statusMap }
+// - 'me' resolves to the signed-in user's user_books (cached in MR_AUTH)
+// - Anything else is treated as a Supabase profile handle (case-insensitive)
+//   and we fetch their user_books over the wire.
+async function loadCompareSide(id, colorIdx = 0) {
+  const PALETTE = ['var(--accent)', 'var(--accent-2)', 'var(--accent-3)', 'var(--accent-4)', 'var(--accent-5)'];
+  if (id === 'me') {
+    const handle = window.MR_AUTH?.profile?.handle || 'you';
+    return {
+      handle,
+      label: handle,
+      colorVar: PALETTE[colorIdx % PALETTE.length],
+      statusMap: window.MR_AUTH?.userBooks || {},
+    };
+  }
+  const client = window.MR_AUTH?.client;
+  if (!client) return null;
+  // ilike for case-insensitive handle lookup (SappySaffron etc)
+  const { data: prof } = await client.from('profiles')
+    .select('id, handle, profile_visibility, on_leaderboard')
+    .ilike('handle', id).maybeSingle();
+  if (!prof) return null;
+  const { data: ub } = await client.from('user_books')
+    .select('book_id, status').eq('user_id', prof.id);
+  const statusMap = {};
+  for (const r of ub || []) statusMap[r.book_id] = r;
+  // If the handle matches a legacy READER_CONFIG, reuse its color for visual continuity
+  const legacy = READER_CONFIG[prof.handle.toLowerCase()];
+  return {
+    handle: prof.handle,
+    label: prof.handle,
+    colorVar: legacy?.colorVar || PALETTE[colorIdx % PALETTE.length],
+    statusMap,
+  };
+}
+
+async function renderCompare(params) {
   const root = $('#view-compare');
   if (!root) return;
 
@@ -1426,15 +1463,15 @@ function renderCompare(params) {
       val.split(',').forEach(v => rawIds.push(v.trim().toLowerCase()));
     }
   }
-  // 'me' is allowed when authenticated; otherwise it's dropped and the user
-  // gets the picker / sign-in CTA below.
-  const userIds = rawIds
-    .map(v => (READER_CONFIG[v] ? v : INITIAL_TO_ID[v]) || v)
-    .filter(id => READER_CONFIG[id])
+  // Initials → full names for legacy reader codes
+  const ids = rawIds
+    .map(v => INITIAL_TO_ID[v] || v)
+    .filter(id => id && id.length > 0)
+    // 'me' is only valid when signed in
     .filter(id => id !== 'me' || !!window.MR_AUTH?.user);
 
-  if (userIds.length !== 2) {
-    // Anon: sign-in CTA.
+  if (ids.length !== 2) {
+    // Anon: sign-in CTA
     if (!window.MR_AUTH?.user) {
       root.innerHTML = `<div class="detail">
         <a href="#/" class="back">← back</a>
@@ -1451,44 +1488,77 @@ function renderCompare(params) {
       $('#compare-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
       return;
     }
-    // Signed in: picker — compare your reads vs one of the demo readers.
-    const otherReaders = ['tom', 'nika', 'westdac', 'colton', 'schupp']
-      .filter(id => READER_CONFIG[id])
-      .map(id => `<option value="${id}">${escapeHtml(READER_CONFIG[id].label)}</option>`)
-      .join('');
+    // Signed in: show friends list as the picker
+    root.innerHTML = `<div class="detail"><h1>Compare reads</h1><p style="color: var(--muted);">Loading friends…</p></div>`;
+    const friends = await window.MR_AUTH.listFriends();
     const myHandle = window.MR_AUTH.profile?.handle || 'you';
-    root.innerHTML = `<div class="detail">
+
+    if (friends.length === 0) {
+      root.innerHTML = `<div class="detail">
+        <a href="#/" class="back">← back</a>
+        <h1>Compare reads</h1>
+        <p style="color: var(--muted); max-width: 620px;">
+          You don't have any friends yet. <a href="#/settings">Add some from Settings</a>
+          and they'll show up here.
+        </p>
+      </div>`;
+      return;
+    }
+
+    // For each friend, fetch a read count (best-effort, no fatal error)
+    const client = window.MR_AUTH.client;
+    const counts = {};
+    for (const f of friends) {
+      const { count } = await client.from('user_books')
+        .select('book_id', { count: 'exact', head: true })
+        .eq('user_id', f.id).eq('status', 'read');
+      counts[f.id] = count ?? 0;
+    }
+
+    const friendRow = (f) => `
+      <a class="compare-friend-row" href="#/compare?u=me&amp;u=${encodeURIComponent(f.handle)}">
+        <div class="compare-friend-handle">@${escapeHtml(f.handle)}</div>
+        <div class="compare-friend-meta">${counts[f.id] || 0} read · ${f.profile_visibility}</div>
+        <div class="compare-friend-cta">Compare →</div>
+      </a>`;
+
+    root.innerHTML = `<div class="detail compare-picker-page">
       <a href="#/" class="back">← back</a>
       <h1>Compare reads</h1>
       <p style="color: var(--muted); max-width: 620px;">
-        Pick a reader to compare your progress against. You'll see what you've
-        both read, what only one of you has read, and what's still uncovered.
+        Pick a friend to head-to-head with — you'll see what you've both read,
+        what only one of you has read, and the gap.
       </p>
-      <form id="compare-picker" style="display: flex; gap: 10px; align-items: center; margin-top: 16px;">
-        <span style="color: var(--text); font-weight: 600;">@${escapeHtml(myHandle)}</span>
-        <span style="color: var(--muted);">vs</span>
-        <select id="compare-other" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 14px;">
-          ${otherReaders}
-        </select>
-        <button type="submit" class="mr-btn-primary">Compare →</button>
-      </form>
+      <div class="compare-self-row">Signed in as <strong>@${escapeHtml(myHandle)}</strong></div>
+      <div class="compare-friend-list">${friends.map(friendRow).join('')}</div>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 18px;">
+        Want to compare with someone not in the list? Add them as a friend in
+        <a href="#/settings">Settings</a>, or hit a direct URL like
+        <code>#/compare?u=me&amp;u=tom</code>.
+      </p>
     </div>`;
-    $('#compare-picker')?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const other = $('#compare-other').value;
-      if (other) location.hash = `#/compare?u=me&u=${other}`;
-    });
     return;
   }
 
-  const [aId, bId] = userIds;
-  const a = READER_CONFIG[aId];
-  const b = READER_CONFIG[bId];
+  // Two ids → render the comparison
+  root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><p style="color: var(--muted);">Loading comparison…</p></div>`;
+  const [aSide, bSide] = await Promise.all([
+    loadCompareSide(ids[0], 0),
+    loadCompareSide(ids[1], 1),
+  ]);
+  if (!aSide || !bSide) {
+    root.innerHTML = `<div class="detail">
+      <a href="#/compare" class="back">← back</a>
+      <h1>Compare reads</h1>
+      <p style="color: var(--sf);">Couldn't find one of those readers (${escapeHtml(ids.join(' / '))}).</p>
+    </div>`;
+    return;
+  }
 
   const both = [], aOnly = [], bOnly = [], neither = [];
   for (const book of DATA.books) {
-    const aRead = readStatus(book, aId) === 'read';
-    const bRead = readStatus(book, bId) === 'read';
+    const aRead = aSide.statusMap[book.id]?.status === 'read';
+    const bRead = bSide.statusMap[book.id]?.status === 'read';
     if (aRead && bRead) both.push(book);
     else if (aRead) aOnly.push(book);
     else if (bRead) bOnly.push(book);
@@ -1522,26 +1592,26 @@ function renderCompare(params) {
 
   const totalBooks = DATA.books.length;
   root.innerHTML = `<div class="detail compare-page">
-    <a href="#/" class="back">← back</a>
+    <a href="#/compare" class="back">← compare another</a>
     <div class="compare-header">
       <h1>
-        <span style="color: ${a.colorVar}">${escapeHtml(a.label)}</span>
+        <span style="color: ${aSide.colorVar}">@${escapeHtml(aSide.label)}</span>
         <span style="color: var(--muted)">vs</span>
-        <span style="color: ${b.colorVar}">${escapeHtml(b.label)}</span>
+        <span style="color: ${bSide.colorVar}">@${escapeHtml(bSide.label)}</span>
       </h1>
-      <p style="color: var(--muted); font-size: 14px;">Comparing read books across the canonical ${totalBooks} on Mount Readmore. Winners + finalists in Novel, Novella, and Novelette.</p>
+      <p style="color: var(--muted); font-size: 14px;">Comparing read books across the canonical ${totalBooks} on Mount Readmore.</p>
       <div class="compare-totals">
-        <span><span style="color: ${a.colorVar}">${a.label}</span> has read <strong>${both.length + aOnly.length}</strong></span>
-        <span><span style="color: ${b.colorVar}">${b.label}</span> has read <strong>${both.length + bOnly.length}</strong></span>
+        <span><span style="color: ${aSide.colorVar}">@${aSide.label}</span> has read <strong>${both.length + aOnly.length}</strong></span>
+        <span><span style="color: ${bSide.colorVar}">@${bSide.label}</span> has read <strong>${both.length + bOnly.length}</strong></span>
         <span>Shared: <strong>${both.length}</strong></span>
       </div>
     </div>
 
     <div class="comparison-block">
-      ${section(`<span style="color: ${a.colorVar}">${escapeHtml(a.label)}</span> ∩ <span style="color: ${b.colorVar}">${escapeHtml(b.label)}</span> — both have read`, both, 'Common ground — shared experience to talk about.')}
-      ${section(`<span style="color: ${a.colorVar}">${escapeHtml(a.label)}</span> only`, aOnly, `Read by ${escapeHtml(a.label)}, not ${escapeHtml(b.label)} — what ${escapeHtml(a.label)} could recommend.`)}
-      ${section(`<span style="color: ${b.colorVar}">${escapeHtml(b.label)}</span> only`, bOnly, `Read by ${escapeHtml(b.label)}, not ${escapeHtml(a.label)} — what ${escapeHtml(b.label)} could recommend.`, 'flip')}
-      ${section('Neither has read', neither, 'The gap — uncovered books on the list, ready to be picked.')}
+      ${section(`<span style="color: ${aSide.colorVar}">@${escapeHtml(aSide.label)}</span> ∩ <span style="color: ${bSide.colorVar}">@${escapeHtml(bSide.label)}</span> — both have read`, both, 'Common ground — shared experience to talk about.')}
+      ${section(`<span style="color: ${aSide.colorVar}">@${escapeHtml(aSide.label)}</span> only`, aOnly, `Read by @${escapeHtml(aSide.label)}, not @${escapeHtml(bSide.label)}.`)}
+      ${section(`<span style="color: ${bSide.colorVar}">@${escapeHtml(bSide.label)}</span> only`, bOnly, `Read by @${escapeHtml(bSide.label)}, not @${escapeHtml(aSide.label)}.`, 'flip')}
+      ${section('Neither has read', neither, 'The gap — books on the list ready to be picked.')}
     </div>
   </div>`;
 }
