@@ -1211,12 +1211,17 @@ const HUGO_2026_FINALISTS = {
 
 function findBook(title, author, category) {
   // Match the data.json record so we can pull cover_url, id, etc.
-  const t = title.toLowerCase().trim();
-  const a = author.toLowerCase().trim();
+  // Normalize by stripping non-alphanumerics so "R.F. Kuang" matches "R. F. Kuang".
+  const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const t = norm(title);
+  const a = norm(author);
   return DATA.books.find(b =>
     b.category === category &&
-    b.title.toLowerCase().trim() === t &&
-    (b.authors || []).some(x => x.toLowerCase().includes(a) || a.includes(x.toLowerCase()))
+    norm(b.title) === t &&
+    (b.authors || []).some(x => {
+      const xn = norm(x);
+      return xn === a || xn.includes(a) || a.includes(xn);
+    })
   );
 }
 
@@ -1225,15 +1230,18 @@ function finalistCard(f, catLabel, theme) {
   const cover = match && match.cover_url
     ? `<img src="${escapeHtml(match.cover_url)}" alt="Cover of ${escapeHtml(f.title)}" loading="lazy">`
     : `<span class="hugo-card-placeholder">📖</span>`;
-  const href = match ? `#/book/${escapeHtml(match.id)}` : '#';
-  return `<a class="hugo-card hugo-card-${theme}" href="${href}">
-    <div class="hugo-card-cover">${cover}</div>
+  const body = `<div class="hugo-card-cover">${cover}</div>
     <div class="hugo-card-body">
       <div class="hugo-card-title">${escapeHtml(f.title)}</div>
       <div class="hugo-card-author">${escapeHtml(f.author)}</div>
       <div class="hugo-card-pub">${escapeHtml(f.publisher)}</div>
-    </div>
-  </a>`;
+    </div>`;
+  // Books not yet in DATA.books render as a non-clickable card so we don't
+  // navigate to "#" and bounce home.
+  if (!match) {
+    return `<div class="hugo-card hugo-card-${theme} hugo-card-stub" title="Not yet in the database">${body}</div>`;
+  }
+  return `<a class="hugo-card hugo-card-${theme}" href="#/book/${escapeHtml(match.id)}">${body}</a>`;
 }
 
 function finalistSection(catLabel, items, theme) {

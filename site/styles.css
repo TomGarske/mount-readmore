@@ -1279,6 +1279,8 @@ fieldset label input { margin-right: 8px; }
   overflow: hidden;
 }
 .hugo-card-cover img { width: 100%; height: 100%; object-fit: cover; }
+.hugo-card-stub { cursor: default; opacity: 0.78; }
+.hugo-card-stub:hover { transform: none; box-shadow: none; }
 .hugo-card-placeholder { font-size: 40px; opacity: 0.4; }
 .hugo-card-body { padding: 12px 14px 14px; }
 .hugo-card-title { font-weight: 700; font-size: 15px; line-height: 1.3; margin-bottom: 4px; }
