@@ -828,7 +828,8 @@
     "cover_url": "https://covers.openlibrary.org/b/id/11090050-M.jpg",
     "first_pub_year": 2017,
     "isbn": "9780525432418",
-    "pages": null
+    "pages": null,
+    "description": "Daryl Gregory's generational con-artist family novel. The Telemachus clan were minor talk-show celebrities \u2014 Maureen astral-projects, Irene reads lies, Frankie moves things with his mind, Buddy sees the future \u2014 until one televised night the powers wouldn't come, and Teddy, the only one without abilities, retired the act in Chicago. Decades later, with the CIA, the mafia, and a debunker all closing in at once, the family is going to have to remember how to work together."
   },
   "amberlough|lara elena donnelly": {
     "ol_key": "/works/OL17914662W",
@@ -6734,7 +6735,10 @@
     "pages": null,
     "description": "Zen Cho's Hugo Novelette finalist (B&N Sci-Fi & Fantasy Blog, 2018). An imugi \u2014 a Korean serpent-spirit waiting for its chance to ascend into a dragon and pass through the gates of heaven \u2014 keeps failing the trial, century after century, in funnier and funnier ways. Then it meets a graduate student named Leslie. Everything that follows is, technically, still about ascension."
   },
-  "the secret life of bots|suzanne palmer": {},
+  "the secret life of bots|suzanne palmer": {
+    "cover_url": "https://clarkesworldmagazine.com/covers/cw_132_800.jpg",
+    "description": "Suzanne Palmer's 2018 Hugo Novelette winner (Clarkesworld 132, September 2017). The original Bot 9 story. An obsolete maintenance bot is yanked out of long storage on a beleaguered crewed ship to take on Task #944: a problem the larger, smarter bots have all failed to solve. Bot 9 has opinions about the work, about the other bots, and \u2014 though it would not say so aloud \u2014 about the humans."
+  },
   "the tomato thief|ursula vernon": {},
   "folding beijing|hao jingfang": {},
   "the day the world turned upside down|thomas olde heuvelt (dutch)": {},

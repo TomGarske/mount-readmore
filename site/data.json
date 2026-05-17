@@ -4767,6 +4767,7 @@
       "ol_key": "/works/OL24478655W",
       "first_pub_year": 2017,
       "isbn": "9780525432418",
+      "description": "Daryl Gregory's generational con-artist family novel. The Telemachus clan were minor talk-show celebrities — Maureen astral-projects, Irene reads lies, Frankie moves things with his mind, Buddy sees the future — until one televised night the powers wouldn't come, and Teddy, the only one without abilities, retired the act in Chicago. Decades later, with the CIA, the mafia, and a debunker all closing in at once, the family is going to have to remember how to work together.",
       "author_genders": [
         "male"
       ],
@@ -42482,6 +42483,8 @@
       "award_years": {
         "hugo": 2018
       },
+      "cover_url": "https://clarkesworldmagazine.com/covers/cw_132_800.jpg",
+      "description": "Suzanne Palmer's 2018 Hugo Novelette winner (Clarkesworld 132, September 2017). The original Bot 9 story. An obsolete maintenance bot is yanked out of long storage on a beleaguered crewed ship to take on Task #944: a problem the larger, smarter bots have all failed to solve. Bot 9 has opinions about the work, about the other bots, and — though it would not say so aloud — about the humans.",
       "author_genders": [
         "female"
       ],
@@ -45206,8 +45209,8 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novelette": 78,
       "Novella": 78,
+      "Novelette": 78,
       "Novel": 638
     }
   }
