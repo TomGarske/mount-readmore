@@ -1426,19 +1426,58 @@ function renderCompare(params) {
       val.split(',').forEach(v => rawIds.push(v.trim().toLowerCase()));
     }
   }
+  // 'me' is allowed when authenticated; otherwise it's dropped and the user
+  // gets the picker / sign-in CTA below.
   const userIds = rawIds
     .map(v => (READER_CONFIG[v] ? v : INITIAL_TO_ID[v]) || v)
-    .filter(id => READER_CONFIG[id] && id !== 'me');
+    .filter(id => READER_CONFIG[id])
+    .filter(id => id !== 'me' || !!window.MR_AUTH?.user);
 
   if (userIds.length !== 2) {
+    // Anon: sign-in CTA.
+    if (!window.MR_AUTH?.user) {
+      root.innerHTML = `<div class="detail">
+        <a href="#/" class="back">← back</a>
+        <h1>Compare reads</h1>
+        <p style="color: var(--muted); max-width: 620px;">
+          Sign in to compare your Mount Readmore progress against another reader
+          — see what you've both read, what only one of you has read, and what's
+          still waiting for both of you.
+        </p>
+        <div style="margin-top: 14px;">
+          <button type="button" class="user-status-signin" id="compare-signin">Sign in</button>
+        </div>
+      </div>`;
+      $('#compare-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
+      return;
+    }
+    // Signed in: picker — compare your reads vs one of the demo readers.
+    const otherReaders = ['tom', 'nika', 'westdac', 'colton', 'schupp']
+      .filter(id => READER_CONFIG[id])
+      .map(id => `<option value="${id}">${escapeHtml(READER_CONFIG[id].label)}</option>`)
+      .join('');
+    const myHandle = window.MR_AUTH.profile?.handle || 'you';
     root.innerHTML = `<div class="detail">
       <a href="#/" class="back">← back</a>
-      <h1>Compare two readers</h1>
-      <p style="color: var(--muted);">Pass two readers in the URL, like
-        <a href="#/compare?u=tom&amp;u=nika"><code>#/compare?u=tom&amp;u=nika</code></a>
-        or by initial <a href="#/compare?u=T&amp;u=N"><code>?u=T&amp;u=N</code></a>.</p>
-      <p style="color: var(--muted);">Valid reader keys: <code>tom</code>, <code>nika</code>, <code>westdac</code>, <code>colton</code>, <code>schupp</code>.</p>
+      <h1>Compare reads</h1>
+      <p style="color: var(--muted); max-width: 620px;">
+        Pick a reader to compare your progress against. You'll see what you've
+        both read, what only one of you has read, and what's still uncovered.
+      </p>
+      <form id="compare-picker" style="display: flex; gap: 10px; align-items: center; margin-top: 16px;">
+        <span style="color: var(--text); font-weight: 600;">@${escapeHtml(myHandle)}</span>
+        <span style="color: var(--muted);">vs</span>
+        <select id="compare-other" style="padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-2); color: var(--text); font-size: 14px;">
+          ${otherReaders}
+        </select>
+        <button type="submit" class="mr-btn-primary">Compare →</button>
+      </form>
     </div>`;
+    $('#compare-picker')?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const other = $('#compare-other').value;
+      if (other) location.hash = `#/compare?u=me&u=${other}`;
+    });
     return;
   }
 
@@ -1762,8 +1801,23 @@ function wireUserStatusControls() {
   });
 }
 
+function wireAuthGatedNav() {
+  // Compare nav link: anon click → sign-in modal; authed → normal navigation.
+  const compare = document.getElementById('nav-compare');
+  if (compare && !compare.dataset.wired) {
+    compare.dataset.wired = '1';
+    compare.addEventListener('click', (e) => {
+      if (!window.MR_AUTH?.user) {
+        e.preventDefault();
+        window.MR_AUTH?.showSignInModal();
+      }
+    });
+  }
+}
+
 async function init() {
   recomputeReaders();
+  wireAuthGatedNav();
   applySoloUI();
   try {
     const res = await fetch('data.json');
