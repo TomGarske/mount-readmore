@@ -1546,6 +1546,109 @@ function renderCompare(params) {
   </div>`;
 }
 
+// Mount Readmore leaderboard — public, reads from public.leaderboard_overall
+// and public.leaderboard_by_award views in Supabase. Only profiles with
+// on_leaderboard = true appear. Each row links to a head-to-head comparison.
+let __mrLeaderboardCache = null;
+async function fetchLeaderboards() {
+  if (__mrLeaderboardCache) return __mrLeaderboardCache;
+  if (!window.MR_AUTH?.client) return { overall: [], byAward: [], error: 'auth-not-ready' };
+  const client = window.MR_AUTH.client;
+  const [overall, byAward] = await Promise.all([
+    client.from('leaderboard_overall').select('*').order('rank'),
+    client.from('leaderboard_by_award').select('*').order('rank'),
+  ]);
+  if (overall.error || byAward.error) {
+    return { overall: [], byAward: [], error: overall.error || byAward.error };
+  }
+  __mrLeaderboardCache = { overall: overall.data || [], byAward: byAward.data || [], error: null };
+  return __mrLeaderboardCache;
+}
+
+let __mrLeaderboardScope = 'overall';   // 'overall' | 'hugo' | 'nebula'
+
+async function renderLeaderboard() {
+  const root = $('#view-leaderboard');
+  if (!root) return;
+  root.innerHTML = `<div class="detail"><h1>Leaderboard</h1><p style="color: var(--muted);">Loading…</p></div>`;
+
+  const { overall, byAward, error } = await fetchLeaderboards();
+  if (error) {
+    root.innerHTML = `<div class="detail">
+      <h1>Leaderboard</h1>
+      <p style="color: var(--sf);">Couldn't load the leaderboard: ${escapeHtml(String(error.message || error))}</p>
+    </div>`;
+    return;
+  }
+
+  const meHandle = window.MR_AUTH?.profile?.handle || null;
+  const myUserId = window.MR_AUTH?.user?.id || null;
+  const scope = __mrLeaderboardScope;
+  const rows = scope === 'overall'
+    ? overall
+    : byAward.filter(r => r.award === scope);
+
+  const totalLabel = scope === 'overall'
+    ? `${overall[0]?.total_books ?? 0} canonical books`
+    : `${rows[0]?.total_books ?? 0} ${scope === 'hugo' ? 'Hugo' : 'Nebula'} books`;
+
+  const onLeaderboard = window.MR_AUTH?.profile?.on_leaderboard;
+  const isAuthed = !!window.MR_AUTH?.user;
+
+  const rowHtml = rows.map(r => {
+    const isMe = r.user_id === myUserId;
+    const canCompare = isAuthed && !isMe;
+    const compareHref = canCompare ? `#/compare?u=me&u=${encodeURIComponent(r.handle)}` : '#';
+    const tag = canCompare
+      ? `<a class="lb-compare" href="${compareHref}">Compare →</a>`
+      : isMe
+        ? `<span class="lb-me">you</span>`
+        : `<span class="lb-compare lb-compare-disabled" data-tooltip="Sign in to compare">Compare</span>`;
+    return `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
+      <div class="lb-rank">#${r.rank}</div>
+      <div class="lb-handle">@${escapeHtml(r.handle)}</div>
+      <div class="lb-stat"><strong>${r.read_count}</strong> <span class="lb-of">/ ${r.total_books}</span></div>
+      <div class="lb-pct">${r.pct ?? 0}%</div>
+      <div class="lb-action">${tag}</div>
+    </div>`;
+  }).join('');
+
+  const tab = (id, label) => `<button type="button" class="status-tab${scope === id ? ' active' : ''}" data-lb-scope="${id}">${label}</button>`;
+
+  root.innerHTML = `<div class="detail leaderboard-page">
+    <h1>Leaderboard</h1>
+    <p style="color: var(--muted);">Public Mount Readmore readers ranked by how many of the ${totalLabel} they've read. Opt in from your settings to appear here.</p>
+
+    <div class="status-toggle leaderboard-toggle">
+      ${tab('overall', 'Overall')}
+      ${tab('hugo', 'Hugo')}
+      ${tab('nebula', 'Nebula')}
+    </div>
+
+    ${rows.length === 0
+      ? `<div class="lb-empty"><p>Nobody on the leaderboard yet for this scope.</p></div>`
+      : `<div class="lb-table">${rowHtml}</div>`}
+
+    ${!isAuthed
+      ? `<p style="margin-top: 22px; color: var(--muted);"><button type="button" class="user-status-signin" id="lb-signin">Sign in</button> &nbsp; to compare your reads against anyone on the leaderboard.</p>`
+      : !onLeaderboard
+        ? `<p style="margin-top: 22px; color: var(--muted);">You're signed in but not opted into the leaderboard yet. (Settings page coming soon.)</p>`
+        : ''}
+  </div>`;
+
+  $$('.leaderboard-toggle .status-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      __mrLeaderboardScope = btn.dataset.lbScope;
+      renderLeaderboard();
+    });
+  });
+  $('#lb-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
+  // Disabled-Compare hover hint: clicking prompts sign-in.
+  root.querySelectorAll('.lb-compare-disabled').forEach(el => {
+    el.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
+  });
+}
+
 function showView(name) {
   $$('.view').forEach(v => v.classList.add('hidden'));
   $(`#view-${name}`).classList.remove('hidden');
@@ -1631,6 +1734,12 @@ function route() {
     const params = new URLSearchParams(qs || '');
     renderCompare(params);
     showView('compare');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (path === '#/leaderboard') {
+    renderLeaderboard();
+    showView('leaderboard');
     window.scrollTo(0, 0);
     return;
   }
@@ -1837,6 +1946,7 @@ async function init() {
       applySoloUI();
       applyReaderFilterVisibility();
       renderAuthPill();
+      __mrLeaderboardCache = null;  // re-fetch so "you" highlight is fresh
       route();
     });
   }
