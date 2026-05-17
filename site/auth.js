@@ -15,10 +15,18 @@
     return;
   }
 
+  // Bypass the Web Locks API for the auth-token mutex. supabase-js v2 uses
+  // navigator.locks to coordinate token refresh across tabs, but a stuck
+  // context (closed-but-orphaned tab, separate Chrome window outside this
+  // session) can hold the exclusive lock forever and freeze every getSession
+  // / from() call in the SDK. We're a single-user app per browser — racing
+  // refreshes across tabs is not a concern. Pass-through lock removes the
+  // hang entirely.
+  const noopLock = async (_name, _acquireTimeout, fn) => fn();
   const client = window.supabase.createClient(
     cfg.SUPABASE_URL,
     cfg.SUPABASE_PUBLISHABLE_KEY,
-    { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
+    { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, lock: noopLock } }
   );
 
   let currentUser = null;
