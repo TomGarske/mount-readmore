@@ -1125,6 +1125,137 @@ fieldset label input { margin-right: 8px; }
   margin-top: 60px;
 }
 
+/* Hugo 2026 finalists tab */
+.nav-hot {
+  position: relative;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba(198, 68, 79, 0.16), rgba(184, 149, 72, 0.18));
+  border: 1px solid rgba(198, 68, 79, 0.4);
+  border-radius: 999px;
+  color: var(--sf) !important;
+  font-weight: 600;
+}
+.nav-hot::before {
+  content: '★';
+  margin-right: 5px;
+  color: var(--winner);
+}
+.nav-hot:hover, .nav-hot.active { color: var(--text) !important; }
+
+.hugo2026 { max-width: 1100px; margin: 0 auto; }
+.hugo-hero {
+  padding: 32px 32px 28px;
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, rgba(198, 68, 79, 0.10), rgba(184, 149, 72, 0.12));
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--sf);
+  margin: 12px 0 28px;
+}
+.hugo-hero-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--sf);
+  font-weight: 700;
+  padding: 3px 10px;
+  border: 1px solid rgba(198, 68, 79, 0.4);
+  border-radius: 999px;
+  background: rgba(198, 68, 79, 0.08);
+  margin-bottom: 12px;
+}
+.hugo-hero h1 {
+  font-size: 32px;
+  margin: 0 0 10px;
+  letter-spacing: -0.01em;
+}
+.hugo-hero p { margin: 0 0 14px; font-size: 15px; line-height: 1.6; color: var(--text); }
+.hugo-hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.hugo-hero-stats strong { color: var(--text); }
+
+.hugo-vote {
+  margin: 0 0 36px;
+  padding: 22px 26px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.hugo-vote h2 { margin: 0 0 14px; font-size: 18px; }
+.hugo-vote ol { margin: 0 0 18px; padding-left: 22px; }
+.hugo-vote li { margin: 6px 0; font-size: 14px; line-height: 1.55; }
+.hugo-vote-links { display: flex; flex-wrap: wrap; gap: 10px; }
+.hugo-btn {
+  display: inline-block;
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: var(--sf);
+  color: #fff !important;
+  font-weight: 600;
+  font-size: 13px;
+  text-decoration: none;
+}
+.hugo-btn:hover { filter: brightness(1.08); }
+.hugo-btn-secondary { background: var(--bg); color: var(--text) !important; border: 1px solid var(--border); }
+.hugo-btn-secondary:hover { border-color: var(--sf); }
+
+.hugo-section { margin: 32px 0; }
+.hugo-section h2 {
+  font-size: 20px;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--border);
+}
+.hugo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.hugo-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--text);
+  overflow: hidden;
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+}
+.hugo-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--sf);
+  box-shadow: 0 4px 14px rgba(198, 68, 79, 0.15);
+}
+.hugo-card-cover {
+  aspect-ratio: 2/3;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.hugo-card-cover img { width: 100%; height: 100%; object-fit: cover; }
+.hugo-card-placeholder { font-size: 40px; opacity: 0.4; }
+.hugo-card-body { padding: 12px 14px 14px; }
+.hugo-card-title { font-weight: 700; font-size: 15px; line-height: 1.3; margin-bottom: 4px; }
+.hugo-card-author { font-size: 13px; color: var(--text); margin-bottom: 6px; }
+.hugo-card-pub { font-size: 11.5px; color: var(--muted); }
+
+.hugo-source {
+  margin: 40px 0 0;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--muted);
+  text-align: center;
+}
+
 @media (max-width: 800px) {
   #view-list { grid-template-columns: 1fr; }
   .filters { position: static; }

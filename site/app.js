@@ -1137,6 +1137,95 @@ function renderStats() {
   });
 }
 
+// Hand-curated list of 2026 Hugo finalists for Novel + Novella.
+// Source: https://www.thehugoawards.org/hugo-history/2026-hugo-awards/
+const HUGO_2026_FINALISTS = {
+  Novel: [
+    { title: 'A Drop of Corruption',  author: 'Robert Jackson Bennett', publisher: 'Del Rey; Hodderscape' },
+    { title: 'Death of the Author',   author: 'Nnedi Okorafor',          publisher: 'William Morrow; Gollancz' },
+    { title: 'Shroud',                author: 'Adrian Tchaikovsky',      publisher: 'Tor UK; Orbit US' },
+    { title: 'The Everlasting',       author: 'Alix E. Harrow',          publisher: 'Tor US; Tor UK' },
+    { title: 'The Incandescent',      author: 'Emily Tesh',              publisher: 'Tor US; Orbit UK' },
+    { title: 'The Raven Scholar',     author: 'Antonia Hodgson',         publisher: 'Orbit US; Hodderscape' },
+  ],
+  Novella: [
+    { title: 'Automatic Noodle',      author: 'Annalee Newitz',          publisher: 'Tordotcom' },
+    { title: 'Cinder House',          author: 'Freya Marske',            publisher: 'Tordotcom; Tor UK' },
+    { title: 'Murder by Memory',      author: 'Olivia Waite',            publisher: 'Tordotcom' },
+    { title: 'The River Has Roots',   author: 'Amal El-Mohtar',          publisher: 'Tordotcom; Arcadia UK' },
+    { title: 'The Summer War',        author: 'Naomi Novik',             publisher: 'Del Rey US; Del Rey UK' },
+    { title: 'What Stalks the Deep',  author: 'T. Kingfisher',           publisher: 'Nightfire; Titan UK' },
+  ],
+};
+
+function findBook(title, author, category) {
+  // Match the data.json record so we can pull cover_url, id, etc.
+  const t = title.toLowerCase().trim();
+  const a = author.toLowerCase().trim();
+  return DATA.books.find(b =>
+    b.category === category &&
+    b.title.toLowerCase().trim() === t &&
+    (b.authors || []).some(x => x.toLowerCase().includes(a) || a.includes(x.toLowerCase()))
+  );
+}
+
+function renderHugo2026() {
+  const root = $('#view-hugo2026');
+  const renderCategory = (catLabel, items) => {
+    const cards = items.map(f => {
+      const match = findBook(f.title, f.author, catLabel);
+      const cover = match && match.cover_url
+        ? `<img src="${escapeHtml(match.cover_url)}" alt="Cover of ${escapeHtml(f.title)}" loading="lazy">`
+        : `<span class="hugo-card-placeholder">📖</span>`;
+      const href = match ? `#/book/${escapeHtml(match.id)}` : '#';
+      return `<a class="hugo-card" href="${href}">
+        <div class="hugo-card-cover">${cover}</div>
+        <div class="hugo-card-body">
+          <div class="hugo-card-title">${escapeHtml(f.title)}</div>
+          <div class="hugo-card-author">${escapeHtml(f.author)}</div>
+          <div class="hugo-card-pub">${escapeHtml(f.publisher)}</div>
+        </div>
+      </a>`;
+    }).join('');
+    return `<section class="hugo-section">
+      <h2>Best ${escapeHtml(catLabel)}</h2>
+      <div class="hugo-grid">${cards}</div>
+    </section>`;
+  };
+
+  root.innerHTML = `<div class="detail hugo2026">
+    <div class="hugo-hero">
+      <div class="hugo-hero-tag">2026 Hugo Awards · Finalists</div>
+      <h1>The ballot is out.</h1>
+      <p>Announced for <strong>LAcon V</strong> — the 84th World Science Fiction Convention, Anaheim, August 27–31, 2026. Ceremony: <strong>Sunday, August 30, 2026</strong>.</p>
+      <div class="hugo-hero-stats">
+        <span><strong>1,153</strong> ballots cast</span>
+        <span><strong>555</strong> unique nominees</span>
+        <span>Finalists ranged <strong>126–210</strong> nominations</span>
+      </div>
+    </div>
+
+    <section class="hugo-vote">
+      <h2>How to vote</h2>
+      <ol>
+        <li><strong>You need a LAcon V membership.</strong> Only attending and supporting members of the 2026 WorldCon can vote on the final ballot. Register at <a href="https://laconv.org/" target="_blank" rel="noopener">laconv.org</a> (a "WSFS-only" supporting membership is the cheapest path if you're not attending).</li>
+        <li><strong>Read the Hugo Voter Packet.</strong> LAcon V will release a free packet of digital copies of (most) finalists to members ahead of the voting deadline. Watch your member email.</li>
+        <li><strong>Rank the finalists.</strong> Voting uses instant-runoff: rank the works you've read in order of preference. You can leave the rest blank. "No Award" is a legitimate ranking.</li>
+        <li><strong>Submit by the deadline.</strong> Voting typically closes in mid-to-late July 2026 — exact dates posted on the <a href="https://www.thehugoawards.org/hugo-voting/" target="_blank" rel="noopener">official Hugo voting page</a>.</li>
+      </ol>
+      <div class="hugo-vote-links">
+        <a class="hugo-btn" href="https://www.thehugoawards.org/hugo-voting/" target="_blank" rel="noopener">Hugo voting instructions →</a>
+        <a class="hugo-btn hugo-btn-secondary" href="https://laconv.org/" target="_blank" rel="noopener">LAcon V membership →</a>
+      </div>
+    </section>
+
+    ${renderCategory('Novel', HUGO_2026_FINALISTS.Novel)}
+    ${renderCategory('Novella', HUGO_2026_FINALISTS.Novella)}
+
+    <p class="hugo-source">Source: <a href="https://www.thehugoawards.org/hugo-history/2026-hugo-awards/" target="_blank" rel="noopener">thehugoawards.org · 2026 Hugo Awards announcement</a></p>
+  </div>`;
+}
+
 function showView(name) {
   $$('.view').forEach(v => v.classList.add('hidden'));
   $(`#view-${name}`).classList.remove('hidden');
@@ -1203,6 +1292,12 @@ function route() {
     if (qs) applyFilterParams(params);
     renderList();
     showView('list');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (path === '#/hugo2026') {
+    renderHugo2026();
+    showView('hugo2026');
     window.scrollTo(0, 0);
     return;
   }
