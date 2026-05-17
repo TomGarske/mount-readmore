@@ -10,8 +10,8 @@ let DATA = { books: [], meta: {} };
 // Canonical reader config — adding a reader: drop in here, no other code changes.
 // colorRgb matches the hex of the CSS --accent-* variable (for SVG fills + rgba mixing).
 const READER_CONFIG = {
-  tom:     { id: 'tom',     label: 'Tom',     initial: 'T', cls: 'reader-t', colorVar: 'var(--accent)',   colorRgb: '44,93,150' },
-  nika:    { id: 'nika',    label: 'Nika',    initial: 'N', cls: 'reader-n', colorVar: 'var(--accent-2)', colorRgb: '198,68,79' },
+  tom:     { id: 'tom',     label: 'Tom',     initial: 'T', cls: 'reader-t', colorVar: 'var(--accent)',   colorRgb: '29,78,216' },
+  nika:    { id: 'nika',    label: 'Nika',    initial: 'N', cls: 'reader-n', colorVar: 'var(--accent-2)', colorRgb: '220,38,38' },
   westdac: { id: 'westdac', label: 'Westdac', initial: 'W', cls: 'reader-w', colorVar: 'var(--accent-3)', colorRgb: '182,120,60' },
   colton:  { id: 'colton',  label: 'Colton',  initial: 'C', cls: 'reader-c', colorVar: 'var(--accent-4)', colorRgb: '74,122,90' },
   schupp:  { id: 'schupp',  label: 'Schupp',  initial: 'S', cls: 'reader-s', colorVar: 'var(--accent-5)', colorRgb: '122,68,134' },
@@ -865,8 +865,8 @@ function renderStats() {
 
   root.innerHTML = `<div class="detail">
     <section class="completionist-intro">
-      <h1 class="completionist-title">Climb every page.</h1>
-      <p>Mount Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is another step up the mountain — across decades of science fiction and fantasy, the books the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to climb with. There's no wrong place to start.</p>
+      <h1 class="completionist-title">Read them all.</h1>
+      <p>Mount Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
     </section>
 
     <div class="progress-section radar-hero">

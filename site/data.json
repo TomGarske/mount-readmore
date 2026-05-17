@@ -1521,6 +1521,7 @@
         "hugo": 2023,
         "nebula": 2023
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1645110008i/56179377.jpg",
       "author_genders": [
         "female"
       ],
@@ -45127,8 +45128,8 @@
     "total": 794,
     "by_category": {
       "Novelette": 78,
-      "Novella": 78,
-      "Novel": 638
+      "Novel": 638,
+      "Novella": 78
     }
   }
 }
