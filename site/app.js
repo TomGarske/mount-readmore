@@ -1009,62 +1009,6 @@ function renderStats() {
     ${comparisonHtml}
 
     <div class="progress-section">
-      <h2>Genre vectors — which combinations win most?</h2>
-      <p style="color: var(--muted); font-size: 13px;">Every book on the list (winners + nominees) bucketed by <strong>primary genre / subgenres</strong>. Win rate = winners ÷ (winners + nominees). Filtered to combos with at least 3 books and sorted by win rate.</p>
-      <div class="vector-table">
-        <div class="vector-row vector-head">
-          <div>Genre vector</div>
-          <div>Books</div>
-          <div>Winners</div>
-          <div>Nominees</div>
-          <div>Win rate</div>
-          <div>${ACTIVE_READERS.map(r => `${r.initial} read`).join(' · ')}</div>
-        </div>
-        ${genreVectors.map(v => {
-          const winRatePct = Math.round(v.winRate * 100);
-          const nominees = v.total - v.winners;
-          const readCol = ACTIVE_READERS.map(r => `<span style="color:${r.colorVar}">${r.initial} ${v[r.id + 'Read']}</span>`).join(' · ');
-          return `<div class="vector-row">
-            <div class="vector-combo">${escapeHtml(v.combo)}</div>
-            <div>${v.total}</div>
-            <div><span style="color: var(--winner)">${v.winners}</span></div>
-            <div><span style="color: var(--nominee)">${nominees}</span></div>
-            <div><span class="vector-pct">${winRatePct}%</span></div>
-            <div>${readCol}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <div class="progress-section">
-      <h2>Browse by genre</h2>
-      <p style="color: var(--muted); font-size: 13px;">Scroll any row sideways. Click a cover for details. Each row is sorted by publication year, newest first.</p>
-      ${swimlanes.map(lane => `
-        <div class="swimlane">
-          <div class="swimlane-header">
-            <h3>${escapeHtml(lane.genre)}</h3>
-            <span class="swimlane-count">${lane.books.length} books</span>
-          </div>
-          <div class="swimlane-strip">
-            ${lane.books.map(b => {
-              const cover = b.cover_url
-                ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
-                : `<span class="swimlane-placeholder">📖</span>`;
-              const isWinner = Object.values(b.awards || {}).includes('winner');
-              const readPill = readStatus(b, 'tom') === 'read' || readStatus(b, 'nika') === 'read'
-                ? `<span class="swimlane-pill">read</span>` : '';
-              return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
-                <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}${readPill}</div>
-                <div class="swimlane-title">${escapeHtml(b.title)}</div>
-                <div class="swimlane-meta">${escapeHtml(b.authors[0] || '')} · ${b.year || ''}</div>
-              </div>`;
-            }).join('')}
-          </div>
-        </div>
-      `).join('')}
-    </div>
-
-    <div class="progress-section">
       <h2>By author gender (${SUBSET})</h2>
       <p style="color: var(--muted); font-size: 13px;">Primary author of each winning work, inferred from first name. Lead-character gender isn't tracked yet — no reliable data source.</p>
       <div class="gender-grid">
@@ -1120,6 +1064,62 @@ function renderStats() {
           return linkCard(`#/books?category=${encodeURIComponent(c)}${statusParam}`, c, `${activeCount} / ${s.total}`, sub, activeCount / s.total * 100);
         }).join('')}
       </div>
+    </div>
+
+    <div class="progress-section">
+      <h2>Genre vectors — which combinations win most?</h2>
+      <p style="color: var(--muted); font-size: 13px;">Every book on the list (winners + nominees) bucketed by <strong>primary genre / subgenres</strong>. Win rate = winners ÷ (winners + nominees). Filtered to combos with at least 3 books and sorted by win rate.</p>
+      <div class="vector-table">
+        <div class="vector-row vector-head">
+          <div>Genre vector</div>
+          <div>Books</div>
+          <div>Winners</div>
+          <div>Nominees</div>
+          <div>Win rate</div>
+          <div>${ACTIVE_READERS.map(r => `${r.initial} read`).join(' · ')}</div>
+        </div>
+        ${genreVectors.map(v => {
+          const winRatePct = Math.round(v.winRate * 100);
+          const nominees = v.total - v.winners;
+          const readCol = ACTIVE_READERS.map(r => `<span style="color:${r.colorVar}">${r.initial} ${v[r.id + 'Read']}</span>`).join(' · ');
+          return `<div class="vector-row">
+            <div class="vector-combo">${escapeHtml(v.combo)}</div>
+            <div>${v.total}</div>
+            <div><span style="color: var(--winner)">${v.winners}</span></div>
+            <div><span style="color: var(--nominee)">${nominees}</span></div>
+            <div><span class="vector-pct">${winRatePct}%</span></div>
+            <div>${readCol}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <h2>Browse by genre</h2>
+      <p style="color: var(--muted); font-size: 13px;">Scroll any row sideways. Click a cover for details. Each row is sorted by publication year, newest first.</p>
+      ${swimlanes.map(lane => `
+        <div class="swimlane">
+          <div class="swimlane-header">
+            <h3>${escapeHtml(lane.genre)}</h3>
+            <span class="swimlane-count">${lane.books.length} books</span>
+          </div>
+          <div class="swimlane-strip">
+            ${lane.books.map(b => {
+              const cover = b.cover_url
+                ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
+                : `<span class="swimlane-placeholder">📖</span>`;
+              const isWinner = Object.values(b.awards || {}).includes('winner');
+              const readPill = readStatus(b, 'tom') === 'read' || readStatus(b, 'nika') === 'read'
+                ? `<span class="swimlane-pill">read</span>` : '';
+              return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
+                <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}${readPill}</div>
+                <div class="swimlane-title">${escapeHtml(b.title)}</div>
+                <div class="swimlane-meta">${escapeHtml(b.authors[0] || '')} · ${b.year || ''}</div>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>
+      `).join('')}
     </div>
   </div>`;
 
