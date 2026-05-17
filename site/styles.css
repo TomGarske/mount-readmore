@@ -292,7 +292,16 @@ a:hover { text-decoration: underline; }
 .author-bar-schupp  { background: var(--accent-5); }
 .author-count { color: var(--muted); font-size: 12px; }
 
-/* Status toggle on Progress page (Winners / Nominees / Both) */
+/* Toggle row on Progress page — status (Winners/Nominees/Both) and award scope (Both/Hugo/Nebula) side by side */
+.toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+.toggle-row .status-toggle { margin-top: 0; margin-bottom: 0; }
 .status-toggle {
   display: inline-flex;
   gap: 4px;
@@ -303,6 +312,8 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--border);
   border-radius: 999px;
 }
+.status-tab-hugo.active { box-shadow: inset 0 -2px 0 var(--sf); }
+.status-tab-nebula.active { box-shadow: inset 0 -2px 0 var(--fantasy); }
 .status-tab {
   background: transparent;
   border: none;

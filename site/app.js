@@ -69,6 +69,8 @@ let state = {
   sort: 'year-desc',
   // Progress-page filter: 'winner' | 'nominee' | 'both'
   progressStatus: 'winner',
+  // Progress-page award scope: 'both' | 'hugo' | 'nebula'
+  progressAward: 'both',
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
@@ -332,17 +334,31 @@ function renderDetail(id) {
 function renderStats() {
   // Status filter for everything on this page
   const STATUS = state.progressStatus;  // 'winner' | 'nominee' | 'both'
-  const isWinner = (b) => Object.values(b.awards || {}).includes('winner');
-  const winnersAll = DATA.books.filter(isWinner);
-  const nomineesAll = DATA.books.filter(b => !isWinner(b));
+  const AWARD = state.progressAward;    // 'both' | 'hugo' | 'nebula'
+
+  // Award scope: when AWARD == specific, only books that carry that award
+  // (counting either winner or nominee status for it). When AWARD == 'both',
+  // every book on the list is in scope.
+  const inAwardScope = (b) => AWARD === 'both' || !!(b.awards || {})[AWARD];
+  const isWinnerInScope = (b) => {
+    if (AWARD === 'both') return Object.values(b.awards || {}).includes('winner');
+    return (b.awards || {})[AWARD] === 'winner';
+  };
+  const scopedBooks = DATA.books.filter(inAwardScope);
+  const winnersAll = scopedBooks.filter(isWinnerInScope);
+  const nomineesAll = scopedBooks.filter(b => !isWinnerInScope(b));
   const allWinnersCount = winnersAll.length;
   const allNomineesCount = nomineesAll.length;
-  const allBooksCount = DATA.books.length;
+  const allBooksCount = scopedBooks.length;
+
+  // Award scope counts (for the second toggle)
+  const hugoCount = DATA.books.filter(b => (b.awards || {}).hugo).length;
+  const nebulaCount = DATA.books.filter(b => (b.awards || {}).nebula).length;
 
   // Which subset drives this render
   const winners = STATUS === 'winner' ? winnersAll
     : STATUS === 'nominee' ? nomineesAll
-    : DATA.books;
+    : scopedBooks;
   const winnersTotal = winners.length;
   // Labels that adapt to filter
   const SUBSET = STATUS === 'winner' ? 'winners'
@@ -398,6 +414,7 @@ function renderStats() {
       const s = b.awards[a];
       if (STATUS === 'winner' && s !== 'winner') continue;
       if (STATUS === 'nominee' && s !== 'nominee') continue;
+      if (AWARD !== 'both' && a !== AWARD) continue;
       byAward[a].total++;
       for (const id of ALL_READER_IDS) {
         if (readStatus(b, id) === 'read') byAward[a][id]++;
@@ -899,10 +916,17 @@ function renderStats() {
     </div>
 
     <h1>Progress</h1>
-    <div class="status-toggle" data-status="${STATUS}">
-      <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
-      <button class="status-tab${STATUS === 'nominee' ? ' active' : ''}" data-status="nominee">Nominees <span class="status-count">${allNomineesCount}</span></button>
-      <button class="status-tab${STATUS === 'both' ? ' active' : ''}" data-status="both">Both <span class="status-count">${allBooksCount}</span></button>
+    <div class="toggle-row">
+      <div class="status-toggle" data-status="${STATUS}">
+        <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
+        <button class="status-tab${STATUS === 'nominee' ? ' active' : ''}" data-status="nominee">Nominees <span class="status-count">${allNomineesCount}</span></button>
+        <button class="status-tab${STATUS === 'both' ? ' active' : ''}" data-status="both">Both <span class="status-count">${allBooksCount}</span></button>
+      </div>
+      <div class="status-toggle award-toggle" data-award="${AWARD}">
+        <button class="status-tab${AWARD === 'both' ? ' active' : ''}" data-award="both">Both <span class="status-count">${DATA.books.length}</span></button>
+        <button class="status-tab status-tab-hugo${AWARD === 'hugo' ? ' active' : ''}" data-award="hugo">Hugo <span class="status-count">${hugoCount}</span></button>
+        <button class="status-tab status-tab-nebula${AWARD === 'nebula' ? ' active' : ''}" data-award="nebula">Nebula <span class="status-count">${nebulaCount}</span></button>
+      </div>
     </div>
 
     <div class="headline-grid">
@@ -1128,8 +1152,13 @@ function renderStats() {
   $$('.status-tab', root).forEach(btn => {
     btn.addEventListener('click', () => {
       const newStatus = btn.dataset.status;
-      if (state.progressStatus !== newStatus) {
+      const newAward = btn.dataset.award;
+      if (newStatus && state.progressStatus !== newStatus) {
         state.progressStatus = newStatus;
+        renderStats();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (newAward && state.progressAward !== newAward) {
+        state.progressAward = newAward;
         renderStats();
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
