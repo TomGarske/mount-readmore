@@ -1005,27 +1005,40 @@ a:hover { text-decoration: underline; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
-.compare-analytics-section h2 { margin: 0 0 10px; font-size: 18px; }
+.compare-analytics-section h2 { margin: 0 0 4px; font-size: 18px; }
 .cmp-stat-grid {
-  display: grid;
-  grid-template-columns: 110px 1fr 60px 1fr 60px;
-  gap: 8px 10px;
-  align-items: center;
-  margin-top: 6px;
+  margin-top: 10px;
   font-size: 13px;
 }
-.cmp-stat-head {
+.cmp-stat-headrow {
+  display: grid;
+  grid-template-columns: 130px 1fr 1fr;
+  gap: 16px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--muted);
-  padding-bottom: 6px;
-  border-bottom: 1px solid var(--border);
 }
-.cmp-stat-row { display: contents; }
+.cmp-stat-headrow > div { font-weight: 600; }
+.cmp-stat-row {
+  display: grid;
+  grid-template-columns: 130px 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 5px 0;
+}
 .cmp-stat-label {
   font-weight: 600;
   color: var(--text);
+}
+.cmp-stat-side {
+  display: grid;
+  grid-template-columns: 1fr 64px;
+  gap: 8px;
+  align-items: center;
 }
 .cmp-stat-bar {
   position: relative;
@@ -1047,7 +1060,8 @@ a:hover { text-decoration: underline; }
   white-space: nowrap;
 }
 @media (max-width: 720px) {
-  .cmp-stat-grid { grid-template-columns: 90px 1fr 50px 1fr 50px; font-size: 12px; }
+  .cmp-stat-headrow, .cmp-stat-row { grid-template-columns: 100px 1fr 1fr; gap: 10px; }
+  .cmp-stat-side { grid-template-columns: 1fr 52px; gap: 6px; }
 }
 
 /* Reader comparison section */

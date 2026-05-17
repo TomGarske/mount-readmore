@@ -1833,9 +1833,9 @@ async function renderCompare(params) {
   const totalBooks = DATA.books.length;
 
   // Helpers for the side-by-side analytics block.
-  // pctRow: a labeled row with two bars (one per reader), each scaled to the
-  // larger of (their value, their max in this group) so visual lengths compare
-  // sensibly across rows.
+  // pctRow: a labeled row with a bar+value per reader. denom controls the
+  // bar's full width — pass the total catalog count for share-of-total
+  // (showPct: true), or pass the row-max for purely-comparative bars.
   const pctRow = (label, aVal, bVal, denom, opts = {}) => {
     const aPct = denom > 0 ? (aVal / denom) * 100 : 0;
     const bPct = denom > 0 ? (bVal / denom) * 100 : 0;
@@ -1843,16 +1843,27 @@ async function renderCompare(params) {
     const bDisp = opts.showPct ? `${bVal} (${Math.round(bPct)}%)` : bVal;
     return `<div class="cmp-stat-row">
       <div class="cmp-stat-label">${label}</div>
-      <div class="cmp-stat-bar">
-        <span class="cmp-stat-bar-fill" style="width:${aPct}%; background:${aSide.colorVar};"></span>
+      <div class="cmp-stat-side">
+        <div class="cmp-stat-bar">
+          <span class="cmp-stat-bar-fill" style="width:${aPct}%; background:${aSide.colorVar};"></span>
+        </div>
+        <div class="cmp-stat-val" style="color:${aSide.colorVar}">${aDisp}</div>
       </div>
-      <div class="cmp-stat-val" style="color:${aSide.colorVar}">${aDisp}</div>
-      <div class="cmp-stat-bar">
-        <span class="cmp-stat-bar-fill" style="width:${bPct}%; background:${bSide.colorVar};"></span>
+      <div class="cmp-stat-side">
+        <div class="cmp-stat-bar">
+          <span class="cmp-stat-bar-fill" style="width:${bPct}%; background:${bSide.colorVar};"></span>
+        </div>
+        <div class="cmp-stat-val" style="color:${bSide.colorVar}">${bDisp}</div>
       </div>
-      <div class="cmp-stat-val" style="color:${bSide.colorVar}">${bDisp}</div>
     </div>`;
   };
+
+  // Header row matching the three-column row layout above.
+  const statHeadrow = (firstCol) => `<div class="cmp-stat-headrow">
+    <div>${firstCol}</div>
+    <div style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
+    <div style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+  </div>`;
 
   // Category breakdown: out of N books in the catalog with that category,
   // how many has each reader finished?
@@ -1951,9 +1962,7 @@ async function renderCompare(params) {
     <section class="compare-analytics-section">
       <h2>By category</h2>
       <div class="cmp-stat-grid">
-        <div class="cmp-stat-head">Category</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${statHeadrow('Category')}
         ${catRows}
       </div>
     </section>
@@ -1961,9 +1970,7 @@ async function renderCompare(params) {
     <section class="compare-analytics-section">
       <h2>By award</h2>
       <div class="cmp-stat-grid">
-        <div class="cmp-stat-head">Award</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${statHeadrow('Award')}
         ${awardRows}
       </div>
     </section>
@@ -1971,9 +1978,7 @@ async function renderCompare(params) {
     <section class="compare-analytics-section">
       <h2>By primary genre</h2>
       <div class="cmp-stat-grid">
-        <div class="cmp-stat-head">Genre</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${statHeadrow('Genre')}
         ${primaryRows}
       </div>
     </section>
@@ -1981,20 +1986,16 @@ async function renderCompare(params) {
     <section class="compare-analytics-section">
       <h2>By author gender</h2>
       <div class="cmp-stat-grid">
-        <div class="cmp-stat-head">Gender</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${statHeadrow('Gender')}
         ${genderRows}
       </div>
     </section>
 
     <section class="compare-analytics-section">
       <h2>By decade</h2>
-      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Where each reader spends most of their time. Bars scale to the busiest decade across both.</p>
+      <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Where each reader spends most of their time. Bars scale to the busiest decade across both.</p>
       <div class="cmp-stat-grid">
-        <div class="cmp-stat-head">Decade</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
-        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${statHeadrow('Decade')}
         ${decadeRows}
       </div>
     </section>
