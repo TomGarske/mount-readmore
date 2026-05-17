@@ -43060,7 +43060,7 @@
       "awards": {
         "hugo": "winner"
       },
-      "tom": "",
+      "tom": "Read",
       "nika": "Read",
       "tom_date_read": "",
       "tom_rating": "",
@@ -43082,6 +43082,7 @@
       "award_years": {
         "hugo": 2002
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1356138316i/223380.jpg",
       "author_genders": [
         "male"
       ],
@@ -45127,8 +45128,8 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novelette": 78,
       "Novel": 638,
+      "Novelette": 78,
       "Novella": 78
     }
   }
