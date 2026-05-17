@@ -65,7 +65,14 @@
     await Promise.all([loadProfile(), loadUserBooks()]);
     notify();
     client.auth.onAuthStateChange(async (event, session) => {
+      const prevUserId = currentUser?.id || null;
       currentUser = session?.user || null;
+      // Identity change → blow away any cached friend list so we don't show
+      // the previous user's friends after a sign-in/out flip.
+      if (prevUserId !== (currentUser?.id || null)) {
+        friendsCache = null;
+        friendsInflight = null;
+      }
       await Promise.all([loadProfile(), loadUserBooks()]);
       notify();
     });
@@ -139,28 +146,47 @@
     }
   }
 
-  async function listFriends() {
+  // Friend-list cache. Cleared on signOut + on auth state change. The actual
+  // friend list doesn't change inside a single SPA session unless the user
+  // adds/removes a friend — so calling listFriends() repeatedly from Compare,
+  // Settings, etc. shouldn't trigger a fresh query every time.
+  let friendsCache = null;
+  let friendsInflight = null;
+
+  async function listFriends({ force = false } = {}) {
     if (!currentUser) return [];
-    const { data, error } = await withTimeout(
-      client.from('friendships')
-        .select('user_id_a, user_id_b, created_at')
-        .or(`user_id_a.eq.${currentUser.id},user_id_b.eq.${currentUser.id}`),
-      8000, 'friendships load'
-    );
-    if (error) { console.error('friendships load:', error); return []; }
-    const friendIds = (data || []).map(f =>
-      f.user_id_a === currentUser.id ? f.user_id_b : f.user_id_a
-    );
-    if (friendIds.length === 0) return [];
-    const { data: profs, error: pErr } = await withTimeout(
-      client.from('profiles')
-        .select('id, handle, profile_visibility, on_leaderboard')
-        .in('id', friendIds),
-      8000, 'friend profiles load'
-    );
-    if (pErr) { console.error('friend profiles load:', pErr); return []; }
-    return profs || [];
+    if (!force && friendsCache) return friendsCache;
+    if (!force && friendsInflight) return friendsInflight;
+    friendsInflight = (async () => {
+      const { data, error } = await withTimeout(
+        client.from('friendships')
+          .select('user_id_a, user_id_b, created_at')
+          .or(`user_id_a.eq.${currentUser.id},user_id_b.eq.${currentUser.id}`),
+        8000, 'friendships load'
+      );
+      if (error) { console.error('friendships load:', error); return []; }
+      const friendIds = (data || []).map(f =>
+        f.user_id_a === currentUser.id ? f.user_id_b : f.user_id_a
+      );
+      if (friendIds.length === 0) { friendsCache = []; return friendsCache; }
+      const { data: profs, error: pErr } = await withTimeout(
+        client.from('profiles')
+          .select('id, handle, profile_visibility, on_leaderboard')
+          .in('id', friendIds),
+        8000, 'friend profiles load'
+      );
+      if (pErr) { console.error('friend profiles load:', pErr); friendsCache = []; return friendsCache; }
+      friendsCache = profs || [];
+      return friendsCache;
+    })();
+    try {
+      return await friendsInflight;
+    } finally {
+      friendsInflight = null;
+    }
   }
+
+  function invalidateFriendsCache() { friendsCache = null; }
 
   async function addFriendByHandle(handle) {
     if (!currentUser) throw new Error('Not signed in');
@@ -177,6 +203,7 @@
     const { error } = await client.from('friendships')
       .insert({ user_id_a: a, user_id_b: b });
     if (error && error.code !== '23505') throw error;  // ignore "already friends"
+    friendsCache = null;  // freshly added — next listFriends() refetches
     return target;
   }
 
@@ -187,6 +214,7 @@
       : [friendId, currentUser.id];
     const { error } = await client.from('friendships')
       .delete().eq('user_id_a', a).eq('user_id_b', b);
+    if (!error) friendsCache = null;  // refresh on next read
     if (error) throw error;
   }
 
@@ -246,6 +274,7 @@
     showSignInModal,
     setBookStatus,
     listFriends,
+    invalidateFriendsCache,
     addFriendByHandle,
     removeFriend,
     updateProfile,

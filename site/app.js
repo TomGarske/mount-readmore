@@ -1525,6 +1525,23 @@ function renderNebula2026() {
 // - 'me' resolves to the signed-in user's user_books (cached in MR_AUTH)
 // - Anything else is treated as a Supabase profile handle (case-insensitive)
 //   and we fetch their user_books over the wire.
+//
+// Per-handle results are cached in `__compareSideCache` so re-rendering the
+// compare page (back and forth, picker → comparison) doesn't refetch.
+
+const __compareSideCache = new Map();    // handle (lowercased) → side object
+const __compareFriendCountsCache = {     // friends list digest → counts map
+  signature: null,                       // joined friend IDs to detect staleness
+  counts: null,
+};
+
+function __invalidateCompareCaches() {
+  __compareSideCache.clear();
+  __compareFriendCountsCache.signature = null;
+  __compareFriendCountsCache.counts = null;
+  __mrLeaderboardCache = null;
+}
+
 async function loadCompareSide(id, colorIdx = 0) {
   const PALETTE = [
     { colorVar: 'var(--accent)',   colorRgb: '29,78,216'   },
@@ -1548,6 +1565,17 @@ async function loadCompareSide(id, colorIdx = 0) {
       statusMap: window.MR_AUTH?.userBooks || {},
     };
   }
+  const key = String(id || '').toLowerCase();
+  if (__compareSideCache.has(key)) {
+    // Re-apply the requested palette color (may differ across views) but keep
+    // the cached profile + statusMap.
+    const cached = __compareSideCache.get(key);
+    return {
+      ...cached,
+      colorVar: cached.legacyColor || fallback.colorVar,
+      colorRgb: cached.legacyRgb   || fallback.colorRgb,
+    };
+  }
   const client = window.MR_AUTH?.client;
   if (!client) return null;
   // ilike for case-insensitive handle lookup (SappySaffron etc)
@@ -1561,13 +1589,17 @@ async function loadCompareSide(id, colorIdx = 0) {
   for (const r of ub || []) statusMap[r.book_id] = r;
   // If the handle matches a legacy READER_CONFIG, reuse its color for visual continuity
   const legacy = READER_CONFIG[prof.handle.toLowerCase()];
-  return {
+  const side = {
     handle: prof.handle,
     label: prof.handle,
     colorVar: legacy?.colorVar || fallback.colorVar,
     colorRgb: legacy?.colorRgb || fallback.colorRgb,
+    legacyColor: legacy?.colorVar || null,
+    legacyRgb: legacy?.colorRgb || null,
     statusMap,
   };
+  __compareSideCache.set(key, side);
+  return side;
 }
 
 async function renderCompare(params) {
@@ -1627,17 +1659,25 @@ async function renderCompare(params) {
       return;
     }
 
-    // For each friend, fetch a read count in parallel (was sequential — saw
-    // ~80ms per friend × N friends; Promise.all collapses that to ~one round
-    // trip).
+    // Per-friend read counts. Cache them across navigations so re-opening
+    // /compare doesn't refetch every time. Cache key = sorted friend IDs;
+    // any add/remove changes the signature and forces a refresh.
     const client = window.MR_AUTH.client;
-    const counts = {};
-    await Promise.all(friends.map(async (f) => {
-      const { count } = await client.from('user_books')
-        .select('book_id', { count: 'exact', head: true })
-        .eq('user_id', f.id).eq('status', 'read');
-      counts[f.id] = count ?? 0;
-    }));
+    const signature = friends.map(f => f.id).sort().join(',');
+    let counts;
+    if (__compareFriendCountsCache.signature === signature && __compareFriendCountsCache.counts) {
+      counts = __compareFriendCountsCache.counts;
+    } else {
+      counts = {};
+      await Promise.all(friends.map(async (f) => {
+        const { count } = await client.from('user_books')
+          .select('book_id', { count: 'exact', head: true })
+          .eq('user_id', f.id).eq('status', 'read');
+        counts[f.id] = count ?? 0;
+      }));
+      __compareFriendCountsCache.signature = signature;
+      __compareFriendCountsCache.counts = counts;
+    }
 
     const meSlug = encodeURIComponent(myHandle);
     const friendRow = (f) => `
@@ -2656,7 +2696,10 @@ async function init() {
       applySoloUI();
       applyReaderFilterVisibility();
       renderAuthPill();
-      __mrLeaderboardCache = null;  // re-fetch so "you" highlight is fresh
+      // Identity changed → drop everything that's user-scoped so the next
+      // page render sees fresh data for the new (or no) user.
+      __invalidateCompareCaches();
+      window.MR_AUTH.invalidateFriendsCache?.();
       route();
     });
   }
