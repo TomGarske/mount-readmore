@@ -2099,6 +2099,22 @@ function route() {
     window.scrollTo(0, 0);
     return;
   }
+  if (path === '#/signin') {
+    // Shareable sign-in URL — opens the magic-link modal over the home view.
+    // Already-signed-in visitors get bounced to settings instead of the modal.
+    if (window.MR_AUTH?.user) {
+      location.hash = '#/settings';
+      return;
+    }
+    // Render the underlying stats view, then pop the modal.
+    renderStats();
+    showView('stats');
+    window.scrollTo(0, 0);
+    const params = new URLSearchParams(qs || location.search || '');
+    const email = params.get('email') || '';
+    setTimeout(() => window.MR_AUTH?.showSignInModal(email), 50);
+    return;
+  }
   if (path === '#/settings') {
     renderSettings();
     showView('settings');

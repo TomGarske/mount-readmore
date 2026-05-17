@@ -63,7 +63,7 @@
     });
   }
 
-  function showSignInModal() {
+  function showSignInModal(prefillEmail) {
     let dlg = document.getElementById('mr-signin-dialog');
     if (!dlg) {
       dlg = document.createElement('dialog');
@@ -109,10 +109,12 @@
         }
       });
     }
-    dlg.querySelector('#mr-signin-email').value = '';
+    dlg.querySelector('#mr-signin-email').value = prefillEmail || '';
     dlg.querySelector('#mr-signin-status').textContent = '';
     dlg.querySelector('#mr-signin-submit').disabled = false;
     dlg.showModal();
+    // Focus the email field after the dialog has opened.
+    setTimeout(() => dlg.querySelector('#mr-signin-email')?.focus(), 0);
   }
 
   async function listFriends() {
