@@ -37965,6 +37965,7 @@
       "award_years": {
         "hugo": 2025
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1683036761i/127284214.jpg",
       "author_genders": [
         "male"
       ],
@@ -45129,9 +45130,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novella": 78,
       "Novelette": 78,
-      "Novel": 638
+      "Novel": 638,
+      "Novella": 78
     }
   }
 }
