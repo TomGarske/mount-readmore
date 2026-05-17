@@ -43,7 +43,10 @@ TITLE_COL_FOR_SHEET = {
 }
 
 
-GENRE_RULES = [
+import re as _re
+
+# Subgenre rules — checked first, narrower / more specific
+SUBGENRE_RULES = [
     ("Space Opera",      [r"space opera", r"interplanetary", r"galactic empire"]),
     ("Hard SF",          [r"hard science fiction", r"hard sf", r"hard sci"]),
     ("Time Travel",      [r"time travel", r"time-travel"]),
@@ -51,31 +54,44 @@ GENRE_RULES = [
     ("Dystopian",        [r"dystopia", r"post-apocalyp", r"postapocalyp"]),
     ("First Contact",    [r"human-alien", r"first contact"]),
     ("Military SF",      [r"military science fiction", r"military sf", r"space war"]),
-    ("Horror",           [r"\bhorror\b"]),
+    ("Alternate History", [r"alternate history", r"alternative history"]),
     ("Urban Fantasy",    [r"urban fantasy"]),
     ("Epic Fantasy",     [r"epic fantasy", r"heroic fantasy", r"sword and sorcery"]),
     ("Magical Realism",  [r"magical realism", r"magic realism"]),
     ("Fairy Tale",       [r"fairy tale", r"folklore", r"folk tale"]),
-    ("Alternate History", [r"alternate history", r"alternative history"]),
-    ("Fantasy",          [r"\bfantasy\b", r"\bmagic\b", r"dragon", r"wizard", r"witch"]),
-    ("Science Fiction",  [r"science[ -]?fiction", r"\bsf\b", r"science-fiction"]),
+    ("Horror",           [r"\bhorror\b"]),
 ]
+_SUBGENRE_RES = [(label, [_re.compile(p, _re.IGNORECASE) for p in pats]) for label, pats in SUBGENRE_RULES]
 
-import re as _re
-_GENRE_RES = [(label, [_re.compile(p, _re.IGNORECASE) for p in pats]) for label, pats in GENRE_RULES]
+# Primary genre detection — Science Fiction vs Fantasy vs Blend
+_RE_SF = _re.compile(r"science[ -]?fiction|\bsf\b|science-fiction|space opera|hard science|cyberpunk|interplanetary|robot|spaceship|extraterrestrial", _re.IGNORECASE)
+_RE_FANTASY = _re.compile(r"\bfantasy\b|\bmagic\b|dragon|wizard|witch|sorcer|elves|fairy tale|mythopo", _re.IGNORECASE)
 
 
-def categorize_genres(subjects: list[str]) -> list[str]:
-    """Map a list of Open Library subjects into a small set of genre labels."""
+def categorize_genres(subjects: list[str]) -> tuple[str, list[str]]:
+    """Return (primary_genre, subgenres). primary is 'Science Fiction', 'Fantasy', 'Blend', 'Horror', or '' if unknown."""
     if not subjects:
-        return []
+        return "", []
     text = " | ".join(subjects).lower()
-    found = []
-    for label, regexes in _GENRE_RES:
+    has_sf = bool(_RE_SF.search(text))
+    has_fantasy = bool(_RE_FANTASY.search(text))
+    # Subgenres
+    subgenres = []
+    for label, regexes in _SUBGENRE_RES:
         if any(rx.search(text) for rx in regexes):
-            found.append(label)
-    # Dedupe overlapping (Hard SF, Space Opera, etc. imply Science Fiction; keep both)
-    return found
+            subgenres.append(label)
+    # Primary
+    if has_sf and has_fantasy:
+        primary = "Blend"
+    elif has_sf:
+        primary = "Science Fiction"
+    elif has_fantasy:
+        primary = "Fantasy"
+    elif "Horror" in subgenres:
+        primary = "Horror"
+    else:
+        primary = ""
+    return primary, subgenres
 
 
 def slugify(s: str) -> str:
@@ -205,6 +221,33 @@ def apply_author_gender(records: list[dict], path: Path) -> int:
     return applied
 
 
+def apply_google_books_cache(records: list[dict], path: Path) -> int:
+    """Second-pass cover enrichment: for books without cover_url after Open Library,
+    fill in from Google Books cache."""
+    if not path.exists():
+        return 0
+    with path.open() as f:
+        cache = json.load(f)
+    applied = 0
+    for r in records:
+        if r.get("cover_url"):
+            continue
+        author = r["authors"][0] if r.get("authors") else ""
+        key = f"{r['title'].strip().lower()}|{author.strip().lower()}"
+        meta = cache.get(key)
+        if not meta or not meta.get("cover_url"):
+            continue
+        r["cover_url"] = meta["cover_url"]
+        if not r.get("isbn") and meta.get("isbn"):
+            r["isbn"] = meta["isbn"]
+        if not r.get("pages") and meta.get("pages"):
+            r["pages"] = meta["pages"]
+        if not r.get("first_pub_year") and meta.get("first_pub_year"):
+            r["first_pub_year"] = meta["first_pub_year"]
+        applied += 1
+    return applied
+
+
 def apply_cover_cache(records: list[dict], cache_path: Path, desc_path: Path | None = None) -> int:
     if not cache_path.exists():
         return 0
@@ -234,7 +277,13 @@ def apply_cover_cache(records: list[dict], cache_path: Path, desc_path: Path | N
             subjects = desc_cache[ol_key].get("subjects", [])
             if subjects:
                 r["subjects"] = subjects
-                r["genres"] = categorize_genres(subjects)
+                primary, subs = categorize_genres(subjects)
+                if primary:
+                    r["primary_genre"] = primary
+                if subs:
+                    r["subgenres"] = subs
+                # Keep legacy "genres" field as union for back-compat with existing UI bits
+                r["genres"] = ([primary] if primary else []) + subs
     return applied
 
 
@@ -254,9 +303,57 @@ def main() -> None:
         print(f"  {stem:25s} {len(recs):4d} books from {src.name}")
         all_records.extend(recs)
 
-    # Deduplicate ids in case of slug collision
+    # Merge duplicate books that appear under multiple award years (e.g. The Moon
+    # Is a Harsh Mistress as Hugo 1967 winner + Nebula 1966 nominee). Group by
+    # (normalized title, normalized first author, category). Combine awards,
+    # take the year of the highest-priority award (winner > nominee, then latest).
+    AWARD_PRIORITY = {"winner": 2, "nominee": 1}
+    merged: dict[tuple, dict] = {}
+    for r in all_records:
+        t = (r.get("title") or "").strip().lower()
+        a = ((r.get("authors") or [""])[0] or "").strip().lower()
+        cat = r.get("category", "")
+        key = (t, a, cat)
+        if key not in merged:
+            merged[key] = r
+            r["award_years"] = {k: r.get("year") for k in r.get("awards", {}).keys()}
+            continue
+        existing = merged[key]
+        existing_years = existing.setdefault("award_years", {})
+        # Merge awards: winner outranks nominee for the same award
+        for award, status in r.get("awards", {}).items():
+            cur = existing["awards"].get(award)
+            if cur is None or AWARD_PRIORITY.get(status, 0) > AWARD_PRIORITY.get(cur, 0):
+                existing["awards"][award] = status
+                existing_years[award] = r.get("year")
+            elif award not in existing_years:
+                existing_years[award] = r.get("year")
+        # Year — recompute from highest-priority award
+        best_year = None
+        best_pri = -1
+        for award, status in existing["awards"].items():
+            p = AWARD_PRIORITY.get(status, 0)
+            yr = existing_years.get(award)
+            if yr and (p > best_pri or (p == best_pri and (best_year is None or yr > best_year))):
+                best_pri = p
+                best_year = yr
+        if best_year:
+            existing["year"] = best_year
+        # Merge reader fields — prefer non-empty
+        for col in ["tom", "nika", "westdac", "tom_shelf", "nika_shelf", "westdac_shelf",
+                    "tom_date_read", "tom_rating", "westdac_date_read", "westdac_rating",
+                    "nika_date_read", "nika_rating", "series", "publisher"]:
+            if not existing.get(col) and r.get(col):
+                existing[col] = r[col]
+    all_records = list(merged.values())
+
+    # Rebuild ids deterministically after merge (drop year suffix variants)
     seen: dict[str, int] = {}
     for r in all_records:
+        # Recompute id without per-year suffix collisions
+        first_author = r["authors"][0] if r.get("authors") else "unknown"
+        last_name = first_author.split()[-1] if first_author and first_author != "unknown" else "x"
+        r["id"] = f"{slugify(r['title'])}-{slugify(last_name)}-{r.get('year') or 'n'}-{r['category'].lower()}"
         base = r["id"]
         n = seen.get(base, 0)
         if n:
@@ -264,10 +361,12 @@ def main() -> None:
         seen[base] = n + 1
 
     covers = apply_cover_cache(all_records, args.data / "openlib_cache.json", args.data / "openlib_descriptions.json")
+    google_covers = apply_google_books_cache(all_records, args.data / "google_books_cache.json")
     descs = sum(1 for r in all_records if r.get("description"))
     gend = apply_author_gender(all_records, args.data / "author_gender.json")
     genres = sum(1 for r in all_records if r.get("genres"))
-    print(f"  Applied {covers} cover URLs + {descs} descriptions + {genres} genre sets + {gend} author genders")
+    total_covers = sum(1 for r in all_records if r.get("cover_url"))
+    print(f"  Applied {covers} OL covers + {google_covers} Google Books covers ({total_covers} total) + {descs} descs + {genres} genre sets + {gend} genders")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w") as f:

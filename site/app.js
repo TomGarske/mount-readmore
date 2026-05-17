@@ -423,16 +423,45 @@ function renderStats() {
     }
   }
 
-  // ===== Genre radar (spider) per active reader =====
-  const RADAR_GENRES = ['Science Fiction', 'Fantasy', 'Space Opera', 'Hard SF', 'First Contact', 'Horror', 'Time Travel', 'Military SF'];
+  // ===== Subgenre buckets (for radar + breakdown) =====
+  const subBuckets = {};
+  for (const b of winners) {
+    for (const g of (b.subgenres || [])) {
+      if (!subBuckets[g]) subBuckets[g] = emptyBucket();
+      subBuckets[g].total++;
+      if (readStatus(b, 'tom') === 'read') subBuckets[g].tom++;
+      if (readStatus(b, 'nika') === 'read') subBuckets[g].nika++;
+      if (readStatus(b, 'westdac') === 'read') subBuckets[g].westdac++;
+    }
+  }
+
+  // ===== Primary genre buckets =====
+  const primaryBuckets = {};
+  for (const b of winners) {
+    const p = b.primary_genre || 'Unclassified';
+    if (!primaryBuckets[p]) primaryBuckets[p] = emptyBucket();
+    primaryBuckets[p].total++;
+    if (readStatus(b, 'tom') === 'read') primaryBuckets[p].tom++;
+    if (readStatus(b, 'nika') === 'read') primaryBuckets[p].nika++;
+    if (readStatus(b, 'westdac') === 'read') primaryBuckets[p].westdac++;
+  }
+  const primaryList = ['Science Fiction', 'Fantasy', 'Blend', 'Horror', 'Unclassified']
+    .filter(p => primaryBuckets[p] && primaryBuckets[p].total > 0)
+    .map(p => ({ name: p, ...primaryBuckets[p] }));
+
+  // ===== Subgenre radar — top 8 most populated subgenres in scope =====
+  const RADAR_AXES = Object.entries(subBuckets)
+    .sort((a, b) => b[1].total - a[1].total)
+    .slice(0, 8)
+    .map(([name]) => name);
   const radarValues = {};
   for (const r of ACTIVE_READERS) {
-    radarValues[r.id] = RADAR_GENRES.map(g => {
-      const bucket = genreBuckets[g] || { total: 0, tom: 0, nika: 0, westdac: 0 };
+    radarValues[r.id] = RADAR_AXES.map(g => {
+      const bucket = subBuckets[g] || { total: 0 };
       return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
     });
   }
-  const radarHtml = buildRadar(RADAR_GENRES, radarValues);
+  const radarHtml = RADAR_AXES.length >= 3 ? buildRadar(RADAR_AXES, radarValues) : '<p style="color:var(--muted)">Not enough subgenre coverage in this view.</p>';
   const genres = Object.entries(genreBuckets)
     .map(([name, s]) => ({ name, ...s }))
     .sort((a, b) => b.total - a.total);
@@ -500,11 +529,14 @@ function renderStats() {
   }
 
   // ===== Genre-combination "vectors" =====
+  // Now grouped as (primary, sorted subgenres) — gives signal about which
+  // SF / Fantasy / Blend × subgenre combinations have the highest win rate.
   const comboBuckets = {};
   for (const b of DATA.books) {
-    const gs = (b.genres || []).slice().sort();
-    if (gs.length === 0) continue;
-    const key = gs.join(' + ');
+    const primary = b.primary_genre || '';
+    const subs = (b.subgenres || []).slice().sort();
+    if (!primary && subs.length === 0) continue;
+    const key = primary + (subs.length ? ' / ' + subs.join(' + ') : '');
     if (!comboBuckets[key]) comboBuckets[key] = { total: 0, winners: 0, tomRead: 0, nikaRead: 0, westdacRead: 0 };
     comboBuckets[key].total++;
     if (Object.values(b.awards || {}).includes('winner')) comboBuckets[key].winners++;
@@ -679,9 +711,12 @@ function renderStats() {
     tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).map(([a, s]) => `${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}`).join(' · ')}`, readerPills(b, 'shelf'))
   ).join('');
 
-  const upNextHtml = upNext.map(b =>
-    tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]).join(' · ')} winner`)
-  ).join('');
+  const upNextHtml = upNext.map(b => {
+    const ws = Object.entries(b.awards).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]);
+    const ns = Object.entries(b.awards).filter(([, s]) => s === 'nominee').map(([a]) => AWARD_LABELS[a]);
+    const awardLabel = ws.length ? `${ws.join(' · ')} winner` : (ns.length ? `${ns.join(' · ')} nominee` : '');
+    return tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year || ''} ${awardLabel}`.trim());
+  }).join('');
 
   const root = $('#view-stats');
 
@@ -829,34 +864,6 @@ function renderStats() {
       <div class="recent-reads">${recentEitherHtml}</div>
     </div>` : ''}
 
-    <div class="year-progress-grid${SOLO ? ' solo' : ''}">
-      ${SHOW_TOM ? `<div class="year-card">
-        <div class="year-card-header">
-          <span class="year-card-name">${SOLO === 'tom' ? `${currentYear} on the list` : 'Tom'}</span>
-          <span class="year-card-year">${currentYear}</span>
-        </div>
-        <div class="year-card-stat"><strong>${thisYearTomRead.length}</strong> of ${thisYearAll.length} on the ${currentYear} list read</div>
-        <div class="year-card-stat"><strong>${thisYearTomShelf.length}</strong> on the nightstand from ${currentYear}</div>
-        <div class="year-card-stat">Currently reading: <strong>${currentlyReading.length === 0 ? 'nothing from this list' : currentlyReading.map(b => escapeHtml(b.title)).join(', ')}</strong></div>
-      </div>` : ''}
-      ${SHOW_NIKA ? `<div class="year-card">
-        <div class="year-card-header">
-          <span class="year-card-name nika">${SOLO === 'nika' ? `${currentYear} on the list` : 'Nika'}</span>
-          <span class="year-card-year">${currentYear}</span>
-        </div>
-        <div class="year-card-stat"><strong>${thisYearNikaRead.length}</strong> of ${thisYearAll.length} on the ${currentYear} list read</div>
-        <div class="year-card-stat"><strong>${thisYearNikaShelf.length}</strong> on the nightstand from ${currentYear}</div>
-        <div class="year-card-stat" style="color: var(--muted); font-size: 12px;">StoryGraph doesn't expose currently-reading</div>
-      </div>` : ''}
-      ${SHOW_WESTDAC ? `<div class="year-card">
-        <div class="year-card-header">
-          <span class="year-card-name westdac">${SOLO === 'westdac' ? `${currentYear} on the list` : 'Westdac'}</span>
-          <span class="year-card-year">${currentYear}</span>
-        </div>
-        <div class="year-card-stat"><strong>${thisYearWestdacRead.length}</strong> of ${thisYearAll.length} on the ${currentYear} list read</div>
-        <div class="year-card-stat"><strong>${thisYearWestdacShelf.length}</strong> on the nightstand from ${currentYear}</div>
-      </div>` : ''}
-    </div>
 
     ${nightstandBooks.length > 0 ? `<div class="progress-section">
       <h2>On the nightstand (${nightstandBooks.length})</h2>
@@ -884,16 +891,16 @@ function renderStats() {
 
 
     <div class="progress-section">
-      <h2>Genre fingerprint</h2>
-      <p style="color: var(--muted); font-size: 13px;">Each axis = a genre. Distance from center = % of that genre's ${SUBSET} this reader has finished. Bigger / more even shape = broader coverage.</p>
+      <h2>Subgenre fingerprint</h2>
+      <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre's ${SUBSET} this reader has finished. Bigger / more even shape = broader coverage.</p>
       ${radarHtml}
     </div>
 
     <div class="progress-section">
-      <h2>By genre (${SUBSET})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Genre tags inferred from Open Library subject lists. A book can be tagged with multiple (e.g. Space Opera + Hard SF).</p>
+      <h2>By primary genre (${SUBSET})</h2>
+      <p style="color: var(--muted); font-size: 13px;">Top-level genre derived from Open Library subjects. "Blend" means the subjects clearly point at both SF and Fantasy.</p>
       <div class="genre-bars">
-        ${genres.map(g => {
+        ${primaryList.map(g => {
           const activeRead = SOLO ? g[SOLO] : g.tom;
           const pct = g.total > 0 ? (activeRead / g.total) * 100 : 0;
           const sub = SOLO
@@ -910,11 +917,34 @@ function renderStats() {
       </div>
     </div>
 
+    <div class="progress-section">
+      <h2>By subgenre (${SUBSET})</h2>
+      <p style="color: var(--muted); font-size: 13px;">Specific subgenre tags. A book can carry multiple (e.g. Space Opera + Hard SF + Military SF).</p>
+      <div class="genre-bars">
+        ${Object.entries(subBuckets).map(([name, s]) => ({name, ...s}))
+          .sort((a, b) => b.total - a.total)
+          .map(g => {
+            const activeRead = SOLO ? g[SOLO] : g.tom;
+            const pct = g.total > 0 ? (activeRead / g.total) * 100 : 0;
+            const sub = SOLO
+              ? `${activeRead} read`
+              : ACTIVE_READERS.map(r => `${r.label} ${g[r.id]}`).join(' · ');
+            return `<div class="genre-row">
+              <div class="genre-name">${escapeHtml(g.name)}</div>
+              <div class="genre-bar">
+                <div class="genre-bar-fill" style="width: ${pct}%;"></div>
+              </div>
+              <div class="genre-count">${activeRead} / ${g.total}<span style="color:var(--muted)"> · ${sub}</span></div>
+            </div>`;
+          }).join('')}
+      </div>
+    </div>
+
     ${comparisonHtml}
 
     <div class="progress-section">
       <h2>Genre vectors — which combinations win most?</h2>
-      <p style="color: var(--muted); font-size: 13px;">Every book on the list (winners + nominees) bucketed by its sorted genre tuple. Win rate = winners ÷ (winners + nominees). Filtered to combos with at least 3 books and sorted by win rate.</p>
+      <p style="color: var(--muted); font-size: 13px;">Every book on the list (winners + nominees) bucketed by <strong>primary genre / subgenres</strong>. Win rate = winners ÷ (winners + nominees). Filtered to combos with at least 3 books and sorted by win rate.</p>
       <div class="vector-table">
         <div class="vector-row vector-head">
           <div>Genre vector</div>
