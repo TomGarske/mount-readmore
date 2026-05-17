@@ -6,22 +6,49 @@ const AWARD_LABELS = {
 };
 
 let DATA = { books: [], meta: {} };
-// Reader visibility — driven by ?reader=tom,nika,westdac (comma-separated).
-// Default: just Tom. ?reader=nika hides Tom. ?reader=tom,nika,westdac shows all three.
-const READERS = ((new URLSearchParams(window.location.search).get('reader')) || 'tom')
-  .split(',').map(r => r.trim().toLowerCase()).filter(Boolean);
+
+// Canonical reader config — adding a reader: drop in here, no other code changes.
+// colorRgb matches the hex of the CSS --accent-* variable (for SVG fills + rgba mixing).
+const READER_CONFIG = {
+  tom:     { id: 'tom',     label: 'Tom',     initial: 'T', cls: 'reader-t', colorVar: 'var(--accent)',   colorRgb: '45,138,115' },
+  nika:    { id: 'nika',    label: 'Nika',    initial: 'N', cls: 'reader-n', colorVar: 'var(--accent-2)', colorRgb: '142,77,125' },
+  westdac: { id: 'westdac', label: 'Westdac', initial: 'W', cls: 'reader-w', colorVar: 'var(--accent-3)', colorRgb: '182,120,60' },
+  colton:  { id: 'colton',  label: 'Colton',  initial: 'C', cls: 'reader-c', colorVar: 'var(--accent-4)', colorRgb: '67,101,135' },
+  schupp:  { id: 'schupp',  label: 'Schupp',  initial: 'S', cls: 'reader-s', colorVar: 'var(--accent-5)', colorRgb: '168,63,89' },
+};
+const ALL_READER_IDS = Object.keys(READER_CONFIG);
+// Initial → id map (T->tom, N->nika, W->westdac, C->colton, S->schupp). Used to
+// accept ?reader=T,N or ?reader=T&reader=N alongside the long-form names.
+const INITIAL_TO_ID = Object.fromEntries(
+  ALL_READER_IDS.map(id => [READER_CONFIG[id].initial.toLowerCase(), id])
+);
+
+// Reader visibility — driven by URL query.
+// Accepts: ?reader=tom,nika,westdac  (comma-separated full names)
+//          ?reader=T,N,W             (comma-separated initials)
+//          ?reader=tom&reader=nika   (repeated param)
+//          ?readers=...              (plural alias)
+// Default: just Tom.
+const READERS = (() => {
+  const params = new URLSearchParams(window.location.search);
+  const raw = [];
+  for (const key of ['reader', 'readers']) {
+    for (const val of params.getAll(key)) {
+      val.split(',').forEach(v => raw.push(v.trim().toLowerCase()));
+    }
+  }
+  const ids = (raw.length ? raw : ['tom'])
+    .map(r => READER_CONFIG[r] ? r : (INITIAL_TO_ID[r] || r))
+    .filter(r => READER_CONFIG[r]);
+  return ids.length ? ids : ['tom'];
+})();
 const SHOW_TOM = READERS.includes('tom');
 const SHOW_NIKA = READERS.includes('nika');
 const SHOW_WESTDAC = READERS.includes('westdac');
+const SHOW_COLTON = READERS.includes('colton');
+const SHOW_SCHUPP = READERS.includes('schupp');
 // SOLO is the single-reader name when only one reader is selected, else null.
 const SOLO = (READERS.length === 1) ? READERS[0] : null;
-
-// Canonical config keeps per-reader rendering DRY
-const READER_CONFIG = {
-  tom: { id: 'tom', label: 'Tom', initial: 'T', cls: 'reader-t', colorVar: 'var(--accent)' },
-  nika: { id: 'nika', label: 'Nika', initial: 'N', cls: 'reader-n', colorVar: 'var(--accent-2)' },
-  westdac: { id: 'westdac', label: 'Westdac', initial: 'W', cls: 'reader-w', colorVar: 'var(--accent-3)' },
-};
 const ACTIVE_READERS = READERS.map(r => READER_CONFIG[r]).filter(Boolean);
 const showReader = (id) => READERS.includes(id);
 let state = {
@@ -29,6 +56,8 @@ let state = {
   readTom: 'all',
   readNika: 'all',
   readWestdac: 'all',
+  readColton: 'all',
+  readSchupp: 'all',
   awards: new Set(Object.keys(AWARD_LABELS)),
   statuses: new Set(['winner', 'nominee']),
   categories: new Set(['Novel', 'Novella', 'Novelette']),
@@ -59,7 +88,7 @@ function matchesFilters(book) {
     const hay = (book.title + ' ' + (book.author_raw || '')).toLowerCase();
     if (!hay.includes(q)) return false;
   }
-  const readerKeyMap = { tom: 'readTom', nika: 'readNika', westdac: 'readWestdac' };
+  const readerKeyMap = { tom: 'readTom', nika: 'readNika', westdac: 'readWestdac', colton: 'readColton', schupp: 'readSchupp' };
   for (const r of ACTIVE_READERS) {
     const who = r.id, key = readerKeyMap[who];
     if (!key) continue;
@@ -133,17 +162,15 @@ function buildRadar(axes, readerValues) {
     return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anchor}" alignment-baseline="middle" fill="var(--muted)" font-size="11" font-weight="600">${label}</text>`;
   }).join('');
   // Reader polygons + dots
-  const colorRgb = { tom: '125,211,192', nika: '180,142,173', westdac: '212,160,112' };
   const polys = Object.entries(readerValues).map(([id, vals]) => {
     const cfg = READER_CONFIG[id];
     if (!cfg) return '';
     const pts = vals.map((v, i) => pt(i, v).map(x => x.toFixed(1)).join(',')).join(' ');
-    const rgb = colorRgb[id];
     const dots = vals.map((v, i) => {
       const [x, y] = pt(i, v);
       return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.5" fill="${cfg.colorVar}" stroke="#0f1115" stroke-width="1"/>`;
     }).join('');
-    return `<polygon points="${pts}" fill="rgba(${rgb}, 0.18)" stroke="${cfg.colorVar}" stroke-width="2" stroke-linejoin="round"/>${dots}`;
+    return `<polygon points="${pts}" fill="rgba(${cfg.colorRgb}, 0.18)" stroke="${cfg.colorVar}" stroke-width="2" stroke-linejoin="round"/>${dots}`;
   }).join('');
   // Legend
   const legend = Object.entries(readerValues).map(([id]) => {
@@ -325,17 +352,26 @@ function renderStats() {
   const winnersTom = winners.filter(b => readStatus(b, 'tom') === 'read');
   const winnersNika = winners.filter(b => readStatus(b, 'nika') === 'read');
   const winnersWestdac = winners.filter(b => readStatus(b, 'westdac') === 'read');
+  const winnersColton = winners.filter(b => readStatus(b, 'colton') === 'read');
+  const winnersSchupp = winners.filter(b => readStatus(b, 'schupp') === 'read');
   const winnersBoth = winners.filter(b => readStatus(b, 'tom') === 'read' && readStatus(b, 'nika') === 'read');
   const winnersEither = winners.filter(b => ACTIVE_READERS.some(r => readStatus(b, r.id) === 'read'));
-  const winnersByReader = { tom: winnersTom, nika: winnersNika, westdac: winnersWestdac };
+  const winnersByReader = { tom: winnersTom, nika: winnersNika, westdac: winnersWestdac, colton: winnersColton, schupp: winnersSchupp };
 
   // Tom shelf overlap (books that are on his Goodreads to-read shelf AND in our list)
   const onShelf = DATA.books.filter(b => b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read');
   const currentlyReading = DATA.books.filter(b => b.tom_shelf === 'currently-reading');
 
-  // Nika shelf count for solo headline
-  const nikaOnShelfCount = DATA.books.filter(b => b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read').length;
-  const westdacOnShelfCount = DATA.books.filter(b => b.westdac_shelf === 'to-read' && readStatus(b, 'westdac') !== 'read').length;
+  // Per-reader shelf count for solo headline
+  const shelfCountByReader = {
+    tom: DATA.books.filter(b => b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read').length,
+    nika: DATA.books.filter(b => b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read').length,
+    westdac: DATA.books.filter(b => b.westdac_shelf === 'to-read' && readStatus(b, 'westdac') !== 'read').length,
+    colton: DATA.books.filter(b => b.colton_shelf === 'to-read' && readStatus(b, 'colton') !== 'read').length,
+    schupp: DATA.books.filter(b => b.schupp_shelf === 'to-read' && readStatus(b, 'schupp') !== 'read').length,
+  };
+  const nikaOnShelfCount = shelfCountByReader.nika;
+  const westdacOnShelfCount = shelfCountByReader.westdac;
 
   // This year (2026) — all readers
   const currentYear = new Date().getFullYear();
@@ -347,7 +383,11 @@ function renderStats() {
   const thisYearNikaShelf = thisYearAll.filter(b => b.nika_shelf === 'to-read');
   const thisYearWestdacShelf = thisYearAll.filter(b => b.westdac_shelf === 'to-read');
 
-  const emptyBucket = () => ({ total: 0, tom: 0, nika: 0, westdac: 0 });
+  const emptyBucket = () => {
+    const b = { total: 0 };
+    for (const id of ALL_READER_IDS) b[id] = 0;
+    return b;
+  };
   const byAward = {};
   for (const a of Object.keys(AWARD_LABELS)) byAward[a] = emptyBucket();
   for (const b of winners) {
@@ -358,18 +398,18 @@ function renderStats() {
       if (STATUS === 'winner' && s !== 'winner') continue;
       if (STATUS === 'nominee' && s !== 'nominee') continue;
       byAward[a].total++;
-      if (readStatus(b, 'tom') === 'read') byAward[a].tom++;
-      if (readStatus(b, 'nika') === 'read') byAward[a].nika++;
-      if (readStatus(b, 'westdac') === 'read') byAward[a].westdac++;
+      for (const id of ALL_READER_IDS) {
+        if (readStatus(b, id) === 'read') byAward[a][id]++;
+      }
     }
   }
   const byCategory = {};
   for (const b of winners) {
     byCategory[b.category] = byCategory[b.category] || emptyBucket();
     byCategory[b.category].total++;
-    if (readStatus(b, 'tom') === 'read') byCategory[b.category].tom++;
-    if (readStatus(b, 'nika') === 'read') byCategory[b.category].nika++;
-    if (readStatus(b, 'westdac') === 'read') byCategory[b.category].westdac++;
+    for (const id of ALL_READER_IDS) {
+      if (readStatus(b, id) === 'read') byCategory[b.category][id]++;
+    }
   }
 
   const dated = winnersTom.filter(b => b.tom_date_read && /^\d{4}/.test(b.tom_date_read))
@@ -383,6 +423,8 @@ function renderStats() {
   if (SHOW_TOM) recentSources.push(...dated, ...winnersTom);
   if (SHOW_NIKA) recentSources.push(...winnersNika);
   if (SHOW_WESTDAC) recentSources.push(...winnersWestdac);
+  if (SHOW_COLTON) recentSources.push(...winnersColton);
+  if (SHOW_SCHUPP) recentSources.push(...winnersSchupp);
   for (const b of recentSources) {
     if (seenRecent.has(b.id)) continue;
     seenRecent.add(b.id);
@@ -401,10 +443,10 @@ function renderStats() {
   const seenShelf = new Set();
   for (const b of DATA.books) {
     if (seenShelf.has(b.id)) continue;
-    const tomOn = SHOW_TOM && b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read';
-    const nikaOn = SHOW_NIKA && b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read';
-    const westdacOn = SHOW_WESTDAC && b.westdac_shelf === 'to-read' && readStatus(b, 'westdac') !== 'read';
-    if (tomOn || nikaOn || westdacOn) {
+    const anyOn = ACTIVE_READERS.some(r =>
+      b[`${r.id}_shelf`] === 'to-read' && readStatus(b, r.id) !== 'read'
+    );
+    if (anyOn) {
       seenShelf.add(b.id);
       nightstandBooks.push(b);
     }
@@ -429,9 +471,9 @@ function renderStats() {
     for (const g of (b.subgenres || [])) {
       if (!subBuckets[g]) subBuckets[g] = emptyBucket();
       subBuckets[g].total++;
-      if (readStatus(b, 'tom') === 'read') subBuckets[g].tom++;
-      if (readStatus(b, 'nika') === 'read') subBuckets[g].nika++;
-      if (readStatus(b, 'westdac') === 'read') subBuckets[g].westdac++;
+      for (const id of ALL_READER_IDS) {
+        if (readStatus(b, id) === 'read') subBuckets[g][id]++;
+      }
     }
   }
 
@@ -441,9 +483,9 @@ function renderStats() {
     const p = b.primary_genre || 'Unclassified';
     if (!primaryBuckets[p]) primaryBuckets[p] = emptyBucket();
     primaryBuckets[p].total++;
-    if (readStatus(b, 'tom') === 'read') primaryBuckets[p].tom++;
-    if (readStatus(b, 'nika') === 'read') primaryBuckets[p].nika++;
-    if (readStatus(b, 'westdac') === 'read') primaryBuckets[p].westdac++;
+    for (const id of ALL_READER_IDS) {
+      if (readStatus(b, id) === 'read') primaryBuckets[p][id]++;
+    }
   }
   const primaryList = ['Science Fiction', 'Fantasy', 'Blend', 'Horror', 'Unclassified']
     .filter(p => primaryBuckets[p] && primaryBuckets[p].total > 0)
@@ -529,20 +571,21 @@ function renderStats() {
   }
 
   // ===== Genre-combination "vectors" =====
-  // Now grouped as (primary, sorted subgenres) — gives signal about which
-  // SF / Fantasy / Blend × subgenre combinations have the highest win rate.
   const comboBuckets = {};
   for (const b of DATA.books) {
     const primary = b.primary_genre || '';
     const subs = (b.subgenres || []).slice().sort();
     if (!primary && subs.length === 0) continue;
     const key = primary + (subs.length ? ' / ' + subs.join(' + ') : '');
-    if (!comboBuckets[key]) comboBuckets[key] = { total: 0, winners: 0, tomRead: 0, nikaRead: 0, westdacRead: 0 };
+    if (!comboBuckets[key]) {
+      comboBuckets[key] = { total: 0, winners: 0 };
+      for (const id of ALL_READER_IDS) comboBuckets[key][`${id}Read`] = 0;
+    }
     comboBuckets[key].total++;
     if (Object.values(b.awards || {}).includes('winner')) comboBuckets[key].winners++;
-    if (readStatus(b, 'tom') === 'read') comboBuckets[key].tomRead++;
-    if (readStatus(b, 'nika') === 'read') comboBuckets[key].nikaRead++;
-    if (readStatus(b, 'westdac') === 'read') comboBuckets[key].westdacRead++;
+    for (const id of ALL_READER_IDS) {
+      if (readStatus(b, id) === 'read') comboBuckets[key][`${id}Read`]++;
+    }
   }
   // Keep combos with >= 3 samples; sort by win rate desc, then by total desc
   const genreVectors = Object.entries(comboBuckets)
@@ -564,7 +607,7 @@ function renderStats() {
   // When multiple readers are active, prefer Tom for the read counts; in solo mode pick that reader
   const genderBuckets = { male: 0, female: 0, unknown: 0 };
   const genderRead = { male: 0, female: 0, unknown: 0 };
-  const genderReadActive = SOLO || (SHOW_TOM ? 'tom' : (SHOW_NIKA ? 'nika' : 'westdac'));
+  const genderReadActive = SOLO || (ACTIVE_READERS[0] ? ACTIVE_READERS[0].id : 'tom');
   for (const b of winners) {
     const g = b.primary_author_gender || 'unknown';
     if (!(g in genderBuckets)) continue;
@@ -578,12 +621,15 @@ function renderStats() {
   for (const b of DATA.books) {
     if (!b.year || b.year < leaderboardCutoff) continue;
     for (const a of (b.authors || [])) {
-      if (!authorAppearances[a]) authorAppearances[a] = { total: 0, winners: 0, tomRead: 0, nikaRead: 0, westdacRead: 0 };
+      if (!authorAppearances[a]) {
+        authorAppearances[a] = { total: 0, winners: 0 };
+        for (const id of ALL_READER_IDS) authorAppearances[a][`${id}Read`] = 0;
+      }
       authorAppearances[a].total++;
       if (Object.values(b.awards || {}).includes('winner')) authorAppearances[a].winners++;
-      if (readStatus(b, 'tom') === 'read') authorAppearances[a].tomRead++;
-      if (readStatus(b, 'nika') === 'read') authorAppearances[a].nikaRead++;
-      if (readStatus(b, 'westdac') === 'read') authorAppearances[a].westdacRead++;
+      for (const id of ALL_READER_IDS) {
+        if (readStatus(b, id) === 'read') authorAppearances[a][`${id}Read`]++;
+      }
     }
   }
   const topAuthors = Object.entries(authorAppearances)
@@ -599,9 +645,9 @@ function renderStats() {
     const decade = Math.floor(b.year / 10) * 10;
     if (!decadeBuckets[decade]) decadeBuckets[decade] = emptyBucket();
     decadeBuckets[decade].total++;
-    if (readStatus(b, 'tom') === 'read') decadeBuckets[decade].tom++;
-    if (readStatus(b, 'nika') === 'read') decadeBuckets[decade].nika++;
-    if (readStatus(b, 'westdac') === 'read') decadeBuckets[decade].westdac++;
+    for (const id of ALL_READER_IDS) {
+      if (readStatus(b, id) === 'read') decadeBuckets[decade][id]++;
+    }
   }
   const decades = Object.entries(decadeBuckets)
     .map(([d, s]) => ({ decade: parseInt(d, 10), ...s }))
@@ -631,19 +677,19 @@ function renderStats() {
   const eraBuckets = {};
   const firstDecade = Math.floor(yearStart / 10) * 10;
   const lastDecade = Math.floor(yearEnd / 10) * 10;
-  for (let d = firstDecade; d <= lastDecade; d += 10) eraBuckets[d] = { total: 0, tom: 0, nika: 0, westdac: 0 };
+  for (let d = firstDecade; d <= lastDecade; d += 10) eraBuckets[d] = emptyBucket();
   for (const b of winners) {
     if (!b.year) continue;
     const dec = Math.floor(b.year / 10) * 10;
     if (!eraBuckets[dec]) continue;
     eraBuckets[dec].total++;
-    if (readStatus(b, 'tom') === 'read') eraBuckets[dec].tom++;
-    if (readStatus(b, 'nika') === 'read') eraBuckets[dec].nika++;
-    if (readStatus(b, 'westdac') === 'read') eraBuckets[dec].westdac++;
+    for (const id of ALL_READER_IDS) {
+      if (readStatus(b, id) === 'read') eraBuckets[dec][id]++;
+    }
   }
   const eras = Object.entries(eraBuckets).map(([d, v]) => [parseInt(d, 10), v]).sort((a, b) => a[0] - b[0]);
   const maxEra = Math.max(1, ...eras.map(([, v]) => v.total));
-  const eraReader = SOLO || (SHOW_TOM ? 'tom' : (SHOW_NIKA ? 'nika' : 'westdac'));
+  const eraReader = SOLO || (ACTIVE_READERS[0] ? ACTIVE_READERS[0].id : 'tom');
   const eraFillColor = READER_CONFIG[eraReader].colorVar;
   const eraBarsHtml = eras.map(([d, v]) => {
     const totalH = (v.total / maxEra) * 100;
@@ -670,20 +716,19 @@ function renderStats() {
 
   const readerPills = (b, mode) => {
     // mode = 'read' or 'shelf'. In solo mode, drop reader prefix.
-    const pillClass = { tom: 'rr-pill-t', nika: 'rr-pill-n', westdac: 'rr-pill-w' };
-    const shelfField = { tom: 'tom_shelf', nika: 'nika_shelf', westdac: 'westdac_shelf' };
+    const pillClass = id => `rr-pill-${id[0]}`;
     if (SOLO) {
       const r = SOLO;
-      if (mode === 'read' && readStatus(b, r) === 'read') return `<span class="rr-pill ${pillClass[r]}">read</span>`;
-      if (mode === 'shelf' && b[shelfField[r]] === 'to-read' && readStatus(b, r) !== 'read') return `<span class="rr-pill ${pillClass[r]}">on nightstand</span>`;
+      if (mode === 'read' && readStatus(b, r) === 'read') return `<span class="rr-pill ${pillClass(r)}">read</span>`;
+      if (mode === 'shelf' && b[`${r}_shelf`] === 'to-read' && readStatus(b, r) !== 'read') return `<span class="rr-pill ${pillClass(r)}">on nightstand</span>`;
       return '';
     }
     const pills = [];
     for (const r of ACTIVE_READERS) {
       if (mode === 'read' && readStatus(b, r.id) === 'read') {
-        pills.push(`<span class="rr-pill ${pillClass[r.id]}">${r.initial} read</span>`);
-      } else if (mode === 'shelf' && b[shelfField[r.id]] === 'to-read' && readStatus(b, r.id) !== 'read') {
-        pills.push(`<span class="rr-pill ${pillClass[r.id]}">${r.initial} nightstand</span>`);
+        pills.push(`<span class="rr-pill ${pillClass(r.id)}">${r.initial} read</span>`);
+      } else if (mode === 'shelf' && b[`${r.id}_shelf`] === 'to-read' && readStatus(b, r.id) !== 'read') {
+        pills.push(`<span class="rr-pill ${pillClass(r.id)}">${r.initial} nightstand</span>`);
       }
     }
     return pills.join('');
@@ -787,9 +832,9 @@ function renderStats() {
     </div>`;
   }).join('');
 
-  // Decade heatmap — color intensity follows the active reader in solo mode, Tom otherwise
-  const heatmapColorRgb = { tom: '125, 211, 192', nika: '180, 142, 173', westdac: '212, 160, 112' };
-  const heatmapReader = SOLO || (SHOW_TOM ? 'tom' : (SHOW_NIKA ? 'nika' : 'westdac'));
+  // Decade heatmap — color intensity follows the active reader in solo mode, first active reader otherwise
+  const heatmapColorRgb = Object.fromEntries(ALL_READER_IDS.map(id => [id, READER_CONFIG[id].colorRgb]));
+  const heatmapReader = SOLO || (ACTIVE_READERS[0] ? ACTIVE_READERS[0].id : 'tom');
   const decadeCells = decades.map(d => {
     const activeCount = d[heatmapReader];
     const pct = d.total > 0 ? activeCount / d.total : 0;
@@ -841,7 +886,7 @@ function renderStats() {
         if (SOLO) {
           const r = SOLO;
           const readBooks = winnersByReader[r];
-          const shelfCount = r === 'tom' ? onShelf.length : (r === 'nika' ? nikaOnShelfCount : westdacOnShelfCount);
+          const shelfCount = shelfCountByReader[r] || 0;
           const startedCount = DATA.books.filter(b => readStatus(b, r) === 'started').length;
           return `
             ${card(totalLabel, winnersTotal, totalSub)}
@@ -1085,7 +1130,7 @@ function renderAbout() {
     <h2>How it works</h2>
     <p>A Python pipeline reads an awards spreadsheet and exported reader CSVs, matches them by title and author, and produces a static JSON file the site reads. There's no backend, no tracking, no login — just a list of books rendered in the browser.</p>
     <h2>Multiple readers</h2>
-    <p>The site defaults to Tom's view. Add another reader via the URL query string: <code>?reader=tom,nika</code> shows both readers side by side; <code>?reader=nika</code> shows just Nika; <code>?reader=tom,nika,westdac</code> shows all three.</p>
+    <p>The site defaults to a single reader. Add or swap readers via the URL query string — comma-separate the ones you want side by side. For example, with readers named Tom, Dick, and Harry: <code>?reader=tom</code> shows just Tom, <code>?reader=tom,dick</code> shows two side by side, <code>?reader=tom,dick,harry</code> shows all three. Any combination works; readers not on the list are silently ignored.</p>
     <h2>Upcoming award dates</h2>
     <ul>
       <li><strong>2026 Nebula Awards</strong> — Saturday, <strong>June 6, 2026</strong> at the SFWA conference in Chicago · <a href="https://events.sfwa.org/" target="_blank" rel="noopener">events.sfwa.org</a> · <a href="https://en.wikipedia.org/wiki/Nebula_Award" target="_blank" rel="noopener">Nebula on Wikipedia</a></li>
@@ -1173,6 +1218,8 @@ function wireFilters() {
   $$('input[name="read-tom"]').forEach(el => el.addEventListener('change', e => { state.readTom = e.target.value; renderList(); }));
   $$('input[name="read-nika"]').forEach(el => el.addEventListener('change', e => { state.readNika = e.target.value; renderList(); }));
   $$('input[name="read-westdac"]').forEach(el => el.addEventListener('change', e => { state.readWestdac = e.target.value; renderList(); }));
+  $$('input[name="read-colton"]').forEach(el => el.addEventListener('change', e => { state.readColton = e.target.value; renderList(); }));
+  $$('input[name="read-schupp"]').forEach(el => el.addEventListener('change', e => { state.readSchupp = e.target.value; renderList(); }));
   $$('input[name="award"]').forEach(el => el.addEventListener('change', e => {
     if (e.target.checked) state.awards.add(e.target.value); else state.awards.delete(e.target.value);
     renderList();

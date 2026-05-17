@@ -171,6 +171,14 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
         westdac_shelf = (row.get("Westdac Shelf", "") or "").strip()
         westdac_date_read = (row.get("Westdac Date Read", "") or "").strip()
         westdac_rating = (row.get("Westdac Rating", "") or "").strip()
+        colton = (row.get("Colton", "") or "").strip()
+        colton_shelf = (row.get("Colton Shelf", "") or "").strip()
+        colton_date_read = (row.get("Colton Date Read", "") or "").strip()
+        colton_rating = (row.get("Colton Rating", "") or "").strip()
+        schupp = (row.get("Schupp", "") or "").strip()
+        schupp_shelf = (row.get("Schupp Shelf", "") or "").strip()
+        schupp_date_read = (row.get("Schupp Date Read", "") or "").strip()
+        schupp_rating = (row.get("Schupp Rating", "") or "").strip()
         series = (row.get("Series", "") or "").strip()
 
         authors = parse_authors(author_raw)
@@ -196,6 +204,14 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
             "westdac_shelf": westdac_shelf,
             "westdac_date_read": westdac_date_read,
             "westdac_rating": westdac_rating,
+            "colton": colton,
+            "colton_shelf": colton_shelf,
+            "colton_date_read": colton_date_read,
+            "colton_rating": colton_rating,
+            "schupp": schupp,
+            "schupp_shelf": schupp_shelf,
+            "schupp_date_read": schupp_date_read,
+            "schupp_rating": schupp_rating,
             "series": series,
         })
 
@@ -340,9 +356,13 @@ def main() -> None:
         if best_year:
             existing["year"] = best_year
         # Merge reader fields — prefer non-empty
-        for col in ["tom", "nika", "westdac", "tom_shelf", "nika_shelf", "westdac_shelf",
-                    "tom_date_read", "tom_rating", "westdac_date_read", "westdac_rating",
-                    "nika_date_read", "nika_rating", "series", "publisher"]:
+        for col in ["tom", "nika", "westdac", "colton", "schupp",
+                    "tom_shelf", "nika_shelf", "westdac_shelf", "colton_shelf", "schupp_shelf",
+                    "tom_date_read", "tom_rating",
+                    "westdac_date_read", "westdac_rating",
+                    "colton_date_read", "colton_rating",
+                    "schupp_date_read", "schupp_rating",
+                    "series", "publisher"]:
             if not existing.get(col) and r.get(col):
                 existing[col] = r[col]
     all_records = list(merged.values())

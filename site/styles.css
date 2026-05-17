@@ -122,13 +122,19 @@ a:hover { text-decoration: underline; }
 .about-profile-link:hover { border-color: var(--accent); text-decoration: none; }
 .about-profile-link .profile-dot { width: 10px; height: 10px; }
 
-/* Solo modes — body class hides every other reader's elements */
-body.solo-tom .nika-only,
-body.solo-tom .westdac-only { display: none !important; }
-body.solo-nika .tom-only,
-body.solo-nika .westdac-only { display: none !important; }
-body.solo-westdac .tom-only,
-body.solo-westdac .nika-only { display: none !important; }
+/* Solo modes — any solo-* body class hides all other readers' filter
+ * fieldsets / header pills. The active reader's own *-only block is
+ * re-exposed via the second rule below. */
+body[class*="solo-"] .tom-only,
+body[class*="solo-"] .nika-only,
+body[class*="solo-"] .westdac-only,
+body[class*="solo-"] .colton-only,
+body[class*="solo-"] .schupp-only { display: none !important; }
+body.solo-tom .tom-only,
+body.solo-nika .nika-only,
+body.solo-westdac .westdac-only,
+body.solo-colton .colton-only,
+body.solo-schupp .schupp-only { display: revert !important; }
 
 /* Awards banner at top of Progress */
 .awards-banner {
@@ -200,28 +206,21 @@ body.solo-westdac .nika-only { display: none !important; }
   position: relative;
   overflow: hidden;
 }
-.author-bar-tom {
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  background: var(--accent);
-  opacity: 0.85;
-}
-.author-bar-nika {
+.author-bar-tom,
+.author-bar-nika,
+.author-bar-westdac,
+.author-bar-colton,
+.author-bar-schupp {
   position: absolute;
   top: 0;
   height: 100%;
-  background: var(--accent-2);
   opacity: 0.85;
 }
-.author-bar-westdac {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  background: var(--accent-3);
-  opacity: 0.85;
-}
+.author-bar-tom     { left: 0; background: var(--accent);   }
+.author-bar-nika    { background: var(--accent-2); }
+.author-bar-westdac { background: var(--accent-3); }
+.author-bar-colton  { background: var(--accent-4); }
+.author-bar-schupp  { background: var(--accent-5); }
 .author-count { color: var(--muted); font-size: 12px; }
 
 /* Status toggle on Progress page (Winners / Nominees / Both) */
@@ -635,6 +634,8 @@ body.solo-westdac .nika-only { display: none !important; }
 .year-card-name { font-size: 17px; font-weight: 600; color: var(--accent); letter-spacing: -0.01em; }
 .year-card-name.nika { color: var(--accent-2); }
 .year-card-name.westdac { color: var(--accent-3); }
+.year-card-name.colton { color: var(--accent-4); }
+.year-card-name.schupp { color: var(--accent-5); }
 .year-card-year { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.08em; }
 .year-card-stat { font-size: 14px; color: var(--text); padding: 4px 0; }
 .year-card-stat strong { color: var(--accent); }
@@ -867,11 +868,15 @@ fieldset label input { margin-right: 8px; }
   margin-right: 4px;
   color: var(--bg);
 }
-.badge.reader-t .reader-initial { background: var(--accent); }
-.badge.reader-n .reader-initial { background: var(--accent-2); }
-.badge.reader-w .reader-initial { background: var(--accent-3); }
-.badge.reader-n { color: var(--accent-2); border-color: rgba(180, 142, 173, 0.4); background: rgba(180, 142, 173, 0.12); }
-.badge.reader-w { color: var(--accent-3); border-color: rgba(212, 160, 112, 0.4); background: rgba(212, 160, 112, 0.12); }
+.badge.reader-t .reader-initial { background: var(--accent); color: #fff; }
+.badge.reader-n .reader-initial { background: var(--accent-2); color: #fff; }
+.badge.reader-w .reader-initial { background: var(--accent-3); color: #fff; }
+.badge.reader-c .reader-initial { background: var(--accent-4); color: #fff; }
+.badge.reader-s .reader-initial { background: var(--accent-5); color: #fff; }
+.badge.reader-n { color: var(--accent-2); border-color: rgba(142, 77, 125, 0.4); background: rgba(142, 77, 125, 0.12); }
+.badge.reader-w { color: var(--accent-3); border-color: rgba(182, 120, 60, 0.4); background: rgba(182, 120, 60, 0.12); }
+.badge.reader-c { color: var(--accent-4); border-color: rgba(67, 101, 135, 0.4); background: rgba(67, 101, 135, 0.12); }
+.badge.reader-s { color: var(--accent-5); border-color: rgba(168, 63, 89, 0.4); background: rgba(168, 63, 89, 0.12); }
 
 /* Detail view */
 .detail {

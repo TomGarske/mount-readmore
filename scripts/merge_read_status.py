@@ -62,8 +62,8 @@ def load_storygraph(path: Path) -> pd.DataFrame:
     return df[["title", "author", "title_n", "author_n"]].rename(columns={"title": "Title", "author": "Author"})
 
 
-def load_westdac_read(path: Path) -> pd.DataFrame:
-    """Westdac Goodreads read shelf scrape. Columns: title, author, date_read, rating."""
+def load_goodreads_read_scrape(path: Path) -> pd.DataFrame:
+    """Generic Goodreads read-shelf scrape — same shape as westdac/colton/schupp."""
     df = pd.read_csv(path, dtype=str).fillna("")
     df["title_n"] = df["title"].apply(normalize)
     df["author_n"] = df["author"].apply(normalize)
@@ -72,14 +72,19 @@ def load_westdac_read(path: Path) -> pd.DataFrame:
     ]
 
 
-def load_westdac_shelf(path: Path) -> pd.DataFrame:
-    """Westdac Goodreads to-read + currently-reading shelf scrape."""
+def load_goodreads_shelf_scrape(path: Path) -> pd.DataFrame:
+    """Generic Goodreads to-read / currently-reading scrape."""
     df = pd.read_csv(path, dtype=str).fillna("")
     df["title_n"] = df["title"].apply(normalize)
     df["author_n"] = df["author"].apply(normalize)
     return df.rename(columns={"title": "Title", "author": "Author"})[
         ["Title", "Author", "title_n", "author_n", "shelf"]
     ]
+
+
+# Aliases for back-compat
+load_westdac_read = load_goodreads_read_scrape
+load_westdac_shelf = load_goodreads_shelf_scrape
 
 
 def strip_series_suffix(title: str) -> str:
@@ -144,6 +149,10 @@ def process_sheet(
     nika_shelf: pd.DataFrame | None,
     westdac_read: pd.DataFrame | None,
     westdac_shelf: pd.DataFrame | None,
+    colton_read: pd.DataFrame | None,
+    colton_shelf: pd.DataFrame | None,
+    schupp_read: pd.DataFrame | None,
+    schupp_shelf: pd.DataFrame | None,
     out_csv: Path,
 ) -> dict:
     base = pd.read_csv(sheet_csv, dtype=str, keep_default_na=False)
@@ -165,6 +174,8 @@ def process_sheet(
         "Tom", "Tom Date Read", "Tom Rating", "Tom Shelf",
         "Series", "Nika", "Nika Shelf",
         "Westdac", "Westdac Date Read", "Westdac Rating", "Westdac Shelf",
+        "Colton", "Colton Date Read", "Colton Rating", "Colton Shelf",
+        "Schupp", "Schupp Date Read", "Schupp Rating", "Schupp Shelf",
     ]:
         if col not in combined.columns:
             combined[col] = ""
@@ -173,6 +184,8 @@ def process_sheet(
         "matched_read": 0, "matched_shelf": 0,
         "matched_nika": 0, "matched_nika_shelf": 0,
         "matched_westdac": 0, "matched_westdac_shelf": 0,
+        "matched_colton": 0, "matched_colton_shelf": 0,
+        "matched_schupp": 0, "matched_schupp_shelf": 0,
     }
     for i, row in combined.iterrows():
         title = row.get(title_col, "")
@@ -248,6 +261,52 @@ def process_sheet(
                 if not existing:
                     combined.at[i, "Westdac"] = "In the queue" if m["shelf"] == "to-read" else "In progress"
 
+        # Colton: Goodreads read shelf
+        colton_read_match = None
+        if colton_read is not None:
+            colton_read_match = find_match(title, author, colton_read)
+            if colton_read_match is not None:
+                stats["matched_colton"] += 1
+                if not (row.get("Colton") or "").strip():
+                    combined.at[i, "Colton"] = "Read"
+                if colton_read_match.get("date_read", ""):
+                    combined.at[i, "Colton Date Read"] = colton_read_match["date_read"]
+                rating = colton_read_match.get("rating", "") or ""
+                if rating:
+                    combined.at[i, "Colton Rating"] = rating
+
+        if colton_shelf is not None and colton_read_match is None:
+            m = find_match(title, author, colton_shelf)
+            if m is not None:
+                stats["matched_colton_shelf"] += 1
+                combined.at[i, "Colton Shelf"] = m["shelf"]
+                existing = (row.get("Colton") or "").strip()
+                if not existing:
+                    combined.at[i, "Colton"] = "In the queue" if m["shelf"] == "to-read" else "In progress"
+
+        # Schupp: Goodreads read shelf
+        schupp_read_match = None
+        if schupp_read is not None:
+            schupp_read_match = find_match(title, author, schupp_read)
+            if schupp_read_match is not None:
+                stats["matched_schupp"] += 1
+                if not (row.get("Schupp") or "").strip():
+                    combined.at[i, "Schupp"] = "Read"
+                if schupp_read_match.get("date_read", ""):
+                    combined.at[i, "Schupp Date Read"] = schupp_read_match["date_read"]
+                rating = schupp_read_match.get("rating", "") or ""
+                if rating:
+                    combined.at[i, "Schupp Rating"] = rating
+
+        if schupp_shelf is not None and schupp_read_match is None:
+            m = find_match(title, author, schupp_shelf)
+            if m is not None:
+                stats["matched_schupp_shelf"] += 1
+                combined.at[i, "Schupp Shelf"] = m["shelf"]
+                existing = (row.get("Schupp") or "").strip()
+                if not existing:
+                    combined.at[i, "Schupp"] = "In the queue" if m["shelf"] == "to-read" else "In progress"
+
     combined.to_csv(out_csv, index=False, quoting=csv.QUOTE_MINIMAL)
     stats["rows"] = len(combined)
     stats["title_col"] = title_col
@@ -262,6 +321,10 @@ def main() -> None:
     p.add_argument("--nika-storygraph-toread", type=Path, help="CSV scraped from Nika's StoryGraph to-read page")
     p.add_argument("--westdac-goodreads", type=Path, help="CSV scraped from westdac's Goodreads read shelf")
     p.add_argument("--westdac-goodreads-shelf", type=Path, help="CSV scraped from westdac's Goodreads to-read / currently-reading shelves")
+    p.add_argument("--colton-goodreads", type=Path, help="CSV scraped from colton's Goodreads read shelf")
+    p.add_argument("--colton-goodreads-shelf", type=Path, help="CSV scraped from colton's Goodreads to-read / currently-reading shelves")
+    p.add_argument("--schupp-goodreads", type=Path, help="CSV scraped from schupp's Goodreads read shelf")
+    p.add_argument("--schupp-goodreads-shelf", type=Path, help="CSV scraped from schupp's Goodreads to-read / currently-reading shelves")
     args = p.parse_args()
 
     gr_read, gr_shelf = load_goodreads(args.goodreads)
@@ -286,6 +349,26 @@ def main() -> None:
     if args.westdac_goodreads_shelf and args.westdac_goodreads_shelf.exists():
         westdac_shelf = load_westdac_shelf(args.westdac_goodreads_shelf)
         print(f"Westdac Goodreads shelf: {len(westdac_shelf)}")
+
+    colton_read = None
+    if args.colton_goodreads and args.colton_goodreads.exists():
+        colton_read = load_goodreads_read_scrape(args.colton_goodreads)
+        print(f"Colton Goodreads reads: {len(colton_read)}")
+
+    colton_shelf = None
+    if args.colton_goodreads_shelf and args.colton_goodreads_shelf.exists():
+        colton_shelf = load_goodreads_shelf_scrape(args.colton_goodreads_shelf)
+        print(f"Colton Goodreads shelf: {len(colton_shelf)}")
+
+    schupp_read = None
+    if args.schupp_goodreads and args.schupp_goodreads.exists():
+        schupp_read = load_goodreads_read_scrape(args.schupp_goodreads)
+        print(f"Schupp Goodreads reads: {len(schupp_read)}")
+
+    schupp_shelf = None
+    if args.schupp_goodreads_shelf and args.schupp_goodreads_shelf.exists():
+        schupp_shelf = load_goodreads_shelf_scrape(args.schupp_goodreads_shelf)
+        print(f"Schupp Goodreads shelf: {len(schupp_shelf)}")
     print()
 
     for stem in ["best_novel", "best_novella_hugo", "best_novelette_hugo", "favorites"]:
@@ -294,8 +377,8 @@ def main() -> None:
         out = args.data / f"{stem}_updated.csv"
         if not src.exists():
             continue
-        s = process_sheet(src, adds, gr_read, gr_shelf, nika_read, nika_shelf, westdac_read, westdac_shelf, out)
-        print(f"{stem:25s} rows={s['rows']:4d}  T-r={s['matched_read']:3d} T-s={s['matched_shelf']:3d} N-r={s['matched_nika']:3d} N-s={s['matched_nika_shelf']:3d} W-r={s['matched_westdac']:3d} W-s={s['matched_westdac_shelf']:3d}")
+        s = process_sheet(src, adds, gr_read, gr_shelf, nika_read, nika_shelf, westdac_read, westdac_shelf, colton_read, colton_shelf, schupp_read, schupp_shelf, out)
+        print(f"{stem:25s} rows={s['rows']:4d}  T={s['matched_read']:3d}/{s['matched_shelf']:2d}  N={s['matched_nika']:3d}/{s['matched_nika_shelf']:2d}  W={s['matched_westdac']:3d}/{s['matched_westdac_shelf']:2d}  C={s['matched_colton']:3d}/{s['matched_colton_shelf']:2d}  S={s['matched_schupp']:3d}/{s['matched_schupp_shelf']:2d}")
 
 
 if __name__ == "__main__":
