@@ -1534,8 +1534,12 @@ async function loadCompareSide(id, colorIdx = 0) {
     { colorVar: 'var(--accent-5)', colorRgb: '122,68,134'  },
   ];
   const fallback = PALETTE[colorIdx % PALETTE.length];
-  if (id === 'me') {
-    const handle = window.MR_AUTH?.profile?.handle || 'you';
+  // 'me' is a legacy alias for the signed-in user. Also short-circuit when the
+  // id matches the signed-in user's own handle — saves a Supabase round-trip
+  // and lets shareable URLs (?u=tom&u=SappySaffron) render fast for the owner.
+  const myHandle = window.MR_AUTH?.profile?.handle || null;
+  if (id === 'me' || (myHandle && id.toLowerCase() === myHandle.toLowerCase())) {
+    const handle = myHandle || 'you';
     return {
       handle,
       label: handle,
@@ -1635,8 +1639,9 @@ async function renderCompare(params) {
       counts[f.id] = count ?? 0;
     }));
 
+    const meSlug = encodeURIComponent(myHandle);
     const friendRow = (f) => `
-      <a class="compare-friend-row" href="#/compare?u=me&amp;u=${encodeURIComponent(f.handle)}">
+      <a class="compare-friend-row" href="#/compare?u=${meSlug}&amp;u=${encodeURIComponent(f.handle)}">
         <div class="compare-friend-handle">@${escapeHtml(f.handle)}</div>
         <div class="compare-friend-meta">${counts[f.id] || 0} read · ${f.profile_visibility}</div>
         <div class="compare-friend-cta">Compare →</div>
@@ -1654,7 +1659,7 @@ async function renderCompare(params) {
       <p style="color: var(--muted); font-size: 13px; margin-top: 18px;">
         Want to compare with someone not in the list? Add them as a friend in
         <a href="#/settings">Settings</a>, or hit a direct URL like
-        <code>#/compare?u=me&amp;u=tom</code>.
+        <code>#/compare?u=${escapeHtml(myHandle)}&amp;u=&lt;their-handle&gt;</code>.
       </p>
     </div>`;
     return;
@@ -1838,10 +1843,11 @@ async function renderLeaderboard() {
   const onLeaderboard = window.MR_AUTH?.profile?.on_leaderboard;
   const isAuthed = !!window.MR_AUTH?.user;
 
+  const myHandleSlug = meHandle ? encodeURIComponent(meHandle) : 'me';
   const rowHtml = rows.map(r => {
     const isMe = r.user_id === myUserId;
     const canCompare = isAuthed && !isMe;
-    const compareHref = canCompare ? `#/compare?u=me&u=${encodeURIComponent(r.handle)}` : '#';
+    const compareHref = canCompare ? `#/compare?u=${myHandleSlug}&u=${encodeURIComponent(r.handle)}` : '#';
     const tag = canCompare
       ? `<a class="lb-compare" href="${compareHref}">Compare →</a>`
       : isMe
@@ -2252,8 +2258,9 @@ async function renderProfile(handle) {
     <div class="swimlane-meta">${escapeHtml(bk.authors?.[0] || '')} · ${bk.year || ''}</div>
   </a>`;
 
+  const myHandle = window.MR_AUTH?.profile?.handle;
   const compareBtn = (meId && !isMe)
-    ? `<a class="mr-btn-primary" href="#/compare?u=me&u=${encodeURIComponent(profile.handle)}">Compare with me →</a>`
+    ? `<a class="mr-btn-primary" href="#/compare?u=${encodeURIComponent(myHandle || 'me')}&u=${encodeURIComponent(profile.handle)}">Compare with me →</a>`
     : '';
   const friendBtn = (meId && !isMe)
     ? (alreadyFriends
