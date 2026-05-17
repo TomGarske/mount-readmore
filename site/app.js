@@ -168,8 +168,12 @@ function sortBooks(books) {
   return arr;
 }
 
-function buildRadar(axes, readerValues) {
-  // axes: string[]   readerValues: { tom: number[], nika: number[], westdac: number[] }  (each 0..1)
+function buildRadar(axes, readerValues, configOverride = null) {
+  // axes: string[]
+  // readerValues: { <id>: number[] }   each value 0..1
+  // configOverride: optional { <id>: { label, colorVar, colorRgb } } for ad-hoc
+  //   readers (compare-page handles) that aren't in READER_CONFIG.
+  const lookup = id => (configOverride && configOverride[id]) || READER_CONFIG[id];
   // Wider viewBox so right-side axis labels (e.g. "Space Opera") don't clip.
   const w = 600, h = 480, cx = w / 2, cy = h / 2 - 6, R = 150;
   const n = axes.length;
@@ -212,7 +216,7 @@ function buildRadar(axes, readerValues) {
   }).join('');
   // Reader polygons + dots
   const polys = Object.entries(readerValues).map(([id, vals]) => {
-    const cfg = READER_CONFIG[id];
+    const cfg = lookup(id);
     if (!cfg) return '';
     const pts = vals.map((v, i) => pt(i, v).map(x => x.toFixed(1)).join(',')).join(' ');
     const dots = vals.map((v, i) => {
@@ -223,7 +227,7 @@ function buildRadar(axes, readerValues) {
   }).join('');
   // Legend
   const legend = Object.entries(readerValues).map(([id]) => {
-    const cfg = READER_CONFIG[id];
+    const cfg = lookup(id);
     if (!cfg) return '';
     return `<div class="radar-legend-item"><span class="radar-legend-dot" style="background: ${cfg.colorVar};"></span>${cfg.label}</div>`;
   }).join('');
@@ -1522,13 +1526,21 @@ function renderNebula2026() {
 // - Anything else is treated as a Supabase profile handle (case-insensitive)
 //   and we fetch their user_books over the wire.
 async function loadCompareSide(id, colorIdx = 0) {
-  const PALETTE = ['var(--accent)', 'var(--accent-2)', 'var(--accent-3)', 'var(--accent-4)', 'var(--accent-5)'];
+  const PALETTE = [
+    { colorVar: 'var(--accent)',   colorRgb: '29,78,216'   },
+    { colorVar: 'var(--accent-2)', colorRgb: '220,38,38'   },
+    { colorVar: 'var(--accent-3)', colorRgb: '182,120,60'  },
+    { colorVar: 'var(--accent-4)', colorRgb: '74,122,90'   },
+    { colorVar: 'var(--accent-5)', colorRgb: '122,68,134'  },
+  ];
+  const fallback = PALETTE[colorIdx % PALETTE.length];
   if (id === 'me') {
     const handle = window.MR_AUTH?.profile?.handle || 'you';
     return {
       handle,
       label: handle,
-      colorVar: PALETTE[colorIdx % PALETTE.length],
+      colorVar: fallback.colorVar,
+      colorRgb: fallback.colorRgb,
       statusMap: window.MR_AUTH?.userBooks || {},
     };
   }
@@ -1548,7 +1560,8 @@ async function loadCompareSide(id, colorIdx = 0) {
   return {
     handle: prof.handle,
     label: prof.handle,
-    colorVar: legacy?.colorVar || PALETTE[colorIdx % PALETTE.length],
+    colorVar: legacy?.colorVar || fallback.colorVar,
+    colorRgb: legacy?.colorRgb || fallback.colorRgb,
     statusMap,
   };
 }
@@ -1610,15 +1623,17 @@ async function renderCompare(params) {
       return;
     }
 
-    // For each friend, fetch a read count (best-effort, no fatal error)
+    // For each friend, fetch a read count in parallel (was sequential — saw
+    // ~80ms per friend × N friends; Promise.all collapses that to ~one round
+    // trip).
     const client = window.MR_AUTH.client;
     const counts = {};
-    for (const f of friends) {
+    await Promise.all(friends.map(async (f) => {
       const { count } = await client.from('user_books')
         .select('book_id', { count: 'exact', head: true })
         .eq('user_id', f.id).eq('status', 'read');
       counts[f.id] = count ?? 0;
-    }
+    }));
 
     const friendRow = (f) => `
       <a class="compare-friend-row" href="#/compare?u=me&amp;u=${encodeURIComponent(f.handle)}">
@@ -1661,6 +1676,9 @@ async function renderCompare(params) {
   }
 
   const both = [], aOnly = [], bOnly = [], neither = [];
+  // Subgenre coverage for each side — used to draw side-by-side fingerprint
+  // radars. A book contributes to every one of its subgenre buckets.
+  const subBuckets = {};
   for (const book of DATA.books) {
     const aRead = aSide.statusMap[book.id]?.status === 'read';
     const bRead = bSide.statusMap[book.id]?.status === 'read';
@@ -1668,8 +1686,44 @@ async function renderCompare(params) {
     else if (aRead) aOnly.push(book);
     else if (bRead) bOnly.push(book);
     else neither.push(book);
+    for (const g of (book.subgenres || [])) {
+      if (!subBuckets[g]) subBuckets[g] = { total: 0, a: 0, b: 0 };
+      subBuckets[g].total++;
+      if (aRead) subBuckets[g].a++;
+      if (bRead) subBuckets[g].b++;
+    }
   }
   [both, aOnly, bOnly, neither].forEach(arr => arr.sort((x, y) => (y.year || 0) - (x.year || 0)));
+
+  // Build per-side radars — top 8 most-populated subgenres, dropping axes
+  // where neither side has any reads (keeps the chart legible).
+  const radarAxes = Object.entries(subBuckets)
+    .sort((x, y) => y[1].total - x[1].total)
+    .slice(0, 8)
+    .map(([name]) => name)
+    .filter(g => (subBuckets[g].a + subBuckets[g].b) > 0);
+  const valsFor = side => radarAxes.map(g => {
+    const bucket = subBuckets[g];
+    return bucket.total > 0 ? bucket[side] / bucket.total : 0;
+  });
+  const aKey = 'compare_a';
+  const bKey = 'compare_b';
+  const radarConfig = {
+    [aKey]: { label: '@' + aSide.label, colorVar: aSide.colorVar, colorRgb: aSide.colorRgb },
+    [bKey]: { label: '@' + bSide.label, colorVar: bSide.colorVar, colorRgb: bSide.colorRgb },
+  };
+  const radarHtml = radarAxes.length >= 3
+    ? `<div class="compare-radar-grid">
+        <div class="compare-radar-card">
+          <h3 style="color: ${aSide.colorVar}">@${escapeHtml(aSide.label)}</h3>
+          ${buildRadar(radarAxes, { [aKey]: valsFor('a') }, radarConfig)}
+        </div>
+        <div class="compare-radar-card">
+          <h3 style="color: ${bSide.colorVar}">@${escapeHtml(bSide.label)}</h3>
+          ${buildRadar(radarAxes, { [bKey]: valsFor('b') }, radarConfig)}
+        </div>
+      </div>`
+    : '';
 
   const tile = (bk) => {
     const cover = bk.cover_url
@@ -1711,6 +1765,12 @@ async function renderCompare(params) {
         <span>Shared: <strong>${both.length}</strong></span>
       </div>
     </div>
+
+    ${radarHtml ? `<section class="compare-radar-section">
+      <h2>Subgenre fingerprint</h2>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Each axis = a subgenre. Distance from center = % of that subgenre this reader has finished.</p>
+      ${radarHtml}
+    </section>` : ''}
 
     <div class="comparison-block">
       ${section(`<span style="color: ${aSide.colorVar}">@${escapeHtml(aSide.label)}</span> ∩ <span style="color: ${bSide.colorVar}">@${escapeHtml(bSide.label)}</span> — both have read`, both, 'Common ground — shared experience to talk about.')}
