@@ -208,7 +208,8 @@
     "description": "Annalee Newitz's far-future ecology novel. On the rented planet Sask-E, top network analyst Destry \u2014 partner: a taciturn moose named Whistle \u2014 discovers an entire city that isn't supposed to exist, hidden inside a volcano. The decision she makes echoes down generations. Centuries later, the planet's transit network and its very atmosphere become contested terrain between the people who live there and the real-estate company that holds the deed."
   },
   "nettle & bone|ursula vernon (as t. kingfisher)": {
-    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1645110008i/56179377.jpg"
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1645110008i/56179377.jpg",
+    "description": "T. Kingfisher's fairy-tale revenge novel. Marra is the shy, convent-raised, third-born daughter of a small kingdom, and the first two are dying \u2014 slowly, deliberately \u2014 at the hands of an abusive prince nobody else will move against. Marra finally accepts that nobody else is coming. She seeks out a gravewitch, accepts three impossible tasks in exchange for the means to kill a prince, and collects a wildly unlikely party along the way: the witch, a reluctant fairy godmother, an ex-knight, and a chicken possessed by a demon."
   },
   "legends & lattes|travis baldree": {
     "ol_key": "/works/OL27591348W",
@@ -229,23 +230,32 @@
     "cover_url": "https://covers.openlibrary.org/b/id/10859555-M.jpg",
     "first_pub_year": 2022,
     "isbn": "0765389134",
-    "pages": 296
+    "pages": 296,
+    "description": "Spring 2020, New York: Jamie Gray loses his publishing job to a venture-capital ghoul and ends up driving for a food-delivery app. A pandemic-era delivery to an old acquaintance turns into a job offer for an animal-rights organization that turns out to be a portal operation. In an alternate Earth, dinosaur-scale kaiju roam a warmer, people-free world \u2014 and they need keeping. So do the borders between worlds. A buoyant, monsters-and-mensches novel."
   },
   "the daughter of doctor moreau|silvia moreno-garcia": {
     "ol_key": "/works/OL43026082W",
-    "cover_url": "",
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1642777183i/54829360.jpg",
     "first_pub_year": 2022,
     "isbn": null,
-    "pages": 450
+    "pages": 450,
+    "description": "Silvia Moreno-Garcia rewrites H. G. Wells against the Yucat\u00e1n of the 1870s, in the middle of the Caste War. Carlota Moreau has grown up sheltered at a remote hacienda, the only daughter of either a genius or a madman. Montgomery Laughton is her father's melancholy overseer. The hybrids \u2014 half-human, half-animal \u2014 keep to the shadows and do what they are told. A balanced, static world that of course will not stay balanced for long."
   },
-  "the spare man|mary robinette kowal": {},
-  "babel: or the necessity of violence: an arcane history of the oxford translators' revolution|r. f. kuang": {},
+  "the spare man|mary robinette kowal": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1653273559i/55077658.jpg",
+    "description": "Mary Robinette Kowal's space-cruise homage to The Thin Man. Heiress and brilliant inventor Tesla Crane is honeymooning incognito aboard an interplanetary liner between the Moon and Mars. Then there is a murder. Then the ship's security decides Tesla's spouse did it. Armed with banter, martinis, her small service dog, and a network of attorneys back on Earth, Tesla has to clear the family name before whoever actually did it strikes again."
+  },
+  "babel: or the necessity of violence: an arcane history of the oxford translators' revolution|r. f. kuang": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1735757274i/134239327.jpg",
+    "description": "R. F. Kuang's anti-imperial dark academia. 1828: the Royal Institute of Translation at Oxford \u2014 Babel \u2014 is the most powerful magical institution in the world, because the silver-working translations practised there are what hold the British Empire together. Robin, a Cantonese orphan brought to Babel as a student, gradually realises that serving the Institute means betraying everything he came from. He has to choose between Babel and the Hermes Society \u2014 and between the systems' own logic and the necessity of violence."
+  },
   "spear|nicola griffith": {
     "ol_key": "/works/OL25012934W",
     "cover_url": "https://covers.openlibrary.org/b/id/11943755-M.jpg",
     "first_pub_year": 2022,
     "isbn": "1250819326",
-    "pages": 192
+    "pages": 192,
+    "description": "Nicola Griffith's Arthurian retelling. She grows up in the wild wood, raised in a cave by a mother who has hidden her from everything, until visions of a faraway lake start arriving on the spring breeze and a traveler speaks of Artos, king of Caer Leon. She steals a hunting spear, mends some armor, breaks her covenant with her mother, and rides out \u2014 an unlikely, magic-bright queer hero who is not chosen by anyone but herself."
   },
   "the mountain in the sea|ray nayler": {
     "ol_key": "/works/OL27172785W",
@@ -6692,7 +6702,10 @@
     "cover_url": "https://www.uncannymagazine.com/wp-content/uploads/2023/10/Issue-55-cover-med-340x510.png",
     "description": "Naomi Kritzer's 2024 Hugo Novelette winner (Uncanny Magazine, Issue 55). After a string of smaller catastrophes \u2014 a pandemic, civil disorder \u2014 a Minneapolis block has already become a tight WhatsApp-coordinated community when the really big disaster arrives and the sky goes dark for a year. A warm, granular story about mutual aid, sourdough, and the neighbors you only get to know when the lights stop coming on."
   },
-  "the space-time painter|hai ya": {},
+  "the space-time painter|hai ya": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1680830199i/116489291.jpg",
+    "description": "Hai Ya's 2023 Hugo Novelette winner \u2014 only the third Hugo win by a Chinese writer (Galaxy's Edge 009, April 2022). Detective Zhou Ning investigates a mysterious shadow inside Beijing's Palace Museum and discovers it is the soul of Zhao Ximeng, a Song Dynasty painter who could project himself across dimensions. A car accident drops Zhou into a shared astral space with Zhao, where the painter offers him the same escape from time he took \u2014 and Zhou has to decide whether to take it."
+  },
   "bots of the lost ark|suzanne palmer": {},
   "two truths and a lie|sarah pinsker": {
     "ol_key": "/works/OL21955022W",
@@ -7001,5 +7014,13 @@
   "thornhedge|t. kingfisher": {
     "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1676554049i/61884932.jpg",
     "description": "T. Kingfisher's Sleeping Beauty retelling, told from the wrong side of the bramble. There is a princess trapped in a tower; this isn't her story. Toadling was stolen at birth, raised in the warm waters of faerieland, and sent back into the human world to lay a single blessing of protection on a newborn. Nothing with fairies is ever that simple. Centuries later, a knight arrives at her wall of thorns hoping to break a curse \u2014 which Toadling will do anything to keep intact."
+  },
+  "nettle & bone|t. kingfisher": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1645110008i/56179377.jpg",
+    "description": "T. Kingfisher's fairy-tale revenge novel. Marra is the shy, convent-raised, third-born daughter of a small kingdom, and the first two are dying \u2014 slowly, deliberately \u2014 at the hands of an abusive prince nobody else will move against. Marra finally accepts that nobody else is coming. She seeks out a gravewitch, accepts three impossible tasks in exchange for the means to kill a prince, and collects a wildly unlikely party along the way: the witch, a reluctant fairy godmother, an ex-knight, and a chicken possessed by a demon."
+  },
+  "babel, or the necessity of violence: an arcane history of the oxford translators' revolution|r. f. kuang": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1735757274i/134239327.jpg",
+    "description": "R. F. Kuang's anti-imperial dark academia. 1828: the Royal Institute of Translation at Oxford \u2014 Babel \u2014 is the most powerful magical institution in the world, because the silver-working translations practised there are what hold the British Empire together. Robin, a Cantonese orphan brought to Babel as a student, gradually realises that serving the Institute means betraying everything he came from. He has to choose between Babel and the Hermes Society \u2014 and between the systems' own logic and the necessity of violence."
   }
 }

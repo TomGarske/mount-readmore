@@ -1550,6 +1550,7 @@
         "nebula": 2023
       },
       "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1645110008i/56179377.jpg",
+      "description": "T. Kingfisher's fairy-tale revenge novel. Marra is the shy, convent-raised, third-born daughter of a small kingdom, and the first two are dying — slowly, deliberately — at the hands of an abusive prince nobody else will move against. Marra finally accepts that nobody else is coming. She seeks out a gravewitch, accepts three impossible tasks in exchange for the means to kill a prince, and collects a wildly unlikely party along the way: the witch, a reluctant fairy godmother, an ex-knight, and a chicken possessed by a demon.",
       "author_genders": [
         "female"
       ],
@@ -1728,6 +1729,7 @@
       "first_pub_year": 2022,
       "isbn": "0765389134",
       "pages": 296,
+      "description": "Spring 2020, New York: Jamie Gray loses his publishing job to a venture-capital ghoul and ends up driving for a food-delivery app. A pandemic-era delivery to an old acquaintance turns into a job offer for an animal-rights organization that turns out to be a portal operation. In an alternate Earth, dinosaur-scale kaiju roam a warmer, people-free world — and they need keeping. So do the borders between worlds. A buoyant, monsters-and-mensches novel.",
       "subjects": [
         "nyt:combined-print-and-e-book-fiction=2022-04-03",
         "New York Times bestseller",
@@ -1778,9 +1780,11 @@
       "award_years": {
         "hugo": 2023
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1642777183i/54829360.jpg",
       "ol_key": "/works/OL43026082W",
       "first_pub_year": 2022,
       "pages": 450,
+      "description": "Silvia Moreno-Garcia rewrites H. G. Wells against the Yucatán of the 1870s, in the middle of the Caste War. Carlota Moreau has grown up sheltered at a remote hacienda, the only daughter of either a genius or a madman. Montgomery Laughton is her father's melancholy overseer. The hybrids — half-human, half-animal — keep to the shadows and do what they are told. A balanced, static world that of course will not stay balanced for long.",
       "author_genders": [
         "female"
       ],
@@ -1821,6 +1825,8 @@
       "award_years": {
         "hugo": 2023
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1653273559i/55077658.jpg",
+      "description": "Mary Robinette Kowal's space-cruise homage to The Thin Man. Heiress and brilliant inventor Tesla Crane is honeymooning incognito aboard an interplanetary liner between the Moon and Mars. Then there is a murder. Then the ship's security decides Tesla's spouse did it. Armed with banter, martinis, her small service dog, and a network of attorneys back on Earth, Tesla has to clear the family name before whoever actually did it strikes again.",
       "author_genders": [
         "female"
       ],
@@ -1861,6 +1867,8 @@
       "award_years": {
         "nebula": 2023
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1735757274i/134239327.jpg",
+      "description": "R. F. Kuang's anti-imperial dark academia. 1828: the Royal Institute of Translation at Oxford — Babel — is the most powerful magical institution in the world, because the silver-working translations practised there are what hold the British Empire together. Robin, a Cantonese orphan brought to Babel as a student, gradually realises that serving the Institute means betraying everything he came from. He has to choose between Babel and the Hermes Society — and between the systems' own logic and the necessity of violence.",
       "author_genders": [
         "female"
       ],
@@ -1906,6 +1914,7 @@
       "first_pub_year": 2022,
       "isbn": "1250819326",
       "pages": 192,
+      "description": "Nicola Griffith's Arthurian retelling. She grows up in the wild wood, raised in a cave by a mother who has hidden her from everything, until visions of a faraway lake start arriving on the spring breeze and a traveler speaks of Artos, king of Caer Leon. She steals a hunting spear, mends some armor, breaks her covenant with her mother, and rides out — an unlikely, magic-bright queer hero who is not chosen by anyone but herself.",
       "author_genders": [
         "female"
       ],
@@ -42254,6 +42263,8 @@
       "award_years": {
         "hugo": 2023
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1680830199i/116489291.jpg",
+      "description": "Hai Ya's 2023 Hugo Novelette winner — only the third Hugo win by a Chinese writer (Galaxy's Edge 009, April 2022). Detective Zhou Ning investigates a mysterious shadow inside Beijing's Palace Museum and discovers it is the soul of Zhao Ximeng, a Song Dynasty painter who could project himself across dimensions. A car accident drops Zhou into a shared astral space with Zhao, where the painter offers him the same escape from time he took — and Zhou has to decide whether to take it.",
       "author_genders": [
         "unknown"
       ],
@@ -45196,9 +45207,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novel": 638,
+      "Novelette": 78,
       "Novella": 78,
-      "Novelette": 78
+      "Novel": 638
     }
   }
 }
