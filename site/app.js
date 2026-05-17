@@ -872,7 +872,7 @@ function renderStats() {
     </section>
 
     <div class="awards-banner">
-      <a class="award-pill nebula" href="https://events.sfwa.org/" target="_blank" rel="noopener">
+      <a class="award-pill nebula" href="https://nebulas.sfwa.org/" target="_blank" rel="noopener">
         <span class="award-pill-date">Jun 6, 2026</span>
         <div class="award-pill-body">
           <div class="award-pill-title">2026 Nebula Awards</div>
