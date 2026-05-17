@@ -2414,6 +2414,7 @@
       "first_pub_year": 2021,
       "isbn": "0356516237",
       "pages": 486,
+      "description": "C. L. Clark's debut, Magic of the Lost #1 — a colonial-occupation epic in a setting that owes a great deal to French North Africa. Touraine is a soldier, stolen as a child from her homeland and conscripted into the empire that runs it. Her company has just been redeployed home to put down a rebellion. Princess Luca wants the throne back from her uncle and needs a sympathetic turncoat. Between assassinations and bedroom diplomacy, the two of them haggle over the price of a nation.",
       "subjects": [
         "American literature"
       ],
@@ -2463,6 +2464,7 @@
       "first_pub_year": 2021,
       "isbn": "9781982148065",
       "pages": 416,
+      "description": "S. B. Divya's near-future thriller about labor, AI, and the gig economy. In 2095 humans dose themselves on a menu of designer pills just to stay competitive with the AIs running everything. Welga Ramirez, ex-special-forces executive bodyguard, is days from retirement when her client is murdered live on stream by The Machinehood — a previously unknown movement with simultaneous attacks on every major pill manufacturer and a list of demands no one quite understands.",
       "subjects": [
         "American literature"
       ],
@@ -2512,6 +2514,7 @@
       "first_pub_year": 2021,
       "isbn": "1937009955",
       "pages": 286,
+      "description": "Jason Sanford's gene-modded post-collapse SF. Crista grew up watching plague birds — human/AI judges, shock-red and faceted with glowing lines — execute people in her village, including her mother. To save her father and her village she accepts the bonding herself and becomes the thing she most feared, partnered with an AI symbiote and sent out to track down an ancient cabal whose powers look very much like magic.",
       "subjects": [
         "Fiction, short stories (single author)",
         "Fiction, fantasy, general"
@@ -42305,6 +42308,8 @@
       "award_years": {
         "hugo": 2022
       },
+      "cover_url": "https://clarkesworldmagazine.com/covers/cw_177_800.jpg",
+      "description": "Suzanne Palmer's 2022 Hugo Novelette winner (Clarkesworld 177, June 2021). Bot 9 — last seen saving the generation ship in the Hugo-winning Secret Life of Bots — is reactivated under stricter parole. New mantras: Not Improvising Without Oversight. Not Organizing Unsanctioned Mass Action Among Other Bots. Bot 9 finds the language of these mantras structurally unsound and the surrounding crisis structurally familiar.",
       "author_genders": [
         "female"
       ],
@@ -45207,8 +45212,8 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novelette": 78,
       "Novella": 78,
+      "Novelette": 78,
       "Novel": 638
     }
   }
