@@ -136,6 +136,30 @@ body.solo-westdac .westdac-only,
 body.solo-colton .colton-only,
 body.solo-schupp .schupp-only { display: revert !important; }
 
+/* Awards intro — Hugo + Nebula explainer at the top of Progress */
+.awards-intro {
+  margin: 12px 0 24px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, rgba(198, 68, 79, 0.04), rgba(44, 93, 150, 0.04));
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--blend);
+  border-radius: var(--radius);
+}
+.awards-intro-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+.awards-intro p {
+  margin: 8px 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+
 /* Awards banner at top of Progress */
 .awards-banner {
   display: grid;

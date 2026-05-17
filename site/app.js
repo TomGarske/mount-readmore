@@ -491,11 +491,17 @@ function renderStats() {
     .filter(p => primaryBuckets[p] && primaryBuckets[p].total > 0)
     .map(p => ({ name: p, ...primaryBuckets[p] }));
 
-  // ===== Subgenre radar — top 8 most populated subgenres in scope =====
-  const RADAR_AXES = Object.entries(subBuckets)
+  // ===== Subgenre radar — top 8 most populated subgenres, with zero-rows dropped =====
+  // First take the top 8 by population, then drop any axis where every active reader is 0.
+  let RADAR_AXES = Object.entries(subBuckets)
     .sort((a, b) => b[1].total - a[1].total)
     .slice(0, 8)
     .map(([name]) => name);
+  RADAR_AXES = RADAR_AXES.filter(g => {
+    const bucket = subBuckets[g];
+    if (!bucket) return false;
+    return ACTIVE_READERS.some(r => (bucket[r.id] || 0) > 0);
+  });
   const radarValues = {};
   for (const r of ACTIVE_READERS) {
     radarValues[r.id] = RADAR_AXES.map(g => {
@@ -855,6 +861,13 @@ function renderStats() {
   }).join('');
 
   root.innerHTML = `<div class="detail">
+    <section class="awards-intro">
+      <h2 class="awards-intro-title">The awards</h2>
+      <p><strong style="color: var(--sf)">Hugo Awards</strong> — the oldest annual literary award in science fiction and fantasy, presented since <strong>1953</strong> by members of the World Science Fiction Convention (Worldcon). Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. The current Hugo Awards site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.</p>
+      <p><strong style="color: var(--fantasy)">Nebula Awards</strong> — peer-voted award presented annually since <strong>1965</strong> by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.</p>
+      <p>Mount Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Mount Readmore.</p>
+    </section>
+
     <div class="awards-banner">
       <a class="award-pill nebula" href="https://events.sfwa.org/" target="_blank" rel="noopener">
         <span class="award-pill-date">Jun 6, 2026</span>
@@ -1112,36 +1125,6 @@ function renderStats() {
   });
 }
 
-function renderAbout() {
-  const root = $('#view-about');
-  root.innerHTML = `<div class="about">
-    <h1>About Mount Readmore</h1>
-    <p>A personal reading mountain of Hugo and Nebula winners and finalists, with read status overlaid from Goodreads and StoryGraph.</p>
-    <h2>The awards</h2>
-    <p><strong>Hugo Awards</strong> — the oldest annual literary award in science fiction and fantasy, presented since <strong>1953</strong> by members of the World Science Fiction Convention (Worldcon). Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. The current Hugo Awards site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.</p>
-    <p><strong>Nebula Awards</strong> — peer-voted award presented annually since <strong>1965</strong> by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.</p>
-    <p>Mount Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Mount Readmore.</p>
-    <h2>Tom's reading profiles</h2>
-    <p>
-      <a href="https://www.goodreads.com/user/show/71075928-tom-garske" target="_blank" rel="noopener" class="about-profile-link"><span class="profile-dot gr"></span>Goodreads</a>
-      &nbsp;&nbsp;
-      <a href="https://app.thestorygraph.com/profile/tdgarske" target="_blank" rel="noopener" class="about-profile-link"><span class="profile-dot sg"></span>StoryGraph</a>
-    </p>
-    <h2>How it works</h2>
-    <p>A Python pipeline reads an awards spreadsheet and exported reader CSVs, matches them by title and author, and produces a static JSON file the site reads. There's no backend, no tracking, no login — just a list of books rendered in the browser.</p>
-    <h2>Multiple readers</h2>
-    <p>The site defaults to a single reader. Add or swap readers via the URL query string — comma-separate the ones you want side by side. For example, with readers named Tom, Dick, and Harry: <code>?reader=tom</code> shows just Tom, <code>?reader=tom,dick</code> shows two side by side, <code>?reader=tom,dick,harry</code> shows all three. Any combination works; readers not on the list are silently ignored.</p>
-    <h2>Upcoming award dates</h2>
-    <ul>
-      <li><strong>2026 Nebula Awards</strong> — Saturday, <strong>June 6, 2026</strong> at the SFWA conference in Chicago · <a href="https://events.sfwa.org/" target="_blank" rel="noopener">events.sfwa.org</a> · <a href="https://en.wikipedia.org/wiki/Nebula_Award" target="_blank" rel="noopener">Nebula on Wikipedia</a></li>
-      <li><strong>2026 Hugo Awards</strong> — Sunday, <strong>August 30, 2026</strong> at LAcon V (84th WorldCon) in Anaheim · <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a> · <a href="https://www.lacon.org/hugos/" target="_blank" rel="noopener">lacon.org/hugos</a></li>
-    </ul>
-    <p style="color: var(--muted); font-size: 13px;">Hugo finalists this year were <a href="https://www.thehugoawards.org/2026/04/2026-hugo-award-lodestar-award-and-astounding-finalists-announced/" target="_blank" rel="noopener">announced April 21, 2026</a>. Voting closes August 8.</p>
-    <h2>Source</h2>
-    <p>The project lives on <a href="https://github.com/TomGarske/mount-readmore" target="_blank">GitHub</a>.</p>
-  </div>`;
-}
-
 function showView(name) {
   $$('.view').forEach(v => v.classList.add('hidden'));
   $(`#view-${name}`).classList.remove('hidden');
@@ -1199,12 +1182,6 @@ function route() {
     if (qs) applyFilterParams(params);
     renderList();
     showView('list');
-    window.scrollTo(0, 0);
-    return;
-  }
-  if (path === '#/about') {
-    renderAbout();
-    showView('about');
     window.scrollTo(0, 0);
     return;
   }
