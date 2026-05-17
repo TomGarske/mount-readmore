@@ -51,13 +51,16 @@ const SHOW_SCHUPP = READERS.includes('schupp');
 const SOLO = (READERS.length === 1) ? READERS[0] : null;
 const ACTIVE_READERS = READERS.map(r => READER_CONFIG[r]).filter(Boolean);
 const showReader = (id) => READERS.includes(id);
+const ALL_READ_STATES = ['read', 'unread', 'started'];
+const fullStatusSet = () => new Set(ALL_READ_STATES);
+
 let state = {
   search: '',
-  readTom: 'all',
-  readNika: 'all',
-  readWestdac: 'all',
-  readColton: 'all',
-  readSchupp: 'all',
+  readTom: fullStatusSet(),
+  readNika: fullStatusSet(),
+  readWestdac: fullStatusSet(),
+  readColton: fullStatusSet(),
+  readSchupp: fullStatusSet(),
   awards: new Set(Object.keys(AWARD_LABELS)),
   statuses: new Set(['winner', 'nominee']),
   categories: new Set(['Novel', 'Novella', 'Novelette']),
@@ -65,7 +68,7 @@ let state = {
   yearMax: null,
   sort: 'year-desc',
   // Progress-page filter: 'winner' | 'nominee' | 'both'
-  progressStatus: 'both',
+  progressStatus: 'winner',
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
@@ -93,11 +96,9 @@ function matchesFilters(book) {
     const who = r.id, key = readerKeyMap[who];
     if (!key) continue;
     const wanted = state[key];
-    if (wanted === 'all') continue;
-    const rs = readStatus(book, who);
-    if (wanted === 'read' && rs !== 'read') return false;
-    if (wanted === 'unread' && rs !== 'unread') return false;
-    if (wanted === 'started' && rs !== 'started') return false;
+    if (!wanted) continue;
+    if (wanted.size === ALL_READ_STATES.length) continue; // all 3 = no filter
+    if (!wanted.has(readStatus(book, who))) return false;
   }
   if (!state.categories.has(book.category)) return false;
   // Conjunctive: book must have at least one (award, status) pair where both match the filter
@@ -861,6 +862,17 @@ function renderStats() {
   }).join('');
 
   root.innerHTML = `<div class="detail">
+    <section class="completionist-intro">
+      <h1 class="completionist-title">Climb every page.</h1>
+      <p>Mount Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is another step up the mountain — across decades of science fiction and fantasy, the books the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to climb with. There's no wrong place to start.</p>
+    </section>
+
+    <div class="progress-section radar-hero">
+      <h2>Subgenre fingerprint</h2>
+      <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre's ${SUBSET} this reader has finished. Bigger / more even shape = broader coverage.</p>
+      ${radarHtml}
+    </div>
+
     <section class="awards-intro">
       <h2 class="awards-intro-title">The awards</h2>
       <p><strong style="color: var(--sf)">Hugo Awards</strong> — the oldest annual literary award in science fiction and fantasy, presented since <strong>1953</strong> by members of the World Science Fiction Convention (Worldcon). Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. The current Hugo Awards site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.</p>
@@ -947,12 +959,6 @@ function renderStats() {
       <div class="era-bars">${eraBarsHtml}</div>
     </div>
 
-
-    <div class="progress-section">
-      <h2>Subgenre fingerprint</h2>
-      <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre's ${SUBSET} this reader has finished. Bigger / more even shape = broader coverage.</p>
-      ${radarHtml}
-    </div>
 
     <div class="progress-section">
       <h2>By primary genre (${SUBSET})</h2>
@@ -1133,8 +1139,11 @@ function showView(name) {
 
 function resetFilterState() {
   state.search = '';
-  state.readTom = 'all';
-  state.readNika = 'all';
+  state.readTom = fullStatusSet();
+  state.readNika = fullStatusSet();
+  state.readWestdac = fullStatusSet();
+  state.readColton = fullStatusSet();
+  state.readSchupp = fullStatusSet();
   state.awards = new Set(Object.keys(AWARD_LABELS));
   state.statuses = new Set(['winner', 'nominee']);
   state.categories = new Set(['Novel', 'Novella', 'Novelette']);
@@ -1150,8 +1159,12 @@ function applyFilterParams(params) {
   if (status) state.statuses = new Set([status]);
   const category = params.get('category');
   if (category) state.categories = new Set([category]);
+  // readTom param is comma-separated list of states (e.g. ?readTom=read,started)
   const readTom = params.get('readTom');
-  if (readTom) state.readTom = readTom;
+  if (readTom) {
+    const parsed = readTom.split(',').map(s => s.trim()).filter(s => ALL_READ_STATES.includes(s));
+    if (parsed.length) state.readTom = new Set(parsed);
+  }
   syncFiltersToDom();
 }
 
@@ -1159,8 +1172,10 @@ function syncFiltersToDom() {
   $('#search').value = state.search;
   $('#year-min').value = state.yearMin == null ? '' : String(state.yearMin);
   $('#year-max').value = state.yearMax == null ? '' : String(state.yearMax);
-  $$('input[name="read-tom"]').forEach(el => { el.checked = el.value === state.readTom; });
-  $$('input[name="read-nika"]').forEach(el => { el.checked = el.value === state.readNika; });
+  const readerStateMap = { tom: state.readTom, nika: state.readNika, westdac: state.readWestdac, colton: state.readColton, schupp: state.readSchupp };
+  for (const [who, set] of Object.entries(readerStateMap)) {
+    $$(`input[name="read-${who}"]`).forEach(el => { el.checked = set.has(el.value); });
+  }
   $$('input[name="award"]').forEach(el => { el.checked = state.awards.has(el.value); });
   $$('input[name="status"]').forEach(el => { el.checked = state.statuses.has(el.value); });
   $$('input[name="category"]').forEach(el => { el.checked = state.categories.has(el.value); });
@@ -1191,12 +1206,24 @@ function route() {
 }
 
 function wireFilters() {
+  // Hide filter fieldsets for readers not in ACTIVE_READERS (URL-driven).
+  $$('.reader-filter').forEach(fs => {
+    const who = fs.dataset.reader;
+    if (!READERS.includes(who)) fs.style.display = 'none';
+  });
+
   $('#search').addEventListener('input', e => { state.search = e.target.value.trim(); renderList(); });
-  $$('input[name="read-tom"]').forEach(el => el.addEventListener('change', e => { state.readTom = e.target.value; renderList(); }));
-  $$('input[name="read-nika"]').forEach(el => el.addEventListener('change', e => { state.readNika = e.target.value; renderList(); }));
-  $$('input[name="read-westdac"]').forEach(el => el.addEventListener('change', e => { state.readWestdac = e.target.value; renderList(); }));
-  $$('input[name="read-colton"]').forEach(el => el.addEventListener('change', e => { state.readColton = e.target.value; renderList(); }));
-  $$('input[name="read-schupp"]').forEach(el => el.addEventListener('change', e => { state.readSchupp = e.target.value; renderList(); }));
+
+  const readerStateKey = { tom: 'readTom', nika: 'readNika', westdac: 'readWestdac', colton: 'readColton', schupp: 'readSchupp' };
+  for (const who of ALL_READER_IDS) {
+    const key = readerStateKey[who];
+    $$(`input[name="read-${who}"]`).forEach(el => el.addEventListener('change', e => {
+      if (e.target.checked) state[key].add(e.target.value);
+      else state[key].delete(e.target.value);
+      renderList();
+    }));
+  }
+
   $$('input[name="award"]').forEach(el => el.addEventListener('change', e => {
     if (e.target.checked) state.awards.add(e.target.value); else state.awards.delete(e.target.value);
     renderList();
@@ -1214,18 +1241,24 @@ function wireFilters() {
   $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderList(); });
   $('#reset').addEventListener('click', () => {
     state = {
-      search: '', readTom: 'all', readNika: 'all', readWestdac: 'all',
+      search: '',
+      readTom: fullStatusSet(),
+      readNika: fullStatusSet(),
+      readWestdac: fullStatusSet(),
+      readColton: fullStatusSet(),
+      readSchupp: fullStatusSet(),
       awards: new Set(Object.keys(AWARD_LABELS)),
       statuses: new Set(['winner', 'nominee']),
       categories: new Set(['Novel', 'Novella', 'Novelette']),
       yearMin: null, yearMax: null, sort: 'year-desc',
+      progressStatus: state.progressStatus,
     };
     $('#search').value = '';
     $('#year-min').value = '';
     $('#year-max').value = '';
-    $('input[name="read-tom"][value="all"]').checked = true;
-    $('input[name="read-nika"][value="all"]').checked = true;
-    $('input[name="read-westdac"][value="all"]').checked = true;
+    for (const who of ALL_READER_IDS) {
+      $$(`input[name="read-${who}"]`).forEach(el => { el.checked = true; });
+    }
     $$('input[name="award"]').forEach(el => el.checked = true);
     $$('input[name="status"]').forEach(el => el.checked = true);
     $$('input[name="category"]').forEach(el => el.checked = true);

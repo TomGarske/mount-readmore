@@ -122,19 +122,43 @@ a:hover { text-decoration: underline; }
 .about-profile-link:hover { border-color: var(--accent); text-decoration: none; }
 .about-profile-link .profile-dot { width: 10px; height: 10px; }
 
-/* Solo modes — any solo-* body class hides all other readers' filter
- * fieldsets / header pills. The active reader's own *-only block is
- * re-exposed via the second rule below. */
-body[class*="solo-"] .tom-only,
-body[class*="solo-"] .nika-only,
-body[class*="solo-"] .westdac-only,
-body[class*="solo-"] .colton-only,
-body[class*="solo-"] .schupp-only { display: none !important; }
-body.solo-tom .tom-only,
-body.solo-nika .nika-only,
-body.solo-westdac .westdac-only,
-body.solo-colton .colton-only,
-body.solo-schupp .schupp-only { display: revert !important; }
+/* Inactive reader filter fieldsets are hidden via JS using `display: none`
+ * (set in wireFilters based on the ?reader= URL param). */
+
+/* Completionist hero — pitch at very top of Progress */
+.completionist-intro {
+  margin: 12px 0 24px;
+  padding: 26px 28px 24px;
+  background: linear-gradient(135deg, rgba(198, 68, 79, 0.07), rgba(44, 93, 150, 0.07));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-align: center;
+}
+.completionist-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  background: linear-gradient(90deg, var(--sf), var(--blend), var(--fantasy));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.completionist-intro p {
+  margin: 0 auto;
+  max-width: 720px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* Radar fingerprint shown above the awards intro on Progress */
+.radar-hero {
+  margin: 0 0 24px;
+  padding: 18px 20px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
 
 /* Awards intro — Hugo + Nebula explainer at the top of Progress */
 .awards-intro {
