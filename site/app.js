@@ -1687,9 +1687,27 @@ async function renderLeaderboard() {
 
   const tab = (id, label) => `<button type="button" class="status-tab${scope === id ? ' active' : ''}" data-lb-scope="${id}">${label}</button>`;
 
+  const meOnly = isAuthed && rows.length === 1 && rows[0].user_id === myUserId;
+
+  const emptyState = !isAuthed
+    ? `<div class="lb-empty">
+        <p><strong>Leaderboards are friends-only.</strong></p>
+        <p style="color: var(--muted);">Sign in to see how you stack up against your friends — and against @tom, who's auto-friends with everyone.</p>
+        <p><button type="button" class="user-status-signin" id="lb-signin-empty">Sign in</button></p>
+      </div>`
+    : !onLeaderboard
+      ? `<div class="lb-empty">
+          <p><strong>You're not on the leaderboard yet.</strong></p>
+          <p style="color: var(--muted);">Opt in from <a href="#/settings">Settings</a> to compare your reads with your friends.</p>
+        </div>`
+      : `<div class="lb-empty">
+          <p><strong>No friends on the leaderboard yet.</strong></p>
+          <p style="color: var(--muted);">Add friends from <a href="#/settings">Settings</a> — they need to be opted into the leaderboard too. @tom should show up automatically once he's on.</p>
+        </div>`;
+
   root.innerHTML = `<div class="detail leaderboard-page">
     <h1>Leaderboard</h1>
-    <p style="color: var(--muted);">Public Mount Readmore readers ranked by how many of the ${totalLabel} they've read. Opt in from your settings to appear here.</p>
+    <p style="color: var(--muted);">You and your friends, ranked by how many of the ${totalLabel} you've read. Friends-only — add friends and opt in from <a href="#/settings">Settings</a>.</p>
 
     <div class="status-toggle leaderboard-toggle">
       ${tab('overall', 'Overall')}
@@ -1698,13 +1716,17 @@ async function renderLeaderboard() {
     </div>
 
     ${rows.length === 0
-      ? `<div class="lb-empty"><p>Nobody on the leaderboard yet for this scope.</p></div>`
+      ? emptyState
       : `<div class="lb-table">${rowHtml}</div>`}
 
-    ${!isAuthed
+    ${meOnly
+      ? `<p style="margin-top: 22px; color: var(--muted);">It's just you for now. <a href="#/settings">Add friends</a> to fill out the board.</p>`
+      : ''}
+
+    ${rows.length > 0 && !isAuthed
       ? `<p style="margin-top: 22px; color: var(--muted);"><button type="button" class="user-status-signin" id="lb-signin">Sign in</button> &nbsp; to compare your reads against anyone on the leaderboard.</p>`
-      : !onLeaderboard
-        ? `<p style="margin-top: 22px; color: var(--muted);">You're signed in but not opted into the leaderboard yet. (Settings page coming soon.)</p>`
+      : rows.length > 0 && !onLeaderboard
+        ? `<p style="margin-top: 22px; color: var(--muted);">You're signed in but not on the leaderboard yet. <a href="#/settings">Opt in from Settings</a>.</p>`
         : ''}
   </div>`;
 
@@ -1715,6 +1737,7 @@ async function renderLeaderboard() {
     });
   });
   $('#lb-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
+  $('#lb-signin-empty')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
   // Disabled-Compare hover hint: clicking prompts sign-in.
   root.querySelectorAll('.lb-compare-disabled').forEach(el => {
     el.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
