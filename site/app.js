@@ -1412,6 +1412,101 @@ function renderNebula2026() {
   </div>`;
 }
 
+// Standalone two-reader comparison page.
+// URL shape: #/compare?u=tom&u=nika  (alias: ?reader=tom,nika or initials T,N)
+// Reads the legacy CSV columns in data.json for the requested readers. Future:
+// pull from Supabase user_books for arbitrary @handle pairs.
+function renderCompare(params) {
+  const root = $('#view-compare');
+  if (!root) return;
+
+  const rawIds = [];
+  for (const key of ['u', 'reader', 'readers']) {
+    for (const val of params.getAll(key)) {
+      val.split(',').forEach(v => rawIds.push(v.trim().toLowerCase()));
+    }
+  }
+  const userIds = rawIds
+    .map(v => (READER_CONFIG[v] ? v : INITIAL_TO_ID[v]) || v)
+    .filter(id => READER_CONFIG[id] && id !== 'me');
+
+  if (userIds.length !== 2) {
+    root.innerHTML = `<div class="detail">
+      <a href="#/" class="back">← back</a>
+      <h1>Compare two readers</h1>
+      <p style="color: var(--muted);">Pass two readers in the URL, like
+        <a href="#/compare?u=tom&amp;u=nika"><code>#/compare?u=tom&amp;u=nika</code></a>
+        or by initial <a href="#/compare?u=T&amp;u=N"><code>?u=T&amp;u=N</code></a>.</p>
+      <p style="color: var(--muted);">Valid reader keys: <code>tom</code>, <code>nika</code>, <code>westdac</code>, <code>colton</code>, <code>schupp</code>.</p>
+    </div>`;
+    return;
+  }
+
+  const [aId, bId] = userIds;
+  const a = READER_CONFIG[aId];
+  const b = READER_CONFIG[bId];
+
+  const both = [], aOnly = [], bOnly = [], neither = [];
+  for (const book of DATA.books) {
+    const aRead = readStatus(book, aId) === 'read';
+    const bRead = readStatus(book, bId) === 'read';
+    if (aRead && bRead) both.push(book);
+    else if (aRead) aOnly.push(book);
+    else if (bRead) bOnly.push(book);
+    else neither.push(book);
+  }
+  [both, aOnly, bOnly, neither].forEach(arr => arr.sort((x, y) => (y.year || 0) - (x.year || 0)));
+
+  const tile = (bk) => {
+    const cover = bk.cover_url
+      ? `<img src="${escapeHtml(bk.cover_url)}" alt="" loading="lazy">`
+      : `<span class="swimlane-placeholder">📖</span>`;
+    const isWinner = Object.values(bk.awards || {}).includes('winner');
+    return `<a class="swimlane-card" href="#/book/${escapeHtml(bk.id)}">
+      <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
+      <div class="swimlane-title">${escapeHtml(bk.title)}</div>
+      <div class="swimlane-meta">${escapeHtml(bk.authors[0] || '')} · ${bk.year || ''}</div>
+    </a>`;
+  };
+
+  const section = (title, items, sub, extraClass = '') => `
+    <div class="comparison-quadrant ${extraClass}">
+      <div class="comparison-quadrant-head">
+        <h3>${title} <span class="comparison-count">${items.length}</span></h3>
+        ${sub ? `<p style="color: var(--muted); font-size: 12px; margin: 2px 0 0;">${sub}</p>` : ''}
+      </div>
+      ${items.length === 0
+        ? `<p style="color: var(--muted); font-size: 13px; padding: 12px 0;">— nothing here —</p>`
+        : `<div class="swimlane-strip">${items.map(tile).join('')}</div>`}
+    </div>
+  `;
+
+  const totalBooks = DATA.books.length;
+  root.innerHTML = `<div class="detail compare-page">
+    <a href="#/" class="back">← back</a>
+    <div class="compare-header">
+      <h1>
+        <span style="color: ${a.colorVar}">${escapeHtml(a.label)}</span>
+        <span style="color: var(--muted)">vs</span>
+        <span style="color: ${b.colorVar}">${escapeHtml(b.label)}</span>
+      </h1>
+      <p style="color: var(--muted); font-size: 14px;">Comparing read books across the canonical ${totalBooks} on Mount Readmore. Winners + finalists in Novel, Novella, and Novelette.</p>
+      <div class="compare-totals">
+        <span><span style="color: ${a.colorVar}">${a.label}</span> has read <strong>${both.length + aOnly.length}</strong></span>
+        <span><span style="color: ${b.colorVar}">${b.label}</span> has read <strong>${both.length + bOnly.length}</strong></span>
+        <span>Shared: <strong>${both.length}</strong></span>
+      </div>
+    </div>
+
+    <div class="comparison-block">
+      ${section(`<span style="color: ${a.colorVar}">${escapeHtml(a.label)}</span> ∩ <span style="color: ${b.colorVar}">${escapeHtml(b.label)}</span> — both have read`, both, 'Common ground — shared experience to talk about.')}
+      ${section(`<span style="color: ${a.colorVar}">${escapeHtml(a.label)}</span> only`, aOnly, `Read by ${escapeHtml(a.label)}, not ${escapeHtml(b.label)} — what ${escapeHtml(a.label)} could recommend.`)}
+      ${section(`<span style="color: ${b.colorVar}">${escapeHtml(b.label)}</span> only`, bOnly, `Read by ${escapeHtml(b.label)}, not ${escapeHtml(a.label)} — what ${escapeHtml(b.label)} could recommend.`, 'flip')}
+      ${section('Neither has read', neither, 'The gap — uncovered books on the list, ready to be picked.')}
+    </div>
+  </div>`;
+}
+
 function showView(name) {
   $$('.view').forEach(v => v.classList.add('hidden'));
   $(`#view-${name}`).classList.remove('hidden');
@@ -1490,6 +1585,13 @@ function route() {
   if (path === '#/nebula2026') {
     renderNebula2026();
     showView('nebula2026');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (path === '#/compare') {
+    const params = new URLSearchParams(qs || '');
+    renderCompare(params);
+    showView('compare');
     window.scrollTo(0, 0);
     return;
   }
