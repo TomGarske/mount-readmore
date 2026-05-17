@@ -85,6 +85,146 @@ a:hover { text-decoration: underline; }
   width: 1px;
   background: var(--border);
 }
+
+/* Auth pill (Sign in / @handle + Sign out) — sits at the end of the nav */
+.auth-slot { display: inline-flex; gap: 8px; align-items: center; margin-left: 6px; }
+.auth-signin {
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.auth-signin:hover { filter: brightness(1.08); }
+.auth-handle {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-2);
+}
+.auth-signout {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.auth-signout:hover { color: var(--text); border-color: var(--accent); }
+
+/* Sign-in modal */
+.mr-signin-dialog {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+  color: var(--text);
+  max-width: 420px;
+  width: 90vw;
+  padding: 0;
+}
+.mr-signin-dialog::backdrop {
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(2px);
+}
+.mr-signin-form { padding: 24px 26px 22px; }
+.mr-signin-form h2 { margin: 0 0 6px; font-size: 20px; }
+.mr-signin-form p { margin: 0 0 18px; color: var(--muted); font-size: 14px; }
+.mr-signin-label { display: block; margin-bottom: 14px; }
+.mr-signin-label span { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.mr-signin-label input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+}
+.mr-signin-label input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+.mr-signin-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
+.mr-btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 18px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+.mr-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+.mr-btn-ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.mr-signin-status { margin-top: 14px; font-size: 13px; color: var(--muted); min-height: 18px; }
+.mr-signin-status.success { color: var(--read); }
+.mr-signin-status.error { color: var(--sf); }
+
+/* Mark-as-read controls on book detail */
+.user-status {
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.user-status-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.user-status-buttons { display: flex; flex-wrap: wrap; gap: 6px; }
+.user-status-btn {
+  background: var(--bg);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.1s, border-color 0.1s, color 0.1s;
+}
+.user-status-btn:hover { border-color: var(--accent); }
+.user-status-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.user-status-clear { color: var(--muted); }
+.user-status-clear:hover { color: var(--sf); border-color: var(--sf); }
+.user-status-msg { margin-top: 8px; font-size: 12px; min-height: 16px; color: var(--muted); }
+.user-status-msg.success { color: var(--read); }
+.user-status-msg.error { color: var(--sf); }
+.user-status-signin {
+  background: var(--accent);
+  color: #fff;
+  border: 0;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+}
+.user-status-signin:hover { filter: brightness(1.08); }
 .profile-link {
   display: inline-flex;
   align-items: center;

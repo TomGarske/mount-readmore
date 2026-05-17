@@ -317,6 +317,7 @@ function renderDetail(id) {
           ${westdacLine}
           ${westdacShelfLine}
         </dl>
+        ${renderUserStatusControls(book.id)}
         ${addToShelfBtn ? `<div style="margin-top: 16px;">${addToShelfBtn}</div>` : ''}
         <div class="detail-links">
           <a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a>
@@ -329,6 +330,7 @@ function renderDetail(id) {
     ${descHtml ? `<div class="book-section"><h2>Description</h2>${descHtml}</div>` : ''}
     ${subjectsHtml ? `<div class="book-section">${subjectsHtml}</div>` : ''}
   </div>`;
+  wireUserStatusControls();
 }
 
 function renderStats() {
@@ -1479,6 +1481,92 @@ function applySoloUI() {
   }
 }
 
+// ===== Auth integration (Supabase) =====================================
+// Renders the nav pill (Sign in / @handle ▾) and re-renders the active view
+// when auth state changes, so the book detail page picks up Mark-as-read
+// state without a reload.
+function renderAuthPill() {
+  const slot = $('#auth-slot');
+  if (!slot) return;
+  if (!window.MR_AUTH) {
+    slot.innerHTML = '';
+    return;
+  }
+  const user = window.MR_AUTH.user;
+  if (!user) {
+    slot.innerHTML = `<button type="button" class="auth-signin" id="auth-signin">Sign in</button>`;
+    $('#auth-signin').addEventListener('click', () => window.MR_AUTH.showSignInModal());
+    return;
+  }
+  const handle = window.MR_AUTH.profile?.handle || user.email || 'me';
+  slot.innerHTML = `
+    <span class="auth-handle" id="auth-handle">@${escapeHtml(handle)}</span>
+    <button type="button" class="auth-signout" id="auth-signout" title="Sign out">Sign out</button>
+  `;
+  $('#auth-signout').addEventListener('click', async () => {
+    await window.MR_AUTH.signOut();
+  });
+}
+
+function renderUserStatusControls(bookId) {
+  // Returns the HTML for the Mark-as-read button group, or a Sign-in CTA when
+  // the user isn't authenticated. The container has data-book-id so we can
+  // re-render in place after a status change.
+  const auth = window.MR_AUTH;
+  if (!auth) return '';
+  if (!auth.user) {
+    return `<div class="user-status user-status-signed-out">
+      <button type="button" class="user-status-signin">Sign in to track your reads</button>
+    </div>`;
+  }
+  const current = auth.statusFor(bookId);
+  const btn = (status, label) =>
+    `<button type="button" class="user-status-btn ${current === status ? 'active' : ''}" data-status="${status}">${label}</button>`;
+  return `<div class="user-status user-status-signed-in" data-book-id="${escapeHtml(bookId)}">
+    <span class="user-status-label">Your status</span>
+    <div class="user-status-buttons">
+      ${btn('read', '✓ Read')}
+      ${btn('nightstand', '📖 Nightstand')}
+      ${btn('started', '▶ Started')}
+      ${current ? `<button type="button" class="user-status-btn user-status-clear" data-status="clear">Clear</button>` : ''}
+    </div>
+    <div class="user-status-msg" id="user-status-msg-${escapeHtml(bookId)}"></div>
+  </div>`;
+}
+
+function wireUserStatusControls() {
+  const root = $('#view-detail');
+  if (!root) return;
+  // Sign-in CTA inside the detail view
+  root.querySelectorAll('.user-status-signin').forEach(b => {
+    b.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
+  });
+  // Status buttons
+  root.querySelectorAll('.user-status[data-book-id]').forEach(container => {
+    const bookId = container.dataset.bookId;
+    container.querySelectorAll('.user-status-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const status = btn.dataset.status === 'clear' ? null : btn.dataset.status;
+        const msg = $(`#user-status-msg-${CSS.escape(bookId)}`);
+        // Optimistic — flip active classes immediately
+        container.querySelectorAll('.user-status-btn').forEach(b => b.classList.remove('active'));
+        if (status) btn.classList.add('active');
+        if (msg) { msg.textContent = 'Saving…'; msg.className = 'user-status-msg'; }
+        try {
+          await window.MR_AUTH.setBookStatus(bookId, status);
+          if (msg) { msg.textContent = '✓ Saved'; msg.className = 'user-status-msg success'; setTimeout(() => { msg.textContent = ''; }, 1500); }
+        } catch (err) {
+          console.error(err);
+          if (msg) { msg.textContent = 'Save failed: ' + err.message; msg.className = 'user-status-msg error'; }
+          // Re-render to revert optimistic state
+          renderDetail(bookId);
+          wireUserStatusControls();
+        }
+      });
+    });
+  });
+}
+
 async function init() {
   applySoloUI();
   try {
@@ -1490,7 +1578,20 @@ async function init() {
   }
   wireFilters();
   renderList();
+  renderAuthPill();
   window.addEventListener('hashchange', () => { applySoloUI(); route(); });
+  // Re-render the nav pill and the current detail view on auth change.
+  if (window.MR_AUTH) {
+    window.MR_AUTH.onChange(() => {
+      renderAuthPill();
+      // If we're on a book detail page, re-render so Mark-as-read state refreshes.
+      if (location.hash.startsWith('#/book/')) {
+        const id = location.hash.slice('#/book/'.length).split('?')[0];
+        renderDetail(id);
+        wireUserStatusControls();
+      }
+    });
+  }
   route();
 }
 
