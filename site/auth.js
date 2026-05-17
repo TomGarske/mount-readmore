@@ -1,4 +1,4 @@
-// Supabase auth wiring for Mount Readmore.
+// Supabase auth wiring for Readmore.
 // Exposes window.MR_AUTH with: client, current user/profile, onChange listener,
 // signInModal trigger, signOut, and a refreshable cache of the current user's
 // user_books rows.
@@ -79,7 +79,7 @@
       dlg.className = 'mr-signin-dialog';
       dlg.innerHTML = `
         <form id="mr-signin-form" class="mr-signin-form">
-          <h2>Sign in to Mount Readmore</h2>
+          <h2>Sign in to Readmore</h2>
           <p>We'll email you a magic link — no password needed.</p>
           <label class="mr-signin-label">
             <span>Email</span>

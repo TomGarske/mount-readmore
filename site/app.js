@@ -966,7 +966,7 @@ function renderStats() {
       <h2 class="awards-intro-title">The awards</h2>
       <p><strong style="color: var(--sf)">Hugo Awards</strong> <span class="awards-tag awards-tag-fans">Fans</span> — the oldest annual literary award in science fiction and fantasy, presented since <strong>1953</strong> by members of the World Science Fiction Convention (Worldcon). Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. The current Hugo Awards site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.</p>
       <p><strong style="color: var(--fantasy)">Nebula Awards</strong> <span class="awards-tag awards-tag-writers">Writers</span> — peer-voted award presented annually since <strong>1965</strong> by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.</p>
-      <p>Mount Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Mount Readmore.</p>
+      <p>Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>
     </section>
 
     <div class="awards-banner">
@@ -987,7 +987,7 @@ function renderStats() {
     </div>
 
     <section class="completionist-intro">
-      <p>Mount Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
+      <p>Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
     </section>
 
     ${HAS_READER ? `<div class="progress-section radar-hero">
@@ -1482,7 +1482,7 @@ async function renderCompare(params) {
         <a href="#/" class="back">← back</a>
         <h1>Compare reads</h1>
         <p style="color: var(--muted); max-width: 620px;">
-          Sign in to compare your Mount Readmore progress against another reader
+          Sign in to compare your Readmore progress against another reader
           — see what you've both read, what only one of you has read, and what's
           still waiting for both of you.
         </p>
@@ -1604,7 +1604,7 @@ async function renderCompare(params) {
         <span style="color: var(--muted)">vs</span>
         <span style="color: ${bSide.colorVar}">@${escapeHtml(bSide.label)}</span>
       </h1>
-      <p style="color: var(--muted); font-size: 14px;">Comparing read books across the canonical ${totalBooks} on Mount Readmore.</p>
+      <p style="color: var(--muted); font-size: 14px;">Comparing read books across the canonical ${totalBooks} on Readmore.</p>
       <div class="compare-totals">
         <span><span style="color: ${aSide.colorVar}">@${aSide.label}</span> has read <strong>${both.length + aOnly.length}</strong></span>
         <span><span style="color: ${bSide.colorVar}">@${bSide.label}</span> has read <strong>${both.length + bOnly.length}</strong></span>
@@ -1621,7 +1621,7 @@ async function renderCompare(params) {
   </div>`;
 }
 
-// Mount Readmore leaderboard — public, reads from public.leaderboard_overall
+// Readmore leaderboard — public, reads from public.leaderboard_overall
 // and public.leaderboard_by_award views in Supabase. Only profiles with
 // on_leaderboard = true appear. Each row links to a head-to-head comparison.
 let __mrLeaderboardCache = null;
@@ -2227,6 +2227,15 @@ function route() {
   }
   if (path.startsWith('#/u/')) {
     const handle = path.slice('#/u/'.length).split('?')[0];
+    // Viewing your OWN profile URL shows the full Progress dashboard so
+    // /#u/<handle> is a shareable canonical link for the signed-in reader.
+    const myHandle = window.MR_AUTH?.profile?.handle;
+    if (myHandle && handle.toLowerCase() === myHandle.toLowerCase()) {
+      renderStats();
+      showView('stats');
+      window.scrollTo(0, 0);
+      return;
+    }
     renderProfile(handle);
     showView('profile');
     window.scrollTo(0, 0);
@@ -2303,13 +2312,13 @@ function wireFilters() {
 }
 
 function applySoloUI() {
-  // Default (just Tom) keeps the plain "Mount Readmore" title. Solo modes hide
+  // Default (just Tom) keeps the plain "Readmore" title. Solo modes hide
   // the other readers via body class; multi-reader keeps everything visible.
   if (SOLO) {
     document.body.classList.add(`solo-${SOLO}`);
-    document.title = SOLO === 'tom' ? "Mount Readmore" : `Mount Readmore · ${SOLO[0].toUpperCase()}${SOLO.slice(1)}`;
+    document.title = SOLO === 'tom' ? "Readmore" : `Readmore · ${SOLO[0].toUpperCase()}${SOLO.slice(1)}`;
   } else {
-    document.title = "Mount Readmore · " + ACTIVE_READERS.map(r => r.label).join(' + ');
+    document.title = "Readmore · " + ACTIVE_READERS.map(r => r.label).join(' + ');
   }
 }
 
@@ -2320,6 +2329,13 @@ function applySoloUI() {
 function renderAuthPill() {
   const slot = $('#auth-slot');
   if (!slot) return;
+  // Progress link uses the signed-in user's profile URL so it's shareable.
+  // Signed out → plain "#/" (renders the public Progress page).
+  const progressLink = document.querySelector('a[data-route="stats"]');
+  const handle = window.MR_AUTH?.profile?.handle;
+  if (progressLink) {
+    progressLink.setAttribute('href', handle ? `#/u/${encodeURIComponent(handle)}` : '#/');
+  }
   if (!window.MR_AUTH) {
     slot.innerHTML = '';
     return;
@@ -2330,10 +2346,10 @@ function renderAuthPill() {
     $('#auth-signin').addEventListener('click', () => window.MR_AUTH.showSignInModal());
     return;
   }
-  const handle = window.MR_AUTH.profile?.handle || user.email || 'me';
+  const handleLabel = handle || user.email || 'me';
   const isAdmin = !!window.MR_AUTH.profile?.is_admin;
   slot.innerHTML = `
-    <a class="auth-handle" id="auth-handle" href="#/settings" title="Settings">@${escapeHtml(handle)}</a>
+    <a class="auth-handle" id="auth-handle" href="#/settings" title="Settings">@${escapeHtml(handleLabel)}</a>
     ${isAdmin ? '<a class="auth-admin" href="#/admin" title="Admin">⚙</a>' : ''}
     <button type="button" class="auth-signout" id="auth-signout" title="Sign out">Sign out</button>
   `;
