@@ -889,7 +889,6 @@ function renderStats() {
     </div>
 
     <section class="completionist-intro">
-      <h1 class="completionist-title">Read them all.</h1>
       <p>Mount Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
     </section>
 
