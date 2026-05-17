@@ -7,29 +7,29 @@ const AWARD_LABELS = {
 
 let DATA = { books: [], meta: {} };
 
-// Canonical reader config — adding a reader: drop in here, no other code changes.
-// colorRgb matches the hex of the CSS --accent-* variable (for SVG fills + rgba mixing).
+// Canonical reader config. `me` is the signed-in user (Supabase user_books);
+// the named entries (tom/nika/…) are legacy URL-overrides for the previous
+// CSV-driven multi-reader view, kept only for ?reader=... debug URLs.
 const READER_CONFIG = {
+  me:      { id: 'me',      label: 'You',     initial: 'Y', cls: 'reader-me', colorVar: 'var(--accent)',   colorRgb: '29,78,216' },
   tom:     { id: 'tom',     label: 'Tom',     initial: 'T', cls: 'reader-t', colorVar: 'var(--accent)',   colorRgb: '29,78,216' },
   nika:    { id: 'nika',    label: 'Nika',    initial: 'N', cls: 'reader-n', colorVar: 'var(--accent-2)', colorRgb: '220,38,38' },
   westdac: { id: 'westdac', label: 'Westdac', initial: 'W', cls: 'reader-w', colorVar: 'var(--accent-3)', colorRgb: '182,120,60' },
   colton:  { id: 'colton',  label: 'Colton',  initial: 'C', cls: 'reader-c', colorVar: 'var(--accent-4)', colorRgb: '74,122,90' },
   schupp:  { id: 'schupp',  label: 'Schupp',  initial: 'S', cls: 'reader-s', colorVar: 'var(--accent-5)', colorRgb: '122,68,134' },
 };
-const ALL_READER_IDS = Object.keys(READER_CONFIG);
+// Excludes 'me' — only the named legacy readers (used for CSV-keyed loops).
+const ALL_READER_IDS = ['tom', 'nika', 'westdac', 'colton', 'schupp'];
 // Initial → id map (T->tom, N->nika, W->westdac, C->colton, S->schupp). Used to
 // accept ?reader=T,N or ?reader=T&reader=N alongside the long-form names.
 const INITIAL_TO_ID = Object.fromEntries(
   ALL_READER_IDS.map(id => [READER_CONFIG[id].initial.toLowerCase(), id])
 );
 
-// Reader visibility — driven by URL query.
-// Accepts: ?reader=tom,nika,westdac  (comma-separated full names)
-//          ?reader=T,N,W             (comma-separated initials)
-//          ?reader=tom&reader=nika   (repeated param)
-//          ?readers=...              (plural alias)
-// Default: just Tom.
-const READERS = (() => {
+// Optional URL override for the legacy CSV-driven multi-reader view.
+// Without `?reader=...`, the active reader set is auth-derived (see
+// recomputeReaders): empty when signed out, ['me'] when signed in.
+const URL_READERS = (() => {
   const params = new URLSearchParams(window.location.search);
   const raw = [];
   for (const key of ['reader', 'readers']) {
@@ -37,20 +37,40 @@ const READERS = (() => {
       val.split(',').forEach(v => raw.push(v.trim().toLowerCase()));
     }
   }
-  const ids = (raw.length ? raw : ['tom'])
-    .map(r => READER_CONFIG[r] ? r : (INITIAL_TO_ID[r] || r))
-    .filter(r => READER_CONFIG[r]);
-  return ids.length ? ids : ['tom'];
+  return raw.map(r => READER_CONFIG[r] ? r : (INITIAL_TO_ID[r] || r))
+            .filter(r => READER_CONFIG[r] && r !== 'me');
 })();
-const SHOW_TOM = READERS.includes('tom');
-const SHOW_NIKA = READERS.includes('nika');
-const SHOW_WESTDAC = READERS.includes('westdac');
-const SHOW_COLTON = READERS.includes('colton');
-const SHOW_SCHUPP = READERS.includes('schupp');
-// SOLO is the single-reader name when only one reader is selected, else null.
-const SOLO = (READERS.length === 1) ? READERS[0] : null;
-const ACTIVE_READERS = READERS.map(r => READER_CONFIG[r]).filter(Boolean);
+
+// Mutable — recomputeReaders() updates these based on auth state.
+let READERS = [];
+let SHOW_TOM = false;
+let SHOW_NIKA = false;
+let SHOW_WESTDAC = false;
+let SHOW_COLTON = false;
+let SHOW_SCHUPP = false;
+let SOLO = null;
+let ACTIVE_READERS = [];
 const showReader = (id) => READERS.includes(id);
+
+function recomputeReaders() {
+  if (URL_READERS.length) {
+    READERS = URL_READERS.slice();
+  } else if (window.MR_AUTH && window.MR_AUTH.user) {
+    READERS = ['me'];
+    // Keep "me" label in sync with the user's handle for nicer UI labels.
+    const handle = window.MR_AUTH.profile?.handle;
+    if (handle) READER_CONFIG.me.label = handle;
+  } else {
+    READERS = [];
+  }
+  SHOW_TOM = READERS.includes('tom');
+  SHOW_NIKA = READERS.includes('nika');
+  SHOW_WESTDAC = READERS.includes('westdac');
+  SHOW_COLTON = READERS.includes('colton');
+  SHOW_SCHUPP = READERS.includes('schupp');
+  SOLO = (READERS.length === 1) ? READERS[0] : null;
+  ACTIVE_READERS = READERS.map(r => READER_CONFIG[r]).filter(Boolean);
+}
 const ALL_READ_STATES = ['read', 'unread', 'started'];
 const fullStatusSet = () => new Set(ALL_READ_STATES);
 
@@ -80,11 +100,37 @@ const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
 function readStatus(book, who = 'tom') {
+  if (who === 'me') {
+    const status = window.MR_AUTH?.statusFor?.(book.id);
+    if (status === 'read') return 'read';
+    if (status === 'started') return 'started';
+    return 'unread';
+  }
   const val = (book[who] || '').toLowerCase();
   if (!val) return 'unread';
   if (val.startsWith('read')) return 'read';
   if (/queue|progress|started|struggling/.test(val)) return 'started';
   return 'started';
+}
+
+// True if the user has the book on their nightstand (to-read shelf).
+// For 'me', that's user_books.status === 'nightstand'. For CSV readers,
+// that's the legacy *_shelf column.
+function onNightstand(book, who) {
+  if (who === 'me') {
+    return window.MR_AUTH?.statusFor?.(book.id) === 'nightstand';
+  }
+  return book[`${who}_shelf`] === 'to-read';
+}
+
+function shelfStatus(book, who) {
+  // Returns the raw shelf label string (e.g., 'to-read', 'currently-reading')
+  // or 'nightstand' / 'started' / 'read' for 'me'. Used where the existing UI
+  // wants to render a label or compare to a specific shelf.
+  if (who === 'me') {
+    return window.MR_AUTH?.statusFor?.(book.id) || null;
+  }
+  return book[`${who}_shelf`] || null;
 }
 
 function matchesFilters(book) {
@@ -200,11 +246,24 @@ function readerBadge(book, who) {
   const cfg = READER_CONFIG[who];
   if (!cfg) return '';
   const rs = readStatus(book, who);
-  if (!book[who]) return '';
-  // In solo mode, drop the initial prefix since there's only one reader
-  const label = SOLO ? escapeHtml(book[who]) : `<span class="reader-initial">${cfg.initial}</span>${escapeHtml(book[who])}`;
+  // For 'me', label text comes from the Supabase status; for legacy CSV readers
+  // gate on the presence of book[who] (raw status string from data.json).
+  let text;
+  if (who === 'me') {
+    const status = window.MR_AUTH?.statusFor?.(book.id);
+    if (status === 'read') text = 'Read';
+    else if (status === 'started') text = 'Started';
+    else if (status === 'nightstand') text = 'Nightstand';
+    else return '';
+  } else {
+    if (!book[who]) return '';
+    text = book[who];
+  }
+  const label = SOLO ? escapeHtml(text) : `<span class="reader-initial">${cfg.initial}</span>${escapeHtml(text)}`;
   if (rs === 'read') return `<span class="badge read ${cfg.cls}">${label}</span>`;
-  if (rs === 'started') return `<span class="badge queued ${cfg.cls}">${label}</span>`;
+  if (rs === 'started' || (who === 'me' && window.MR_AUTH?.statusFor?.(book.id) === 'nightstand')) {
+    return `<span class="badge queued ${cfg.cls}">${label}</span>`;
+  }
   return '';
 }
 
@@ -1408,12 +1467,15 @@ function route() {
   window.scrollTo(0, 0);
 }
 
-function wireFilters() {
-  // Hide filter fieldsets for readers not in ACTIVE_READERS (URL-driven).
+function applyReaderFilterVisibility() {
   $$('.reader-filter').forEach(fs => {
     const who = fs.dataset.reader;
-    if (!READERS.includes(who)) fs.style.display = 'none';
+    fs.style.display = READERS.includes(who) ? '' : 'none';
   });
+}
+
+function wireFilters() {
+  applyReaderFilterVisibility();
 
   $('#search').addEventListener('input', e => { state.search = e.target.value.trim(); renderList(); });
 
@@ -1568,6 +1630,7 @@ function wireUserStatusControls() {
 }
 
 async function init() {
+  recomputeReaders();
   applySoloUI();
   try {
     const res = await fetch('data.json');
@@ -1580,16 +1643,14 @@ async function init() {
   renderList();
   renderAuthPill();
   window.addEventListener('hashchange', () => { applySoloUI(); route(); });
-  // Re-render the nav pill and the current detail view on auth change.
+  // Re-render on auth change: ACTIVE_READERS flips, then re-route.
   if (window.MR_AUTH) {
     window.MR_AUTH.onChange(() => {
+      recomputeReaders();
+      applySoloUI();
+      applyReaderFilterVisibility();
       renderAuthPill();
-      // If we're on a book detail page, re-render so Mark-as-read state refreshes.
-      if (location.hash.startsWith('#/book/')) {
-        const id = location.hash.slice('#/book/'.length).split('?')[0];
-        renderDetail(id);
-        wireUserStatusControls();
-      }
+      route();
     });
   }
   route();
