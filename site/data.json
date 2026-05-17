@@ -41698,6 +41698,7 @@
       "award_years": {
         "hugo": 2026
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1778096219i/251904930.jpg",
       "author_genders": [
         "unknown"
       ],
@@ -45128,9 +45129,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novel": 638,
+      "Novella": 78,
       "Novelette": 78,
-      "Novella": 78
+      "Novel": 638
     }
   }
 }
