@@ -438,9 +438,10 @@ function renderStats() {
   const winnersWestdac = winners.filter(b => readStatus(b, 'westdac') === 'read');
   const winnersColton = winners.filter(b => readStatus(b, 'colton') === 'read');
   const winnersSchupp = winners.filter(b => readStatus(b, 'schupp') === 'read');
+  const winnersMe = winners.filter(b => readStatus(b, 'me') === 'read');
   const winnersBoth = winners.filter(b => readStatus(b, 'tom') === 'read' && readStatus(b, 'nika') === 'read');
   const winnersEither = winners.filter(b => ACTIVE_READERS.some(r => readStatus(b, r.id) === 'read'));
-  const winnersByReader = { tom: winnersTom, nika: winnersNika, westdac: winnersWestdac, colton: winnersColton, schupp: winnersSchupp };
+  const winnersByReader = { me: winnersMe, tom: winnersTom, nika: winnersNika, westdac: winnersWestdac, colton: winnersColton, schupp: winnersSchupp };
 
   // Tom shelf overlap (books that are on his Goodreads to-read shelf AND in our list)
   const onShelf = DATA.books.filter(b => b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read');
@@ -448,6 +449,7 @@ function renderStats() {
 
   // Per-reader shelf count for solo headline
   const shelfCountByReader = {
+    me: DATA.books.filter(b => onNightstand(b, 'me')).length,
     tom: DATA.books.filter(b => b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read').length,
     nika: DATA.books.filter(b => b.nika_shelf === 'to-read' && readStatus(b, 'nika') !== 'read').length,
     westdac: DATA.books.filter(b => b.westdac_shelf === 'to-read' && readStatus(b, 'westdac') !== 'read').length,
