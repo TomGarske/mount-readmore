@@ -1224,7 +1224,7 @@ function renderStats() {
                 ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
                 : `<span class="swimlane-placeholder">📖</span>`;
               const isWinner = Object.values(b.awards || {}).includes('winner');
-              const readPill = readStatus(b, 'tom') === 'read' || readStatus(b, 'nika') === 'read'
+              const readPill = HAS_READER && ACTIVE_READERS.some(r => readStatus(b, r.id) === 'read')
                 ? `<span class="swimlane-pill">read</span>` : '';
               return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
                 <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}${readPill}</div>
