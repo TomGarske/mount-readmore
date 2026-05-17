@@ -283,6 +283,10 @@ def apply_cover_cache(records: list[dict], cache_path: Path, desc_path: Path | N
         for field in ["cover_url", "ol_key", "first_pub_year", "isbn", "pages"]:
             if meta.get(field):
                 r[field] = meta[field]
+        # Manual description override (set directly in openlib_cache.json) wins
+        # over the ol_key -> desc_cache lookup below.
+        if meta.get("description"):
+            r["description"] = meta["description"]
         if meta.get("cover_url"):
             applied += 1
         ol_key = meta.get("ol_key", "")
