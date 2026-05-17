@@ -864,17 +864,6 @@ function renderStats() {
   }).join('');
 
   root.innerHTML = `<div class="detail">
-    <section class="completionist-intro">
-      <h1 class="completionist-title">Read them all.</h1>
-      <p>Mount Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
-    </section>
-
-    <div class="progress-section radar-hero">
-      <h2>Subgenre fingerprint</h2>
-      <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre's ${SUBSET} this reader has finished. Bigger / more even shape = broader coverage.</p>
-      ${radarHtml}
-    </div>
-
     <section class="awards-intro">
       <h2 class="awards-intro-title">The awards</h2>
       <p><strong style="color: var(--sf)">Hugo Awards</strong> <span class="awards-tag awards-tag-fans">Fans</span> — the oldest annual literary award in science fiction and fantasy, presented since <strong>1953</strong> by members of the World Science Fiction Convention (Worldcon). Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. The current Hugo Awards site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.</p>
@@ -897,6 +886,17 @@ function renderStats() {
           <div class="award-pill-sub">LAcon V (84th WorldCon) · Anaheim</div>
         </div>
       </a>
+    </div>
+
+    <section class="completionist-intro">
+      <h1 class="completionist-title">Read them all.</h1>
+      <p>Mount Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
+    </section>
+
+    <div class="progress-section radar-hero">
+      <h2>Subgenre fingerprint</h2>
+      <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre's ${SUBSET} this reader has finished. Bigger / more even shape = broader coverage.</p>
+      ${radarHtml}
     </div>
 
     <h1>Progress</h1>
