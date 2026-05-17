@@ -2042,6 +2042,10 @@ async function renderProfile(handle) {
     return;
   }
   root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><p style="color: var(--muted);">Loading @${escapeHtml(handle)}…</p></div>`;
+  // Wait for auth bootstrap so MR_AUTH.user / profile / client are all settled
+  // before any cross-user query — otherwise the profile RLS check sees a
+  // half-initialized state and the page can stall.
+  await window.MR_AUTH?.ready;
 
   const client = window.MR_AUTH?.client;
   if (!client) {
@@ -2049,9 +2053,17 @@ async function renderProfile(handle) {
     return;
   }
 
-  const { data: profile, error } = await client.from('profiles')
-    .select('id, handle, profile_visibility, on_leaderboard, created_at, is_admin')
-    .eq('handle', handle).maybeSingle();
+  // Race the profile lookup against a timeout so a stuck SDK falls through
+  // to an error message instead of parking on "Loading @<handle>…".
+  const withTimeout = (p, ms, label) => Promise.race([
+    p,
+    new Promise(res => setTimeout(() => res({ data: null, error: { message: `${label} timed out after ${ms}ms` } }), ms)),
+  ]);
+  const { data: profile, error } = await withTimeout(
+    client.from('profiles')
+      .select('id, handle, profile_visibility, on_leaderboard, created_at, is_admin')
+      .eq('handle', handle).maybeSingle(),
+    8000, 'profile lookup');
   if (error || !profile) {
     root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><h1>Not found</h1><p>No profile @${escapeHtml(handle)}.</p></div>`;
     return;
