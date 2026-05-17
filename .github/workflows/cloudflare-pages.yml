@@ -46,12 +46,23 @@ jobs:
           wranglerVersion: "4"
           command: pages deploy site --project-name=mount-readmore --branch=${{ github.head_ref || github.ref_name }} --commit-dirty=true
 
-      - name: Attach custom domain
+      - name: Attach domain + create DNS
         if: github.ref == 'refs/heads/main'
+        env:
+          PROJECT: mount-readmore
+          ZONE: tomgarske.com
+          DOMAIN: readmore.tomgarske.com
         run: |
-          curl -sS -X POST \
-            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/mount-readmore/domains" \
+          ZONE_ID=$(curl -sS "https://api.cloudflare.com/client/v4/zones?name=$ZONE" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            | python3 -c "import json,sys; r=json.load(sys.stdin); print(r['result'][0]['id'] if r.get('result') else '')")
+          curl -sS -X POST "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/$PROJECT/domains" \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             -H "Content-Type: application/json" \
-            --data '{"name":"readmore.tomgarske.com"}' \
-            | python3 -c "import json,sys; r=json.load(sys.stdin); print('OK' if r.get('success') else 'INFO: '+'; '.join(e.get('message','') for e in r.get('errors',[])))"
+            --data "{\"name\":\"$DOMAIN\"}" \
+            | python3 -c "import json,sys; r=json.load(sys.stdin); print('attach:', 'OK' if r.get('success') else r.get('errors'))"
+          curl -sS -X POST "https://api.cloudflare.com/client/v4/zones/$ZONE_ID/dns_records" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"type\":\"CNAME\",\"name\":\"$DOMAIN\",\"content\":\"$PROJECT.pages.dev\",\"proxied\":true,\"comment\":\"Pages\"}" \
+            | python3 -c "import json,sys; r=json.load(sys.stdin); print('dns:   ', 'OK' if r.get('success') else r.get('errors'))"
