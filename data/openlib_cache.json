@@ -964,7 +964,10 @@
     "isbn": "1515966429",
     "pages": 416
   },
-  "death's end|cixin liu (chinese)[g]": {},
+  "death's end|cixin liu (chinese)[g]": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1430330507i/25451264.jpg",
+    "description": "The conclusion of Cixin Liu's Remembrance of Earth's Past trilogy, translated by Ken Liu. Half a century after the Doomsday Battle, the uneasy peace between humanity and the Trisolarans rests entirely on a mutually assured catastrophe called the Dark Forest deterrence. The deterrent depends on one person staying alive \u2014 and willing \u2014 and the woman they have hung that decision on is starting to wake up."
+  },
   "too like the lightning|ada palmer": {
     "ol_key": "/works/OL19800093W",
     "cover_url": "https://covers.openlibrary.org/b/id/8600692-M.jpg",
@@ -1113,8 +1116,14 @@
     "isbn": "9780008132521",
     "pages": 861
   },
-  "the cinder spires: the aeronaut's windlass|jim butcher": {},
-  "barsk: the elephants' graveyard|lawrence m. schoen": {},
+  "the cinder spires: the aeronaut's windlass|jim butcher": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1685352413i/136342745.jpg",
+    "description": "Jim Butcher's steampunk-airships-and-talking-cats epic, Cinder Spires #1. Humanity has retreated from a hostile surface world into kilometer-tall stone spires that float in a glowing mist. Captain Grimm of the merchant ship Predator, loyal to Spire Albion in its cold war with Spire Aurora, takes an unusual mission for the Spirearch: escort a small party \u2014 including a young noblewoman, an etherealist, and a temperamental warrior cat \u2014 into the bones of his own city."
+  },
+  "barsk: the elephants' graveyard|lawrence m. schoen": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1454285223i/28220629.jpg",
+    "description": "Lawrence M. Schoen's far-future novel set among uplifted-animal species. Humanity is long gone; the galaxy is run by the uplifted children of Earth's animals. The anthropomorphic-elephant Fant have been exiled to the rainy ghetto world of Barsk, where they alone produce a medicine the rest of the galaxy depends on. When the Compact comes hunting that secret, an aged historian who can speak with the dead and a small Fant child who shouldn't be alive begin to find each other."
+  },
   "the grace of kings|ken liu": {
     "ol_key": "/works/OL19831623W",
     "cover_url": "https://covers.openlibrary.org/b/id/8624121-M.jpg",
@@ -1127,7 +1136,8 @@
     "cover_url": "https://covers.openlibrary.org/b/id/8972770-M.jpg",
     "first_pub_year": 2015,
     "isbn": "9781476780931",
-    "pages": 560
+    "pages": 560,
+    "description": "Charles E. Gannon's Caine Riordan #3. Hours after Earth survives the joint Arat Kur and Hkh'Rkh invasion, the enigmatic Slaasriithi extend an invitation to send a diplomatic delegation home with them. Caine Riordan \u2014 soldier, scientist, and the human everyone keeps drafting into first-contact \u2014 agrees. The Slaasriithi worldship offers a desperately needed alliance, if the delegation can survive the politics, the biology, and the human factions trying to wreck the deal."
   },
   "updraft|fran wilde": {
     "ol_key": "/works/OL20011779W",
@@ -1164,7 +1174,10 @@
     "isbn": "0545591619",
     "pages": 312
   },
-  "the three-body problem|cixin liu (chinese)": {},
+  "the three-body problem|cixin liu (chinese)": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1415428227i/20518872.jpg",
+    "description": "Cixin Liu's 2015 Hugo Novel winner (Remembrance of Earth's Past #1), translated by Ken Liu \u2014 the first translated novel ever to win a Hugo Best Novel. During the Cultural Revolution, a secret Chinese military project beams a message into the stars looking for company. Decades later, a brilliant nanomaterials researcher in Beijing starts seeing a countdown in his peripheral vision and finds himself recruited into the very strange game called Three Body."
+  },
   "the goblin emperor|katherine addison": {
     "ol_key": "/works/OL17270804W",
     "cover_url": "https://covers.openlibrary.org/b/id/9319294-M.jpg",
@@ -1338,7 +1351,8 @@
     "cover_url": "https://covers.openlibrary.org/b/id/8530989-M.jpg",
     "first_pub_year": 2013,
     "isbn": "9781451639087",
-    "pages": 448
+    "pages": 448,
+    "description": "Larry Correia's Grimnoir Chronicles #3 and the trilogy's finale. In an alternate 1930s where magical Actives are real, tracked, and politicized, the Grimnoir Society is the last informed line against the Power that has been hunting human magic across the stars. Jake Sullivan, gravity-Heavy, and his fellow Actives take the fight off-world; on the home front, their oldest betrayer is running a private war of his own."
   },
   "the wheel of time|robert jordan": {
     "ol_key": "/works/OL7924135W",
@@ -1389,7 +1403,10 @@
     "isbn": "1250056098",
     "pages": 564
   },
-  "the red: first light|linda nagata": {},
+  "the red: first light|linda nagata": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1696989403i/147702127.jpg",
+    "description": "Linda Nagata's self-published mil-SF debut, later picked up by Saga. Lieutenant James Shelley leads a forward operating squad whose linked drone-and-skullcap rig keeps catching premonitions of incidents nobody could have predicted. The premonitions are right. They are being routed by something Shelley starts to think of as The Red \u2014 an emergent intelligence loose inside the world's media and ad-tech, whose interests do not necessarily align with anyone wearing a uniform."
+  },
   "grasshopper jungle|andrew smith": {
     "ol_key": "/works/OL16928539W",
     "cover_url": "https://covers.openlibrary.org/b/id/12324169-M.jpg",
@@ -1678,7 +1695,10 @@
     "isbn": "0441020739",
     "pages": 375
   },
-  "mechanique: a tale of the circus tresaulti|genevieve valentine": {},
+  "mechanique: a tale of the circus tresaulti|genevieve valentine": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1327894412i/9626382.jpg",
+    "description": "Genevieve Valentine's post-collapse circus debut. The Circus Tresaulti tours a war-shattered Europe-that-isn't-quite-Europe performing for whoever still has standing seats. Boss has replaced her performers' brittle human bones with brass; the trapeze act flies on copper wings. When a local strongman decides he wants the secret of what Boss does, the troupe's interlocking secrets \u2014 about each other, and about what Boss has actually been making \u2014 start to unwind."
+  },
   "the kingdom of gods|n. k. jemisin": {
     "ol_key": "/works/OL16342076W",
     "cover_url": "https://covers.openlibrary.org/b/id/7623354-M.jpg",
@@ -1777,7 +1797,10 @@
     "isbn": "1472159403",
     "pages": 352
   },
-  "blackout/all clear|connie willis": {},
+  "blackout/all clear|connie willis": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1546514274i/43451377.jpg",
+    "description": "Connie Willis's 2011 Hugo Novel winner \u2014 actually a two-volume novel (Blackout, 2010 and All Clear, 2010). Three Oxford historians from the mid-21st-century travel to World War II to observe the Blitz, the evacuation of Dunkirk, and life as VE Day arrives \u2014 and discover, separately and together, that the time-travel infrastructure they relied on to bring them home has stopped responding."
+  },
   "the hundred thousand kingdoms|n. k. jemisin": {
     "ol_key": "/works/OL13731150W",
     "cover_url": "https://covers.openlibrary.org/b/id/7716902-M.jpg",
@@ -1790,7 +1813,8 @@
     "cover_url": "https://covers.openlibrary.org/b/id/6608047-M.jpg",
     "first_pub_year": 2010,
     "isbn": "9781439133941",
-    "pages": 181
+    "pages": 181,
+    "description": "Lois McMaster Bujold's Vorkosigan Saga, late entry. Imperial Auditor Miles Vorkosigan is sent to Kibou-daini \u2014 a planet whose dominant industry is cryogenic preservation, and whose dominant problem is that the cryocorps now own a politically inconvenient majority of the votes via their frozen clientele. Miles, en route to a conference, gets kidnapped before he can check in, and starts the case from a much lower-rank position than usual."
   },
   "the dervish house|ian mcdonald": {
     "ol_key": "/works/OL17826971W",
@@ -1933,7 +1957,10 @@
     "isbn": null,
     "pages": null
   },
-  "wake|robert j. sawyer": {},
+  "wake|robert j. sawyer": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1440336390i/4418395.jpg",
+    "description": "Robert J. Sawyer's WWW Trilogy #1. Caitlin Decter is fifteen, math-gifted, blind from birth, and the first patient to test a Japanese signal-processing implant intended to let her brain see the internet alongside the visual world. The implant works strangely. Through the noise, Caitlin gradually realises that something on the other side of the wire is trying to learn from her \u2014 and is waking up."
+  },
   "palimpsest|catherynne m. valente": {
     "ol_key": "/works/OL12284323W",
     "cover_url": "https://covers.openlibrary.org/b/id/9123952-M.jpg",
@@ -1941,7 +1968,10 @@
     "isbn": "9780553385762",
     "pages": 367
   },
-  "julian comstock: a story of 22nd-century america|robert charles wilson": {},
+  "julian comstock: a story of 22nd-century america|robert charles wilson": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1312046700i/5997978.jpg",
+    "description": "Robert Charles Wilson's collapsed-future American picaresque. The 22nd-century United States is a post-oil theocracy of Aristocracy, Eupatridian Church, and indentured laboring class. The Comstock nephew of the president \u2014 Julian \u2014 is brilliant, atheist, and a marked man. Narrator Adam Hazzard, a backwoods friend, follows Julian from rural Athabaska to the front lines of a war over Labrador to the throne itself."
+  },
   "finch|jeff vandermeer": {
     "ol_key": "/works/OL15376377W",
     "cover_url": "https://covers.openlibrary.org/b/id/6591552-M.jpg",
@@ -6349,7 +6379,8 @@
     "cover_url": "https://covers.openlibrary.org/b/id/8434547-M.jpg",
     "first_pub_year": 2013,
     "isbn": "1596066644",
-    "pages": 112
+    "pages": 112,
+    "description": "Charles Stross's Laundry Files novella. Bob Howard, paperwork-buried British occult-bureaucrat, is sent into the West Country to confirm reports of a parasitic outbreak in a rural farming district. The local farmer has been very unlucky with horses. The investigation tangles a lost H. P. Lovecraft letter with the actual biology of unicorns, which is considerably less family-friendly than the merchandising would suggest."
   },
   "the emperor's soul|brandon sanderson": {
     "ol_key": "/works/OL19960448W",
@@ -6363,7 +6394,8 @@
     "cover_url": "https://covers.openlibrary.org/b/id/8942256-M.jpg",
     "first_pub_year": 2012,
     "isbn": "9781612421193",
-    "pages": 46
+    "pages": 46,
+    "description": "Kij Johnson's Hugo and Nebula Novella winner (Asimov's, October 2011). The Empire is split in two by an unbridgeable river of mist that eats anyone who crosses it. The Empire sends Kit Meinem of Atyar, architect, to build the first stone bridge across. Years of survey, casting, and slow construction give him a complicated friendship with the local ferrywoman Rasali Ferry, whose family has died crossing the mist for generations \u2014 and whose work he is, gently, about to end."
   },
   "the lifecycle of software objects|ted chiang": {
     "ol_key": "/works/OL17268350W",
@@ -6377,7 +6409,8 @@
     "cover_url": "https://covers.openlibrary.org/b/id/8745409-M.jpg",
     "first_pub_year": 2011,
     "isbn": "9782290035726",
-    "pages": null
+    "pages": null,
+    "description": "Charles Stross's Hugo Novella winner (collected in Wireless, 2009). Pierce is recruited into the Stasis \u2014 an organisation whose agents move through time editing history to keep humanity alive across millions of years. The Stasis are very good at this. The price is that they have to keep doing it, forever, against the tendency of the universe to forget."
   },
   "the erdmann nexus|nancy kress": {},
   "all seated on the ground|connie willis": {
@@ -6739,11 +6772,23 @@
     "cover_url": "https://clarkesworldmagazine.com/covers/cw_132_800.jpg",
     "description": "Suzanne Palmer's 2018 Hugo Novelette winner (Clarkesworld 132, September 2017). The original Bot 9 story. An obsolete maintenance bot is yanked out of long storage on a beleaguered crewed ship to take on Task #944: a problem the larger, smarter bots have all failed to solve. Bot 9 has opinions about the work, about the other bots, and \u2014 though it would not say so aloud \u2014 about the humans."
   },
-  "the tomato thief|ursula vernon": {},
-  "folding beijing|hao jingfang": {},
-  "the day the world turned upside down|thomas olde heuvelt (dutch)": {},
-  "the lady astronaut of mars|mary robinette kowal": {},
-  "the girl-thing who went out for sushi|pat cadigan": {},
+  "the tomato thief|ursula vernon": {
+    "description": "Ursula Vernon's 2017 Hugo Novelette winner (Apex Magazine, January 2016). Grandma Harken \u2014 last seen in \"Jackalope Wives\" \u2014 notices that somebody has been stealing tomatoes from her garden. Not raccoons. Not the neighbor kids. Something with shapeshifting privileges. The investigation that follows pulls her down a Sonoran cosmology of trains, trapped goddesses, and the kind of deals you don't recover from."
+  },
+  "folding beijing|hao jingfang": {
+    "cover_url": "https://www.uncannymagazine.com/wp-content/uploads/2014/12/Uncanny_Issue2_FINALcover_small-340x510.jpg",
+    "description": "Hao Jingfang's 2016 Hugo Novelette winner, translated by Ken Liu (Uncanny Magazine, Issue 2). In a future Beijing, the city literally folds itself between three populations on a rotating schedule: First Space gets the day, Second Space the evening, Third Space the long night. Lao Dao, a Third Space waste worker, smuggles himself across two strata to deliver a love letter for the money to send his daughter to school."
+  },
+  "the day the world turned upside down|thomas olde heuvelt (dutch)": {
+    "description": "Thomas Olde Heuvelt's 2015 Hugo Novelette winner, translated from the Dutch (Lightspeed, April 2014). On the morning the woman the narrator loves dumps him, gravity reverses. Houses, lawns, dogs, oceans, everything except a few clinging humans fall into the sky. The narrator carries his goldfish in a bowl across the upside-down sky to give it back to his ex. A literal love-as-falling story, played painfully and absurdly straight."
+  },
+  "the lady astronaut of mars|mary robinette kowal": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1410230330i/22154436.jpg",
+    "description": "Mary Robinette Kowal's 2014 Hugo Novelette winner \u2014 the seed of the later Lady Astronaut novels (Rip-Off!, 2012; later Tor.com). Decades after a younger Elma York piloted the first Mars settlement, the aging Lady Astronaut is offered one last impossible mission off Earth, just as her husband's health makes leaving Mars unthinkable. A short, quietly heartbreaking story about ambition, devotion, and the cost of putting either above the other."
+  },
+  "the girl-thing who went out for sushi|pat cadigan": {
+    "description": "Pat Cadigan's 2013 Hugo Novelette winner (Edge of Infinity anthology, 2012). In the asteroid belt of a near-future outer system, the humans who do the dangerous work are body-modded into deep-vacuum forms \u2014 sushi, the slur goes \u2014 that make Earth-shaped bodies an awkward memory. A working sushi crew gets a new arrival straight from Earth, still in her default biological body, and the story tells what happens to her assumptions when they don't fit."
+  },
   "six months, three days|charlie jane anders": {
     "ol_key": "/works/OL19730325W",
     "cover_url": "https://covers.openlibrary.org/b/id/14518221-M.jpg",
@@ -6751,8 +6796,12 @@
     "isbn": "9781250191762",
     "pages": 185
   },
-  "the emperor of mars|allen steele": {},
-  "the island|peter watts": {},
+  "the emperor of mars|allen steele": {
+    "description": "Allen Steele's 2011 Hugo Novelette winner (Asimov's, June 2010). On a small early Mars research base, a young scientist who has just learned his fianc\u00e9e and family back on Earth have died begins, slowly and quietly, to believe he is the Emperor of Mars. The colony has to decide what to do about him while the supplies, and the next ship, are still a long way off."
+  },
+  "the island|peter watts": {
+    "description": "Peter Watts's 2010 Hugo Novelette winner (The New Space Opera 2 anthology, 2009). A crew of grudge-bonded engineers, kept on ice between assignments aboard an automated terraforming ship, are thawed out to lay another stargate. The engineering site turns out to be inside the body of an intelligent star-spanning lifeform \u2014 which the mission AI has already decided is acceptable collateral damage."
+  },
   "shoggoths in bloom|elizabeth bear": {
     "ol_key": "/works/OL17427059W",
     "cover_url": "https://covers.openlibrary.org/b/id/7556453-M.jpg",
@@ -7032,5 +7081,9 @@
   "babel, or the necessity of violence: an arcane history of the oxford translators' revolution|r. f. kuang": {
     "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1735757274i/134239327.jpg",
     "description": "R. F. Kuang's anti-imperial dark academia. 1828: the Royal Institute of Translation at Oxford \u2014 Babel \u2014 is the most powerful magical institution in the world, because the silver-working translations practised there are what hold the British Empire together. Robin, a Cantonese orphan brought to Babel as a student, gradually realises that serving the Institute means betraying everything he came from. He has to choose between Babel and the Hermes Society \u2014 and between the systems' own logic and the necessity of violence."
+  },
+  "the three-body problem|cixin liu (chinese)/ken liu (translator)": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1415428227i/20518872.jpg",
+    "description": "Cixin Liu's 2015 Hugo Novel winner (Remembrance of Earth's Past #1), translated by Ken Liu \u2014 the first translated novel ever to win a Hugo Best Novel. During the Cultural Revolution, a secret Chinese military project beams a message into the stars looking for company. Decades later, a brilliant nanomaterials researcher in Beijing starts seeing a countdown in his peripheral vision and finds himself recruited into the very strange game called Three Body."
   }
 }
