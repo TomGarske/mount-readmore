@@ -12,8 +12,15 @@ jobs:
     permissions:
       contents: read
       deployments: write
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
 
       - uses: actions/setup-python@v5
         with:
@@ -25,9 +32,16 @@ jobs:
       - name: Rebuild site/data.json
         run: python scripts/build_site_data.py --data data --out site/data.json
 
+      - name: Ensure Pages project exists
+        run: |
+          if ! npx -y wrangler@4 pages project list 2>/dev/null | grep -q "mount-readmore"; then
+            npx -y wrangler@4 pages project create mount-readmore --production-branch=main
+          fi
+
       - name: Deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy site --project-name=mount-readmore --branch=${{ github.head_ref || github.ref_name }}
+          wranglerVersion: "4"
+          command: pages deploy site --project-name=mount-readmore --branch=${{ github.head_ref || github.ref_name }} --commit-dirty=true
