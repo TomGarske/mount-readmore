@@ -393,6 +393,9 @@ function renderDetail(id) {
 }
 
 function renderStats() {
+  // Per-reader loops inside this function must include 'me' so signed-in
+  // users (whose reader id is 'me') don't crash on map lookups.
+  const READER_KEYS = [...ALL_READER_IDS, 'me'];
   // Status filter for everything on this page
   const STATUS = state.progressStatus;  // 'winner' | 'nominee' | 'both'
   const AWARD = state.progressAward;    // 'both' | 'hugo' | 'nebula'
@@ -471,7 +474,7 @@ function renderStats() {
 
   const emptyBucket = () => {
     const b = { total: 0 };
-    for (const id of ALL_READER_IDS) b[id] = 0;
+    for (const id of READER_KEYS) b[id] = 0;
     return b;
   };
   const byAward = {};
@@ -485,7 +488,7 @@ function renderStats() {
       if (STATUS === 'nominee' && s !== 'nominee') continue;
       if (AWARD !== 'both' && a !== AWARD) continue;
       byAward[a].total++;
-      for (const id of ALL_READER_IDS) {
+      for (const id of READER_KEYS) {
         if (readStatus(b, id) === 'read') byAward[a][id]++;
       }
     }
@@ -494,7 +497,7 @@ function renderStats() {
   for (const b of winners) {
     byCategory[b.category] = byCategory[b.category] || emptyBucket();
     byCategory[b.category].total++;
-    for (const id of ALL_READER_IDS) {
+    for (const id of READER_KEYS) {
       if (readStatus(b, id) === 'read') byCategory[b.category][id]++;
     }
   }
@@ -558,7 +561,7 @@ function renderStats() {
     for (const g of (b.subgenres || [])) {
       if (!subBuckets[g]) subBuckets[g] = emptyBucket();
       subBuckets[g].total++;
-      for (const id of ALL_READER_IDS) {
+      for (const id of READER_KEYS) {
         if (readStatus(b, id) === 'read') subBuckets[g][id]++;
       }
     }
@@ -570,7 +573,7 @@ function renderStats() {
     const p = b.primary_genre || 'Unclassified';
     if (!primaryBuckets[p]) primaryBuckets[p] = emptyBucket();
     primaryBuckets[p].total++;
-    for (const id of ALL_READER_IDS) {
+    for (const id of READER_KEYS) {
       if (readStatus(b, id) === 'read') primaryBuckets[p][id]++;
     }
   }
@@ -672,11 +675,11 @@ function renderStats() {
     const key = primary + (subs.length ? ' / ' + subs.join(' + ') : '');
     if (!comboBuckets[key]) {
       comboBuckets[key] = { total: 0, winners: 0 };
-      for (const id of ALL_READER_IDS) comboBuckets[key][`${id}Read`] = 0;
+      for (const id of READER_KEYS) comboBuckets[key][`${id}Read`] = 0;
     }
     comboBuckets[key].total++;
     if (Object.values(b.awards || {}).includes('winner')) comboBuckets[key].winners++;
-    for (const id of ALL_READER_IDS) {
+    for (const id of READER_KEYS) {
       if (readStatus(b, id) === 'read') comboBuckets[key][`${id}Read`]++;
     }
   }
@@ -700,12 +703,12 @@ function renderStats() {
   // Per-reader read counts so all active readers show in the gender cards.
   const genderBuckets = { male: 0, female: 0, unknown: 0 };
   const genderReadByReader = {};
-  for (const id of ALL_READER_IDS) genderReadByReader[id] = { male: 0, female: 0, unknown: 0 };
+  for (const id of READER_KEYS) genderReadByReader[id] = { male: 0, female: 0, unknown: 0 };
   for (const b of winners) {
     const g = b.primary_author_gender || 'unknown';
     if (!(g in genderBuckets)) continue;
     genderBuckets[g]++;
-    for (const id of ALL_READER_IDS) {
+    for (const id of READER_KEYS) {
       if (readStatus(b, id) === 'read') genderReadByReader[id][g]++;
     }
   }
@@ -718,11 +721,11 @@ function renderStats() {
     for (const a of (b.authors || [])) {
       if (!authorAppearances[a]) {
         authorAppearances[a] = { total: 0, winners: 0 };
-        for (const id of ALL_READER_IDS) authorAppearances[a][`${id}Read`] = 0;
+        for (const id of READER_KEYS) authorAppearances[a][`${id}Read`] = 0;
       }
       authorAppearances[a].total++;
       if (Object.values(b.awards || {}).includes('winner')) authorAppearances[a].winners++;
-      for (const id of ALL_READER_IDS) {
+      for (const id of READER_KEYS) {
         if (readStatus(b, id) === 'read') authorAppearances[a][`${id}Read`]++;
       }
     }
@@ -740,7 +743,7 @@ function renderStats() {
     const decade = Math.floor(b.year / 10) * 10;
     if (!decadeBuckets[decade]) decadeBuckets[decade] = emptyBucket();
     decadeBuckets[decade].total++;
-    for (const id of ALL_READER_IDS) {
+    for (const id of READER_KEYS) {
       if (readStatus(b, id) === 'read') decadeBuckets[decade][id]++;
     }
   }
@@ -778,7 +781,7 @@ function renderStats() {
     const dec = Math.floor(b.year / 10) * 10;
     if (!eraBuckets[dec]) continue;
     eraBuckets[dec].total++;
-    for (const id of ALL_READER_IDS) {
+    for (const id of READER_KEYS) {
       if (readStatus(b, id) === 'read') eraBuckets[dec][id]++;
     }
   }
@@ -937,7 +940,7 @@ function renderStats() {
   }).join('');
 
   // Decade heatmap — color intensity follows the active reader in solo mode, first active reader otherwise
-  const heatmapColorRgb = Object.fromEntries(ALL_READER_IDS.map(id => [id, READER_CONFIG[id].colorRgb]));
+  const heatmapColorRgb = Object.fromEntries(READER_KEYS.map(id => [id, READER_CONFIG[id].colorRgb]));
   const heatmapReader = SOLO || (ACTIVE_READERS[0] ? ACTIVE_READERS[0].id : 'tom');
   const decadeCells = decades.map(d => {
     const activeCount = d[heatmapReader];
