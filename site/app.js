@@ -1725,6 +1725,31 @@ async function renderCompare(params) {
   // Subgenre coverage for each side — used to draw side-by-side fingerprint
   // radars. A book contributes to every one of its subgenre buckets.
   const subBuckets = {};
+  // Per-side stat accumulators (computed in one DATA.books pass).
+  const empty = () => ({ Novel: 0, Novella: 0, Novelette: 0 });
+  const emptyAward = () => ({ hugo: 0, nebula: 0 });
+  const emptyGender = () => ({ female: 0, male: 0, unknown: 0 });
+  const stats = {
+    a: { byCategory: empty(), byAward: emptyAward(), byGender: emptyGender(), byPrimaryGenre: {}, byDecade: {}, yearSum: 0, yearCount: 0 },
+    b: { byCategory: empty(), byAward: emptyAward(), byGender: emptyGender(), byPrimaryGenre: {}, byDecade: {}, yearSum: 0, yearCount: 0 },
+  };
+  const tallyOne = (s, book) => {
+    if (book.category) s.byCategory[book.category] = (s.byCategory[book.category] || 0) + 1;
+    for (const a of Object.keys(book.awards || {})) {
+      s.byAward[a] = (s.byAward[a] || 0) + 1;
+    }
+    const pg = book.primary_genre || 'Unclassified';
+    s.byPrimaryGenre[pg] = (s.byPrimaryGenre[pg] || 0) + 1;
+    if (book.year) {
+      const dec = Math.floor(book.year / 10) * 10;
+      s.byDecade[dec] = (s.byDecade[dec] || 0) + 1;
+      s.yearSum += book.year;
+      s.yearCount++;
+    }
+    const g = book.primary_author_gender || 'unknown';
+    if (g in s.byGender) s.byGender[g]++;
+  };
+
   for (const book of DATA.books) {
     const aRead = aSide.statusMap[book.id]?.status === 'read';
     const bRead = bSide.statusMap[book.id]?.status === 'read';
@@ -1732,6 +1757,8 @@ async function renderCompare(params) {
     else if (aRead) aOnly.push(book);
     else if (bRead) bOnly.push(book);
     else neither.push(book);
+    if (aRead) tallyOne(stats.a, book);
+    if (bRead) tallyOne(stats.b, book);
     for (const g of (book.subgenres || [])) {
       if (!subBuckets[g]) subBuckets[g] = { total: 0, a: 0, b: 0 };
       subBuckets[g].total++;
@@ -1740,6 +1767,14 @@ async function renderCompare(params) {
     }
   }
   [both, aOnly, bOnly, neither].forEach(arr => arr.sort((x, y) => (y.year || 0) - (x.year || 0)));
+
+  const aReadCount = both.length + aOnly.length;
+  const bReadCount = both.length + bOnly.length;
+  const unionCount = aReadCount + bReadCount - both.length;
+  // Jaccard index — size of intersection ÷ size of union. 1.0 = identical reads.
+  const taste = unionCount > 0 ? Math.round((both.length / unionCount) * 100) : 0;
+  const avgYearA = stats.a.yearCount > 0 ? Math.round(stats.a.yearSum / stats.a.yearCount) : null;
+  const avgYearB = stats.b.yearCount > 0 ? Math.round(stats.b.yearSum / stats.b.yearCount) : null;
 
   // Build per-side radars — top 8 most-populated subgenres, dropping axes
   // where neither side has any reads (keeps the chart legible).
@@ -1796,6 +1831,85 @@ async function renderCompare(params) {
   `;
 
   const totalBooks = DATA.books.length;
+
+  // Helpers for the side-by-side analytics block.
+  // pctRow: a labeled row with two bars (one per reader), each scaled to the
+  // larger of (their value, their max in this group) so visual lengths compare
+  // sensibly across rows.
+  const pctRow = (label, aVal, bVal, denom, opts = {}) => {
+    const aPct = denom > 0 ? (aVal / denom) * 100 : 0;
+    const bPct = denom > 0 ? (bVal / denom) * 100 : 0;
+    const aDisp = opts.showPct ? `${aVal} (${Math.round(aPct)}%)` : aVal;
+    const bDisp = opts.showPct ? `${bVal} (${Math.round(bPct)}%)` : bVal;
+    return `<div class="cmp-stat-row">
+      <div class="cmp-stat-label">${label}</div>
+      <div class="cmp-stat-bar">
+        <span class="cmp-stat-bar-fill" style="width:${aPct}%; background:${aSide.colorVar};"></span>
+      </div>
+      <div class="cmp-stat-val" style="color:${aSide.colorVar}">${aDisp}</div>
+      <div class="cmp-stat-bar">
+        <span class="cmp-stat-bar-fill" style="width:${bPct}%; background:${bSide.colorVar};"></span>
+      </div>
+      <div class="cmp-stat-val" style="color:${bSide.colorVar}">${bDisp}</div>
+    </div>`;
+  };
+
+  // Category breakdown: out of N books in the catalog with that category,
+  // how many has each reader finished?
+  const catTotals = { Novel: 0, Novella: 0, Novelette: 0 };
+  for (const b of DATA.books) {
+    if (catTotals[b.category] != null) catTotals[b.category]++;
+  }
+  const catRows = ['Novel', 'Novella', 'Novelette']
+    .map(c => pctRow(c, stats.a.byCategory[c], stats.b.byCategory[c], catTotals[c], { showPct: true }))
+    .join('');
+
+  // Award breakdown
+  const awardTotals = { hugo: 0, nebula: 0 };
+  for (const b of DATA.books) {
+    for (const a of Object.keys(b.awards || {})) {
+      if (awardTotals[a] != null) awardTotals[a]++;
+    }
+  }
+  const awardRows = ['hugo', 'nebula']
+    .map(a => pctRow(a.charAt(0).toUpperCase() + a.slice(1), stats.a.byAward[a] || 0, stats.b.byAward[a] || 0, awardTotals[a], { showPct: true }))
+    .join('');
+
+  // Primary-genre breakdown — rank by combined reader interest
+  const primaryUnion = new Set([...Object.keys(stats.a.byPrimaryGenre), ...Object.keys(stats.b.byPrimaryGenre)]);
+  const primaryTotals = {};
+  for (const b of DATA.books) {
+    const pg = b.primary_genre || 'Unclassified';
+    primaryTotals[pg] = (primaryTotals[pg] || 0) + 1;
+  }
+  const primaryRanked = Array.from(primaryUnion)
+    .sort((p, q) => ((stats.a.byPrimaryGenre[q] || 0) + (stats.b.byPrimaryGenre[q] || 0))
+                  - ((stats.a.byPrimaryGenre[p] || 0) + (stats.b.byPrimaryGenre[p] || 0)));
+  const primaryRows = primaryRanked
+    .map(g => pctRow(g, stats.a.byPrimaryGenre[g] || 0, stats.b.byPrimaryGenre[g] || 0, primaryTotals[g] || 1, { showPct: true }))
+    .join('');
+
+  // Author-gender split
+  const genderTotals = { female: 0, male: 0, unknown: 0 };
+  for (const b of DATA.books) {
+    const g = b.primary_author_gender || 'unknown';
+    if (g in genderTotals) genderTotals[g]++;
+  }
+  const genderLabels = { female: 'Female-authored', male: 'Male-authored', unknown: 'Unknown / pen name' };
+  const genderRows = ['female', 'male', 'unknown']
+    .map(g => pctRow(genderLabels[g], stats.a.byGender[g] || 0, stats.b.byGender[g] || 0, genderTotals[g] || 1, { showPct: true }))
+    .join('');
+
+  // Decade overlay: one row per decade with each reader's count.
+  const decadesUnion = Array.from(new Set([
+    ...Object.keys(stats.a.byDecade).map(Number),
+    ...Object.keys(stats.b.byDecade).map(Number),
+  ])).sort((x, y) => x - y);
+  const maxDecade = Math.max(1, ...decadesUnion.map(d => Math.max(stats.a.byDecade[d] || 0, stats.b.byDecade[d] || 0)));
+  const decadeRows = decadesUnion
+    .map(d => pctRow(`${d % 100 < 10 ? '0' + (d % 100) : d % 100}s`, stats.a.byDecade[d] || 0, stats.b.byDecade[d] || 0, maxDecade))
+    .join('');
+
   root.innerHTML = `<div class="detail compare-page">
     <a href="#/compare" class="back">← compare another</a>
     <div class="compare-header">
@@ -1806,11 +1920,84 @@ async function renderCompare(params) {
       </h1>
       <p style="color: var(--muted); font-size: 14px;">Comparing read books across the canonical ${totalBooks} on Readmore.</p>
       <div class="compare-totals">
-        <span><span style="color: ${aSide.colorVar}">@${aSide.label}</span> has read <strong>${both.length + aOnly.length}</strong></span>
-        <span><span style="color: ${bSide.colorVar}">@${bSide.label}</span> has read <strong>${both.length + bOnly.length}</strong></span>
+        <span><span style="color: ${aSide.colorVar}">@${aSide.label}</span> has read <strong>${aReadCount}</strong></span>
+        <span><span style="color: ${bSide.colorVar}">@${bSide.label}</span> has read <strong>${bReadCount}</strong></span>
         <span>Shared: <strong>${both.length}</strong></span>
       </div>
     </div>
+
+    <section class="compare-headline-grid">
+      <div class="compare-stat-card compare-stat-similarity">
+        <div class="compare-stat-card-label">Taste similarity</div>
+        <div class="compare-stat-card-value">${taste}%</div>
+        <div class="compare-stat-card-sub">Jaccard index — shared reads ÷ combined reads</div>
+      </div>
+      <div class="compare-stat-card">
+        <div class="compare-stat-card-label">Average pub year</div>
+        <div class="compare-stat-card-value compare-avg-year">
+          <span style="color:${aSide.colorVar}">${avgYearA ?? '—'}</span>
+          <span style="color:var(--muted)">vs</span>
+          <span style="color:${bSide.colorVar}">${avgYearB ?? '—'}</span>
+        </div>
+        <div class="compare-stat-card-sub">Of the books each has read</div>
+      </div>
+      <div class="compare-stat-card">
+        <div class="compare-stat-card-label">Gap to close</div>
+        <div class="compare-stat-card-value">${neither.length}</div>
+        <div class="compare-stat-card-sub">Books neither of you has read</div>
+      </div>
+    </section>
+
+    <section class="compare-analytics-section">
+      <h2>By category</h2>
+      <div class="cmp-stat-grid">
+        <div class="cmp-stat-head">Category</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${catRows}
+      </div>
+    </section>
+
+    <section class="compare-analytics-section">
+      <h2>By award</h2>
+      <div class="cmp-stat-grid">
+        <div class="cmp-stat-head">Award</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${awardRows}
+      </div>
+    </section>
+
+    <section class="compare-analytics-section">
+      <h2>By primary genre</h2>
+      <div class="cmp-stat-grid">
+        <div class="cmp-stat-head">Genre</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${primaryRows}
+      </div>
+    </section>
+
+    <section class="compare-analytics-section">
+      <h2>By author gender</h2>
+      <div class="cmp-stat-grid">
+        <div class="cmp-stat-head">Gender</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${genderRows}
+      </div>
+    </section>
+
+    <section class="compare-analytics-section">
+      <h2>By decade</h2>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Where each reader spends most of their time. Bars scale to the busiest decade across both.</p>
+      <div class="cmp-stat-grid">
+        <div class="cmp-stat-head">Decade</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${aSide.colorVar}">@${escapeHtml(aSide.label)}</div>
+        <div class="cmp-stat-head" colspan="2" style="color:${bSide.colorVar}">@${escapeHtml(bSide.label)}</div>
+        ${decadeRows}
+      </div>
+    </section>
 
     ${radarHtml ? `<section class="compare-radar-section">
       <h2>Subgenre fingerprint</h2>

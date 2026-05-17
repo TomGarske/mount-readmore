@@ -958,6 +958,98 @@ a:hover { text-decoration: underline; }
 }
 .compare-totals strong { color: var(--text); }
 
+/* Compare headline cards (similarity, avg year, gap) */
+.compare-headline-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 24px;
+}
+.compare-stat-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+.compare-stat-card-label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.compare-stat-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1;
+}
+.compare-stat-card.compare-stat-similarity .compare-stat-card-value {
+  color: var(--accent-4, #4a7a5a);
+}
+.compare-avg-year { font-size: 22px; }
+.compare-avg-year span { font-weight: 700; }
+.compare-stat-card-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+@media (max-width: 720px) {
+  .compare-headline-grid { grid-template-columns: 1fr; }
+}
+
+/* Side-by-side analytics rows */
+.compare-analytics-section {
+  margin-top: 28px;
+  padding: 16px 18px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.compare-analytics-section h2 { margin: 0 0 10px; font-size: 18px; }
+.cmp-stat-grid {
+  display: grid;
+  grid-template-columns: 110px 1fr 60px 1fr 60px;
+  gap: 8px 10px;
+  align-items: center;
+  margin-top: 6px;
+  font-size: 13px;
+}
+.cmp-stat-head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.cmp-stat-row { display: contents; }
+.cmp-stat-label {
+  font-weight: 600;
+  color: var(--text);
+}
+.cmp-stat-bar {
+  position: relative;
+  height: 8px;
+  background: var(--bg-3, var(--bg));
+  border-radius: 4px;
+  overflow: hidden;
+}
+.cmp-stat-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.2s ease;
+}
+.cmp-stat-val {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+@media (max-width: 720px) {
+  .cmp-stat-grid { grid-template-columns: 90px 1fr 50px 1fr 50px; font-size: 12px; }
+}
+
 /* Reader comparison section */
 .comparison-block { margin-top: 36px; }
 .comparison-quadrant {
