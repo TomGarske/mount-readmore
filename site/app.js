@@ -1659,22 +1659,23 @@ async function renderCompare(params) {
       return;
     }
 
-    // Per-friend read counts. Cache them across navigations so re-opening
-    // /compare doesn't refetch every time. Cache key = sorted friend IDs;
-    // any add/remove changes the signature and forces a refresh.
+    // Per-friend read counts. We *used* to fire one HEAD count() request per
+    // friend, but those returned 503 against the consolidated RLS policy
+    // (cross-user count + the public-profile EXISTS subquery is too slow on
+    // free-tier PostgREST). The leaderboard_overall view already aggregates
+    // server-side and is friends-scoped via auth.uid() — one query gives us
+    // every friend's count for free.
     const client = window.MR_AUTH.client;
     const signature = friends.map(f => f.id).sort().join(',');
     let counts;
     if (__compareFriendCountsCache.signature === signature && __compareFriendCountsCache.counts) {
       counts = __compareFriendCountsCache.counts;
     } else {
+      const { overall } = await fetchLeaderboards();
       counts = {};
-      await Promise.all(friends.map(async (f) => {
-        const { count } = await client.from('user_books')
-          .select('book_id', { count: 'exact', head: true })
-          .eq('user_id', f.id).eq('status', 'read');
-        counts[f.id] = count ?? 0;
-      }));
+      for (const row of overall || []) {
+        counts[row.user_id] = row.read_count;
+      }
       __compareFriendCountsCache.signature = signature;
       __compareFriendCountsCache.counts = counts;
     }
