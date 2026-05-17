@@ -6607,15 +6607,29 @@
   "if this goes on\u2026|robert a. heinlein": {},
   "who goes there?|john w. campbell (as don a. stuart)": {},
   "kaiju agonistes|scott lynch": {
-    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1778097303i/251905481.jpg"
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1778097303i/251905481.jpg",
+    "description": "Scott Lynch's 2026 Hugo Novelette finalist, originally in Uncanny Magazine, Issue 62. An older civilization that tends younger ones the way you might tend a delicate sapling plants a \"watchseed\" on a watery, accidentally-rich planet in 1946 \u2014 meaning well, mostly. Two hundred thousand years later, something it has watched and become wakes up in the wrong shape, and the story unfolds at the agonised intersection of monstrosity and grief."
   },
   "never eaten vegetables|h.h. pak": {
-    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1778096219i/251904930.jpg"
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1778096219i/251904930.jpg",
+    "description": "H.H. Pak's debut Hugo Novelette finalist (Clarkesworld 220, January 2025; also a 2025 Nebula finalist). Told from the point of view of the ship herself \u2014 a vast half-organic vessel cradling ten thousand humans across decades of void toward a planet none of them will reach in this body. As she counts the stars and tends her sleeping passengers, she contemplates what hers is and isn't, and what her ten thousand have lost by never having lived."
   },
-  "rapport: friendship, solidarity, communion, empathy|martha wells": {},
-  "the girl that my mother is leaving me for|cameron reed": {},
-  "the millay illusion|sarah pinsker": {},
-  "when he calls your name|catherynne m. valente": {},
+  "rapport: friendship, solidarity, communion, empathy|martha wells": {
+    "description": "A 2026 Hugo Novelette finalist set in the Murderbot universe (Reactor, July 2025). Perihelion \u2014 the ship-AI better known to Murderbot fans as ART \u2014 and its crew take a job at a corporate-run station in the middle of a hostile takeover. As the situation grows messier and the bots have to read the humans (and the humans them), \"rapport\" turns out to be the load-bearing word.",
+    "cover_url": "https://reactormag.com/wp-content/uploads/2025/07/rapport_full-art.jpeg"
+  },
+  "the girl that my mother is leaving me for|cameron reed": {
+    "description": "Cameron Reed's 2026 Hugo Novelette finalist (Reactor, April 2025). In a corporate-run dystopia, a trans girl rescued out of poverty by a wealthy family in exchange for carrying a clone meets the girl she's been gestating \u2014 the daughter who will replace her in the only life she has left.",
+    "cover_url": "https://reactormag.com/wp-content/uploads/2025/04/girlmymother_full.jpg"
+  },
+  "the millay illusion|sarah pinsker": {
+    "description": "Sarah Pinsker's 2026 Hugo Novelette finalist (Uncanny Magazine #67). A career stage magician looks back on the season that broke her \u2014 the year she shared a touring bill with Susanna Miller, the one illusionist whose tricks she could never quite explain, and whose eventual disappearance still belongs more to magic than to memory.",
+    "cover_url": "https://www.uncannymagazine.com/wp-content/uploads/2025/10/Issue-67-cover-med-340x510.png"
+  },
+  "when he calls your name|catherynne m. valente": {
+    "description": "Catherynne M. Valente's 2026 Hugo Novelette finalist (Uncanny Magazine #65). Deep-summer Southern Gothic. A woman sits up at 2 a.m. on the wraparound porch of the farmhouse she and her husband built from nothing, shotgun across her lap, waiting for a disturbance \u2014 one she has been waiting for her whole life and that, this time, calls her by name.",
+    "cover_url": "https://www.uncannymagazine.com/wp-content/uploads/2025/06/Issue-65-cover-med-340x510.jpg"
+  },
   "the four sisters overlooking the sea|naomi kritzer": {},
   "the brotherhood of montague st. video|thomas ha": {},
   "by salt, by sea, by light of stars|premee mohamed": {},
