@@ -39,6 +39,7 @@
       "ol_key": "/works/OL42983060W",
       "first_pub_year": 2025,
       "isbn": "0593723821",
+      "description": "The second Shadow of the Leviathan novel after The Tainted Cup. The Empire's strangest investigator, Ana Dolabra, is dispatched to the remote canton of Yarrowdale to unpick a locked-room disappearance that quickly proves to be murder — the opening move in a contest with an adversary who may finally be her match.",
       "subjects": [
         "Fantasy",
         "Mystery",
@@ -98,6 +99,7 @@
       "first_pub_year": 2025,
       "isbn": "9781399622967",
       "pages": 448,
+      "description": "Zelu — disabled, unemployed, dropped from her university job in the middle of her sister's wedding — risks writing a novel unlike anything she has tried before: a far-future drama about androids surviving the extinction of humanity. The book takes off, and as her own life is reshaped by sudden fame, the line between her invented world and her own begins to blur.",
       "subjects": [
         "American literature"
       ],
@@ -147,6 +149,7 @@
       "first_pub_year": 2025,
       "isbn": "9780316579025",
       "pages": 460,
+      "description": "Adrian Tchaikovsky returns to first-contact territory. A commercial expedition strip-mining the edges of human-reachable space discovers a moon nicknamed Shroud — pitch-black, high-pressure, radio-loud, and emphatically inhospitable. When a catastrophic accident strands two crew on its surface in a vessel meant only for orbit, what they find down there is impossibly alive.",
       "subjects": [
         "English literature"
       ],
@@ -248,6 +251,7 @@
       "first_pub_year": 2025,
       "isbn": "9781250835024",
       "pages": 432,
+      "description": "A sapphic dark-academia novel from the author of Some Desperate Glory. Dr. Walden, Director of Magic at Chetwood Academy, is the most powerful magician in England — and the woman most responsible for keeping six hundred students alive when the school's wards start failing. Demons are master manipulators, and this one has been studying her for a long time.",
       "author_genders": [
         "female"
       ],
@@ -342,10 +346,12 @@
       "award_years": {
         "nebula": 2026
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1724430840i/214565598.jpg",
       "ol_key": "/works/OL42540135W",
       "first_pub_year": 2025,
       "isbn": "9781668060049",
       "pages": 464,
+      "description": "Seven years after the Announcement confirmed that all of reality is a simulation, JP and Dulin take one last cross-country bus tour of North America's \"Impossibles\" — the physics-defying glitches the simulation has been quietly spitting out ever since. JP is dying; Dulin is along for everything else. A funny, big-hearted road novel about the world being fake and the people in it being real anyway.",
       "subjects": [
         "American literature"
       ],
@@ -390,6 +396,8 @@
       "award_years": {
         "nebula": 2026
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1752247826i/232370210.jpg",
+      "description": "A Lutheran pastor's 1912 diary, found inside a wall a century later, transcribes a series of confessional visits from a Blackfeet man named Good Stab — and through them, the slow, patient revenge of an Indigenous vampire who has been hunting the men responsible for 217 dead in the snow. A historical horror novel from one of the genre's new masters.",
       "author_genders": [
         "male"
       ],
@@ -484,10 +492,12 @@
       "award_years": {
         "nebula": 2026
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1717706963i/213816143.jpg",
       "ol_key": "/works/OL38664026W",
       "first_pub_year": 2024,
       "isbn": "9781035416189",
       "pages": 304,
+      "description": "A modern Bluebeard retelling that scans more like a folktale than a thriller. Wet-nurse Agnes is called to feed the local lord's strange new son — a child whose nails grow too quickly, whose skin smells of soil, and whom the land seems to reject. As he grows into a man whose wives keep dying, the women around him begin reading the same pattern by another name.",
       "author_genders": [
         "female"
       ],
@@ -37754,6 +37764,7 @@
       "first_pub_year": 2025,
       "isbn": "9781250341716",
       "pages": 208,
+      "description": "A queer gothic Cinderella retelling. Ella was murdered at sixteen and is now a ghost trapped in her father's house, invisible to everyone but her stepmother and stepsisters. When she trades with a fairy charm-seller for three nights of almost-living freedom, the bargain — and the people she meets — pull her further from the staircase where she died than she has ever been.",
       "author_genders": [
         "female"
       ],
@@ -37799,6 +37810,7 @@
       "first_pub_year": 2025,
       "isbn": "1250342244",
       "pages": 68,
+      "description": "Becky Chambers by way of Miss Marple. Aboard the luxury interstellar liner HMS Fairweather, passengers can sleep between lifetimes by checking their minds into the Library between bodies. Detective Dorothy Gentleman wakes up in the wrong body and immediately has a corpse on her hands — and a murderer who isn't just killing bodies but unmaking the people inside them.",
       "author_genders": [
         "female"
       ],
@@ -45135,8 +45147,8 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novella": 78,
       "Novelette": 78,
+      "Novella": 78,
       "Novel": 638
     }
   }
