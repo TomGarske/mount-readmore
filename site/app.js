@@ -1461,6 +1461,11 @@ async function loadCompareSide(id, colorIdx = 0) {
 async function renderCompare(params) {
   const root = $('#view-compare');
   if (!root) return;
+  root.innerHTML = `<div class="detail"><h1>Compare reads</h1><p style="color: var(--muted);">Loading…</p></div>`;
+  // Wait for the initial auth bootstrap so MR_AUTH.user is settled before we
+  // branch on it. Otherwise the friends-picker can fire listFriends() before
+  // currentUser is set, returning empty by accident.
+  await window.MR_AUTH?.ready;
 
   const rawIds = [];
   for (const key of ['u', 'reader', 'readers']) {
@@ -1751,6 +1756,11 @@ async function renderLeaderboard() {
 async function renderSettings() {
   const root = $('#view-settings');
   if (!root) return;
+  root.innerHTML = `<div class="detail"><h1>Settings</h1><p style="color: var(--muted);">Loading…</p></div>`;
+  // Wait for the initial auth bootstrap so user + profile are both populated
+  // before we render. Otherwise we can crash reading profile.handle when the
+  // page is navigated to mid-bootstrap.
+  await window.MR_AUTH?.ready;
   if (!window.MR_AUTH?.user) {
     root.innerHTML = `<div class="detail">
       <h1>Settings</h1>
@@ -1761,10 +1771,15 @@ async function renderSettings() {
     return;
   }
 
-  root.innerHTML = `<div class="detail"><h1>Settings</h1><p style="color: var(--muted);">Loading…</p></div>`;
-
   const profile = window.MR_AUTH.profile;
   const user = window.MR_AUTH.user;
+  if (!profile) {
+    root.innerHTML = `<div class="detail">
+      <h1>Settings</h1>
+      <p style="color: var(--sf);">Couldn't load your profile. Try refreshing.</p>
+    </div>`;
+    return;
+  }
   const friends = await window.MR_AUTH.listFriends();
 
   const visOpt = (val, label, desc) => `

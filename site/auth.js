@@ -125,19 +125,39 @@
     setTimeout(() => dlg.querySelector('#mr-signin-email')?.focus(), 0);
   }
 
+  // Race a query against a timeout so a stuck SDK call doesn't freeze callers.
+  // Returns { data, error } shape; on timeout `error` describes the timeout.
+  async function withTimeout(promise, ms, label) {
+    let timer;
+    const timeout = new Promise(resolve => {
+      timer = setTimeout(() => resolve({ data: null, error: { message: `${label} timed out after ${ms}ms` } }), ms);
+    });
+    try {
+      return await Promise.race([promise, timeout]);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
   async function listFriends() {
     if (!currentUser) return [];
-    const { data, error } = await client.from('friendships')
-      .select('user_id_a, user_id_b, created_at')
-      .or(`user_id_a.eq.${currentUser.id},user_id_b.eq.${currentUser.id}`);
+    const { data, error } = await withTimeout(
+      client.from('friendships')
+        .select('user_id_a, user_id_b, created_at')
+        .or(`user_id_a.eq.${currentUser.id},user_id_b.eq.${currentUser.id}`),
+      8000, 'friendships load'
+    );
     if (error) { console.error('friendships load:', error); return []; }
     const friendIds = (data || []).map(f =>
       f.user_id_a === currentUser.id ? f.user_id_b : f.user_id_a
     );
     if (friendIds.length === 0) return [];
-    const { data: profs, error: pErr } = await client.from('profiles')
-      .select('id, handle, profile_visibility, on_leaderboard')
-      .in('id', friendIds);
+    const { data: profs, error: pErr } = await withTimeout(
+      client.from('profiles')
+        .select('id, handle, profile_visibility, on_leaderboard')
+        .in('id', friendIds),
+      8000, 'friend profiles load'
+    );
     if (pErr) { console.error('friend profiles load:', pErr); return []; }
     return profs || [];
   }
@@ -209,8 +229,14 @@
     return data;
   }
 
+  // `ready` resolves after the initial bootstrap (getSession + loadProfile +
+  // loadUserBooks). Pages that read MR_AUTH.profile / userBooks should await
+  // it first to avoid the race where user is set but profile is still null.
+  const readyPromise = bootstrap();
+
   window.MR_AUTH = {
     client,
+    ready: readyPromise,
     get user() { return currentUser; },
     get profile() { return currentProfile; },
     get userBooks() { return userBooksById; },
@@ -224,6 +250,4 @@
     removeFriend,
     updateProfile,
   };
-
-  bootstrap();
 })();
