@@ -115,6 +115,51 @@
     dlg.showModal();
   }
 
+  async function listFriends() {
+    if (!currentUser) return [];
+    const { data, error } = await client.from('friendships')
+      .select('user_id_a, user_id_b, created_at')
+      .or(`user_id_a.eq.${currentUser.id},user_id_b.eq.${currentUser.id}`);
+    if (error) { console.error('friendships load:', error); return []; }
+    const friendIds = (data || []).map(f =>
+      f.user_id_a === currentUser.id ? f.user_id_b : f.user_id_a
+    );
+    if (friendIds.length === 0) return [];
+    const { data: profs, error: pErr } = await client.from('profiles')
+      .select('id, handle, profile_visibility, on_leaderboard')
+      .in('id', friendIds);
+    if (pErr) { console.error('friend profiles load:', pErr); return []; }
+    return profs || [];
+  }
+
+  async function addFriendByHandle(handle) {
+    if (!currentUser) throw new Error('Not signed in');
+    const clean = String(handle || '').replace(/^@/, '').trim().toLowerCase();
+    if (!clean) throw new Error('Handle is empty');
+    const { data: target, error: lookupErr } = await client.from('profiles')
+      .select('id, handle').eq('handle', clean).maybeSingle();
+    if (lookupErr) throw lookupErr;
+    if (!target) throw new Error(`No user with handle @${clean}`);
+    if (target.id === currentUser.id) throw new Error("Can't friend yourself");
+    const [a, b] = currentUser.id < target.id
+      ? [currentUser.id, target.id]
+      : [target.id, currentUser.id];
+    const { error } = await client.from('friendships')
+      .insert({ user_id_a: a, user_id_b: b });
+    if (error && error.code !== '23505') throw error;  // ignore "already friends"
+    return target;
+  }
+
+  async function removeFriend(friendId) {
+    if (!currentUser) throw new Error('Not signed in');
+    const [a, b] = currentUser.id < friendId
+      ? [currentUser.id, friendId]
+      : [friendId, currentUser.id];
+    const { error } = await client.from('friendships')
+      .delete().eq('user_id_a', a).eq('user_id_b', b);
+    if (error) throw error;
+  }
+
   async function setBookStatus(bookId, status) {
     // status: 'read' | 'started' | 'nightstand' | null (null = remove)
     if (!currentUser) throw new Error('Not signed in');
@@ -139,6 +184,21 @@
     notify();
   }
 
+  async function updateProfile(patch) {
+    if (!currentUser) throw new Error('Not signed in');
+    const allowed = ['handle', 'profile_visibility', 'on_leaderboard'];
+    const safe = {};
+    for (const k of allowed) if (k in patch) safe[k] = patch[k];
+    if (Object.keys(safe).length === 0) return currentProfile;
+    const { data, error } = await client.from('profiles')
+      .update(safe).eq('id', currentUser.id)
+      .select('*').single();
+    if (error) throw error;
+    currentProfile = data;
+    notify();
+    return data;
+  }
+
   window.MR_AUTH = {
     client,
     get user() { return currentUser; },
@@ -149,6 +209,10 @@
     signOut: async () => { await client.auth.signOut(); },
     showSignInModal,
     setBookStatus,
+    listFriends,
+    addFriendByHandle,
+    removeFriend,
+    updateProfile,
   };
 
   bootstrap();

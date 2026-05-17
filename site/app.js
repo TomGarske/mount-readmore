@@ -1649,6 +1649,362 @@ async function renderLeaderboard() {
   });
 }
 
+// ===== Settings page ==================================================
+async function renderSettings() {
+  const root = $('#view-settings');
+  if (!root) return;
+  if (!window.MR_AUTH?.user) {
+    root.innerHTML = `<div class="detail">
+      <h1>Settings</h1>
+      <p style="color: var(--muted);">Sign in to manage your profile.</p>
+      <div style="margin-top: 14px;"><button type="button" class="user-status-signin" id="settings-signin">Sign in</button></div>
+    </div>`;
+    $('#settings-signin')?.addEventListener('click', () => window.MR_AUTH.showSignInModal());
+    return;
+  }
+
+  root.innerHTML = `<div class="detail"><h1>Settings</h1><p style="color: var(--muted);">Loading…</p></div>`;
+
+  const profile = window.MR_AUTH.profile;
+  const user = window.MR_AUTH.user;
+  const friends = await window.MR_AUTH.listFriends();
+
+  const visOpt = (val, label, desc) => `
+    <label class="settings-radio">
+      <input type="radio" name="profile_visibility" value="${val}" ${profile.profile_visibility === val ? 'checked' : ''}>
+      <span><strong>${label}</strong> — ${desc}</span>
+    </label>`;
+
+  const friendRow = (f) => `
+    <div class="settings-friend-row" data-friend-id="${escapeHtml(f.id)}">
+      <a class="settings-friend-handle" href="#/u/${escapeHtml(f.handle)}">@${escapeHtml(f.handle)}</a>
+      <span class="settings-friend-meta">${f.on_leaderboard ? 'on leaderboard' : 'off leaderboard'}</span>
+      <button type="button" class="settings-friend-remove" data-friend-id="${escapeHtml(f.id)}">Remove</button>
+    </div>`;
+
+  root.innerHTML = `<div class="detail settings-page">
+    <h1>Settings</h1>
+
+    <section class="settings-section">
+      <h2>Account</h2>
+      <div class="settings-grid">
+        <label class="settings-field">
+          <span>Email</span>
+          <input type="email" value="${escapeHtml(user.email || '')}" disabled>
+        </label>
+        <label class="settings-field">
+          <span>Handle <span class="settings-hint">— letters and numbers, 3+ chars</span></span>
+          <input type="text" id="settings-handle" value="${escapeHtml(profile.handle)}" minlength="3" maxlength="32">
+        </label>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h2>Visibility</h2>
+      ${visOpt('private', 'Private', "Only you can see your profile and reads.")}
+      ${visOpt('link', 'Link-only', "People with your share link can see your profile. Bring your own social graph.")}
+      ${visOpt('public', 'Public', "Anyone can view your profile at /u/" + escapeHtml(profile.handle) + ".")}
+      <div style="margin-top: 12px;">
+        <label class="settings-check">
+          <input type="checkbox" id="settings-leaderboard" ${profile.on_leaderboard ? 'checked' : ''}>
+          Show me on the leaderboard (friends only — you and your friends see each other)
+        </label>
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h2>Friends <span class="settings-count">${friends.length}</span></h2>
+      <p style="color: var(--muted); font-size: 13px;">Your friends appear together on your leaderboard. <strong>@tom is auto-friends with everyone.</strong></p>
+      <form id="settings-add-friend" class="settings-add-friend">
+        <input type="text" id="settings-friend-handle" placeholder="@handle" autocomplete="off">
+        <button type="submit" class="mr-btn-primary">Add friend</button>
+      </form>
+      <div class="settings-friend-list">
+        ${friends.length === 0 ? '<p style="color: var(--muted); font-size: 13px;">No friends yet. Tom should be here automatically — if not, add him: @tom.</p>' : friends.map(friendRow).join('')}
+      </div>
+    </section>
+
+    <section class="settings-section">
+      <h2>Session</h2>
+      <button type="button" class="mr-btn-ghost" id="settings-signout">Sign out</button>
+    </section>
+
+    <div id="settings-msg" class="settings-msg"></div>
+  </div>`;
+
+  const msg = $('#settings-msg');
+  const setMsg = (text, cls = '') => { msg.textContent = text; msg.className = 'settings-msg ' + cls; };
+
+  // Save-on-blur for the handle field
+  let handleSaving = false;
+  $('#settings-handle').addEventListener('blur', async (e) => {
+    const newHandle = e.target.value.replace(/^@/, '').trim();
+    if (!newHandle || newHandle === profile.handle) return;
+    if (!/^[a-zA-Z0-9_]{3,32}$/.test(newHandle)) {
+      setMsg('Handle must be 3–32 chars, letters/numbers/underscore only.', 'error');
+      e.target.value = profile.handle;
+      return;
+    }
+    if (handleSaving) return;
+    handleSaving = true;
+    try {
+      await window.MR_AUTH.updateProfile({ handle: newHandle });
+      setMsg(`Handle saved as @${newHandle}.`, 'success');
+    } catch (err) {
+      setMsg('Save failed: ' + (err.message || err), 'error');
+      e.target.value = profile.handle;
+    }
+    handleSaving = false;
+  });
+
+  $$('input[name="profile_visibility"]').forEach(r => {
+    r.addEventListener('change', async (e) => {
+      try {
+        await window.MR_AUTH.updateProfile({ profile_visibility: e.target.value });
+        setMsg(`Visibility set to ${e.target.value}.`, 'success');
+      } catch (err) { setMsg('Save failed: ' + err.message, 'error'); }
+    });
+  });
+
+  $('#settings-leaderboard').addEventListener('change', async (e) => {
+    try {
+      await window.MR_AUTH.updateProfile({ on_leaderboard: e.target.checked });
+      setMsg(e.target.checked ? "You're on the leaderboard." : "Removed from leaderboard.", 'success');
+    } catch (err) { setMsg('Save failed: ' + err.message, 'error'); }
+  });
+
+  $('#settings-add-friend').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const handle = $('#settings-friend-handle').value;
+    try {
+      const target = await window.MR_AUTH.addFriendByHandle(handle);
+      setMsg(`Added @${target.handle} as a friend.`, 'success');
+      $('#settings-friend-handle').value = '';
+      renderSettings();
+    } catch (err) {
+      setMsg(err.message || String(err), 'error');
+    }
+  });
+
+  $$('.settings-friend-remove').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const friendId = btn.dataset.friendId;
+      if (!confirm('Remove this friend?')) return;
+      try {
+        await window.MR_AUTH.removeFriend(friendId);
+        setMsg('Friend removed.', 'success');
+        renderSettings();
+      } catch (err) { setMsg(err.message || String(err), 'error'); }
+    });
+  });
+
+  $('#settings-signout').addEventListener('click', async () => {
+    await window.MR_AUTH.signOut();
+    location.hash = '#/';
+  });
+}
+
+// ===== Admin page ====================================================
+async function renderAdmin() {
+  const root = $('#view-admin');
+  if (!root) return;
+  const me = window.MR_AUTH?.profile;
+  if (!window.MR_AUTH?.user || !me?.is_admin) {
+    root.innerHTML = `<div class="detail">
+      <h1>Admin</h1>
+      <p style="color: var(--muted);">This page is admin-only. ${me ? '' : '<button type="button" class="user-status-signin" id="admin-signin">Sign in</button>'}</p>
+    </div>`;
+    $('#admin-signin')?.addEventListener('click', () => window.MR_AUTH.showSignInModal());
+    return;
+  }
+
+  root.innerHTML = `<div class="detail"><h1>Admin</h1><p style="color: var(--muted);">Loading…</p></div>`;
+
+  const client = window.MR_AUTH.client;
+  const { data: profiles, error } = await client.from('profiles')
+    .select('id, handle, profile_visibility, on_leaderboard, is_admin, created_at')
+    .order('created_at');
+  if (error) {
+    root.innerHTML = `<div class="detail"><h1>Admin</h1><p style="color: var(--sf);">Load failed: ${escapeHtml(error.message)}</p></div>`;
+    return;
+  }
+
+  // user_books counts per profile
+  const { data: ubAll } = await client.from('user_books').select('user_id, status');
+  const reads = {};
+  const totalUb = {};
+  for (const r of ubAll || []) {
+    totalUb[r.user_id] = (totalUb[r.user_id] || 0) + 1;
+    if (r.status === 'read') reads[r.user_id] = (reads[r.user_id] || 0) + 1;
+  }
+
+  const row = (p) => `
+    <div class="admin-row" data-profile-id="${escapeHtml(p.id)}">
+      <div class="admin-handle">
+        <a href="#/u/${escapeHtml(p.handle)}">@${escapeHtml(p.handle)}</a>
+        ${p.is_admin ? '<span class="admin-pill admin-pill-admin">admin</span>' : ''}
+      </div>
+      <div class="admin-reads">${reads[p.id] || 0} read · ${totalUb[p.id] || 0} total</div>
+      <div class="admin-controls">
+        <select data-field="profile_visibility" data-profile-id="${escapeHtml(p.id)}">
+          <option value="private" ${p.profile_visibility === 'private' ? 'selected' : ''}>private</option>
+          <option value="link" ${p.profile_visibility === 'link' ? 'selected' : ''}>link</option>
+          <option value="public" ${p.profile_visibility === 'public' ? 'selected' : ''}>public</option>
+        </select>
+        <label><input type="checkbox" data-field="on_leaderboard" data-profile-id="${escapeHtml(p.id)}" ${p.on_leaderboard ? 'checked' : ''}> on board</label>
+        <label><input type="checkbox" data-field="is_admin" data-profile-id="${escapeHtml(p.id)}" ${p.is_admin ? 'checked' : ''}> admin</label>
+      </div>
+    </div>`;
+
+  root.innerHTML = `<div class="detail admin-page">
+    <h1>Admin</h1>
+    <p style="color: var(--muted);">All profiles. Inline edits save immediately. To change an account's email, run <code>scripts/migrate_demo_to_real.py</code> (it has the service-role context required by Supabase auth).</p>
+    <div class="admin-table">${profiles.map(row).join('')}</div>
+    <div id="admin-msg" class="settings-msg"></div>
+    <section class="settings-section" style="margin-top: 24px;">
+      <h2>Reassign a sleeping demo to a friend</h2>
+      <p style="color: var(--muted); font-size: 13px;">
+        The four hidden demos (@SappySaffron / @Westdac / @Colt45 / @Isobat) have
+        Tom-synced reading history but fake emails. To give them to Nika / Westdac
+        / Colton / Schupp, run locally:
+      </p>
+      <pre style="background: var(--bg); padding: 14px; border-radius: 8px; overflow:auto; font-size: 12.5px;">cd ~/Projects/Personal/award-books-tracker
+set -a && . ./.env && set +a
+python3 -c "
+from scripts.migrate_demo_to_real import *
+import os
+from supabase import create_client
+sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_KEY'])
+# replace handle + email below
+HANDLE = 'SappySaffron'
+EMAIL = 'nika@example.com'
+NEW_HANDLE = 'nika'
+prof = sb.table('profiles').select('id').eq('handle', HANDLE).execute().data[0]
+sb.auth.admin.update_user_by_id(prof['id'], {'email': EMAIL, 'email_confirm': True})
+sb.table('profiles').update({'handle': NEW_HANDLE, 'profile_visibility': 'public', 'on_leaderboard': True}).eq('id', prof['id']).execute()
+"</pre>
+    </section>
+  </div>`;
+
+  const adminMsg = $('#admin-msg');
+  const setAdminMsg = (t, c = '') => { adminMsg.textContent = t; adminMsg.className = 'settings-msg ' + c; };
+
+  root.querySelectorAll('[data-field]').forEach(el => {
+    el.addEventListener('change', async () => {
+      const field = el.dataset.field;
+      const id = el.dataset.profileId;
+      const value = el.type === 'checkbox' ? el.checked : el.value;
+      try {
+        const { error } = await client.from('profiles').update({ [field]: value }).eq('id', id);
+        if (error) throw error;
+        setAdminMsg(`Updated ${field} for ${id.slice(0,8)}…`, 'success');
+      } catch (err) {
+        setAdminMsg(err.message || String(err), 'error');
+      }
+    });
+  });
+}
+
+// ===== Public profile page ===========================================
+async function renderProfile(handle) {
+  const root = $('#view-profile');
+  if (!root) return;
+  if (!handle) {
+    root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><h1>Profile</h1><p>No handle specified.</p></div>`;
+    return;
+  }
+  root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><p style="color: var(--muted);">Loading @${escapeHtml(handle)}…</p></div>`;
+
+  const client = window.MR_AUTH?.client;
+  if (!client) {
+    root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><p style="color: var(--sf);">Auth client not ready.</p></div>`;
+    return;
+  }
+
+  const { data: profile, error } = await client.from('profiles')
+    .select('id, handle, profile_visibility, on_leaderboard, created_at, is_admin')
+    .eq('handle', handle).maybeSingle();
+  if (error || !profile) {
+    root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><h1>Not found</h1><p>No profile @${escapeHtml(handle)}.</p></div>`;
+    return;
+  }
+
+  const meId = window.MR_AUTH.user?.id;
+  const isMe = meId === profile.id;
+
+  // Visibility gate (client-side hint; RLS is authoritative). If we got the
+  // profile back, RLS already let us read it. If it's private + not me + not
+  // admin, the read would have returned null.
+  const { data: ub } = await client.from('user_books')
+    .select('book_id, status, date_read').eq('user_id', profile.id);
+  const reads = (ub || []).filter(r => r.status === 'read');
+  const nightstand = (ub || []).filter(r => r.status === 'nightstand');
+  const started = (ub || []).filter(r => r.status === 'started');
+  const totalBooks = DATA.books.length;
+
+  // Are we friends?
+  let alreadyFriends = false;
+  if (meId && !isMe) {
+    const [a, b] = meId < profile.id ? [meId, profile.id] : [profile.id, meId];
+    const { data: fr } = await client.from('friendships')
+      .select('user_id_a').eq('user_id_a', a).eq('user_id_b', b);
+    alreadyFriends = (fr || []).length > 0;
+  }
+
+  // Recent reads (intersect with DATA.books for cover/title lookup)
+  const byId = Object.fromEntries(DATA.books.map(b => [b.id, b]));
+  const readBooks = reads
+    .map(r => ({ ...byId[r.book_id], date_read: r.date_read }))
+    .filter(b => b.id)
+    .sort((a, b) => (b.date_read || '').localeCompare(a.date_read || '') || (b.year || 0) - (a.year || 0))
+    .slice(0, 12);
+  const tile = (bk) => `<a class="swimlane-card" href="#/book/${escapeHtml(bk.id)}">
+    <div class="swimlane-cover">${bk.cover_url ? `<img src="${escapeHtml(bk.cover_url)}" alt="" loading="lazy">` : '<span class="swimlane-placeholder">📖</span>'}</div>
+    <div class="swimlane-title">${escapeHtml(bk.title)}</div>
+    <div class="swimlane-meta">${escapeHtml(bk.authors?.[0] || '')} · ${bk.year || ''}</div>
+  </a>`;
+
+  const compareBtn = (meId && !isMe)
+    ? `<a class="mr-btn-primary" href="#/compare?u=me&u=${encodeURIComponent(profile.handle)}">Compare with me →</a>`
+    : '';
+  const friendBtn = (meId && !isMe)
+    ? (alreadyFriends
+        ? `<span class="profile-friend-tag">✓ Friends</span>`
+        : `<button type="button" class="mr-btn-ghost" id="profile-add-friend">+ Add as friend</button>`)
+    : '';
+  const signInBtn = (!meId)
+    ? `<button type="button" class="mr-btn-ghost" id="profile-signin">Sign in to compare / add friend</button>`
+    : '';
+
+  root.innerHTML = `<div class="detail profile-page">
+    <a href="#/" class="back">← back</a>
+    <div class="profile-header">
+      <h1>@${escapeHtml(profile.handle)}${isMe ? ' <span class="profile-me">you</span>' : ''}${profile.is_admin ? ' <span class="admin-pill admin-pill-admin">admin</span>' : ''}</h1>
+      <div class="profile-stats">
+        <span><strong>${reads.length}</strong> read <span class="muted">of ${totalBooks}</span></span>
+        <span><strong>${nightstand.length}</strong> on nightstand</span>
+        <span><strong>${started.length}</strong> started</span>
+        <span class="muted">${profile.profile_visibility} profile</span>
+      </div>
+      <div class="profile-actions">${compareBtn} ${friendBtn} ${signInBtn}</div>
+    </div>
+
+    ${readBooks.length === 0
+      ? `<p style="color: var(--muted); margin-top: 24px;">No reads yet.</p>`
+      : `<section class="settings-section"><h2>Recently read</h2><div class="swimlane-strip">${readBooks.map(tile).join('')}</div></section>`}
+  </div>`;
+
+  $('#profile-add-friend')?.addEventListener('click', async () => {
+    try {
+      await window.MR_AUTH.addFriendByHandle(profile.handle);
+      renderProfile(handle);
+    } catch (err) {
+      alert(err.message || String(err));
+    }
+  });
+  $('#profile-signin')?.addEventListener('click', () => window.MR_AUTH.showSignInModal());
+}
+
 function showView(name) {
   $$('.view').forEach(v => v.classList.add('hidden'));
   $(`#view-${name}`).classList.remove('hidden');
@@ -1740,6 +2096,25 @@ function route() {
   if (path === '#/leaderboard') {
     renderLeaderboard();
     showView('leaderboard');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (path === '#/settings') {
+    renderSettings();
+    showView('settings');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (path === '#/admin') {
+    renderAdmin();
+    showView('admin');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (path.startsWith('#/u/')) {
+    const handle = path.slice('#/u/'.length).split('?')[0];
+    renderProfile(handle);
+    showView('profile');
     window.scrollTo(0, 0);
     return;
   }
@@ -1842,8 +2217,10 @@ function renderAuthPill() {
     return;
   }
   const handle = window.MR_AUTH.profile?.handle || user.email || 'me';
+  const isAdmin = !!window.MR_AUTH.profile?.is_admin;
   slot.innerHTML = `
-    <span class="auth-handle" id="auth-handle">@${escapeHtml(handle)}</span>
+    <a class="auth-handle" id="auth-handle" href="#/settings" title="Settings">@${escapeHtml(handle)}</a>
+    ${isAdmin ? '<a class="auth-admin" href="#/admin" title="Admin">⚙</a>' : ''}
     <button type="button" class="auth-signout" id="auth-signout" title="Sign out">Sign out</button>
   `;
   $('#auth-signout').addEventListener('click', async () => {
