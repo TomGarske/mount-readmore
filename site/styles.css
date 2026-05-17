@@ -1468,6 +1468,45 @@ fieldset label input { margin-right: 8px; }
 }
 .card-cover img { width: 100%; height: 100%; object-fit: cover; }
 .card-cover .cover-placeholder { font-size: 24px; color: var(--muted); }
+/* Typographic fallback when a cover image is missing or returns the
+   openlibrary 60x40 placeholder pixel. Swapped in at load-time by
+   __coverFallback() in app.js. */
+.card-cover.cover-fallback,
+.swimlane-cover.cover-fallback,
+.recent-read-cover.cover-fallback {
+  background: linear-gradient(135deg, var(--bg-2) 0%, var(--bg-3, var(--bg)) 100%);
+  padding: 4px;
+  border-right: none;
+}
+.cover-fallback-inner {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  box-sizing: border-box;
+}
+.cover-fallback-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.18;
+  text-align: center;
+  color: var(--text);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+}
+.swimlane-cover.cover-fallback .cover-fallback-title {
+  font-size: 13px;
+  -webkit-line-clamp: 4;
+}
+.recent-read-cover.cover-fallback .cover-fallback-title {
+  font-size: 12px;
+  -webkit-line-clamp: 4;
+}
 .card-body {
   padding: 9px 11px;
   display: flex;

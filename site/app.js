@@ -245,6 +245,33 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Cover-load handler — wired as an inline onload/onerror on every cover <img>.
+// OpenLibrary returns a 60×40 "image not available" pixel when a cover ID has
+// no actual scan, and a 404 is also a possibility. In either case we swap the
+// img for a typographic fallback (serif title over a gradient) so the card
+// stops looking broken. Exposed on window so inline handlers can call it.
+window.__coverFallback = function(img) {
+  if (!img || img.dataset.fellback === '1') return;
+  // A successful image will have naturalWidth >= ~150. The OL placeholder is
+  // 60x40; treat anything under 80 as broken.
+  if (img.naturalWidth >= 80) return;
+  img.dataset.fellback = '1';
+  const card = img.closest('.card');
+  const cover = img.closest('.card-cover, .swimlane-cover, .recent-read-cover');
+  if (!cover) { img.style.display = 'none'; return; }
+  const titleEl = card?.querySelector('.title, .swimlane-title, .rr-title');
+  const title = titleEl?.textContent?.trim() || img.alt || '';
+  cover.classList.add('cover-fallback');
+  while (cover.firstChild) cover.removeChild(cover.firstChild);
+  const inner = document.createElement('div');
+  inner.className = 'cover-fallback-inner';
+  const t = document.createElement('div');
+  t.className = 'cover-fallback-title';
+  t.textContent = title;
+  inner.appendChild(t);
+  cover.appendChild(inner);
+};
+
 function readerBadge(book, who) {
   if (!showReader(who)) return '';
   const cfg = READER_CONFIG[who];
@@ -278,7 +305,7 @@ function bookCard(book) {
     .join('');
   const readBadges = ACTIVE_READERS.map(r => readerBadge(book, r.id)).join('');
   const coverHtml = book.cover_url
-    ? `<img src="${escapeHtml(book.cover_url)}" alt="" loading="lazy">`
+    ? `<img src="${escapeHtml(book.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
     : `<span class="cover-placeholder">📖</span>`;
   return `<div class="card" data-id="${escapeHtml(book.id)}">
     <div class="card-cover">${coverHtml}</div>
@@ -628,7 +655,7 @@ function renderStats() {
 
     const compTile = (b) => {
       const cover = b.cover_url
-        ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
+        ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
         : `<span class="swimlane-placeholder">📖</span>`;
       const isWinner = Object.values(b.awards || {}).includes('winner');
       return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
@@ -847,7 +874,7 @@ function renderStats() {
 
   const tile = (b, metaLine, pillsHtml = '') => {
     const coverHtml = b.cover_url
-      ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
+      ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
       : '📖';
     return `<div class="recent-read" data-id="${escapeHtml(b.id)}">
       <div class="recent-read-cover">${coverHtml}</div>
@@ -1376,7 +1403,7 @@ function renderGenre() {
           <div class="swimlane-strip">
             ${lane.books.map(b => {
               const cover = b.cover_url
-                ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy">`
+                ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
                 : `<span class="swimlane-placeholder">📖</span>`;
               const isWinner = Object.values(b.awards || {}).includes('winner');
               const readPill = HAS_READER && ACTIVE_READERS.some(r => readStatus(b, r.id) === 'read')
@@ -1808,7 +1835,7 @@ async function renderCompare(params) {
 
   const tile = (bk) => {
     const cover = bk.cover_url
-      ? `<img src="${escapeHtml(bk.cover_url)}" alt="" loading="lazy">`
+      ? `<img src="${escapeHtml(bk.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
       : `<span class="swimlane-placeholder">📖</span>`;
     const isWinner = Object.values(bk.awards || {}).includes('winner');
     return `<a class="swimlane-card" href="#/book/${escapeHtml(bk.id)}">
@@ -2482,7 +2509,7 @@ async function renderProfile(handle) {
     .sort((a, b) => (b.date_read || '').localeCompare(a.date_read || '') || (b.year || 0) - (a.year || 0))
     .slice(0, 12);
   const tile = (bk) => `<a class="swimlane-card" href="#/book/${escapeHtml(bk.id)}">
-    <div class="swimlane-cover">${bk.cover_url ? `<img src="${escapeHtml(bk.cover_url)}" alt="" loading="lazy">` : '<span class="swimlane-placeholder">📖</span>'}</div>
+    <div class="swimlane-cover">${bk.cover_url ? `<img src="${escapeHtml(bk.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">` : '<span class="swimlane-placeholder">📖</span>'}</div>
     <div class="swimlane-title">${escapeHtml(bk.title)}</div>
     <div class="swimlane-meta">${escapeHtml(bk.authors?.[0] || '')} · ${bk.year || ''}</div>
   </a>`;
