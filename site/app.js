@@ -412,6 +412,12 @@ function renderStats() {
   const allNomineesCount = nomineesAll.length;
   const allBooksCount = scopedBooks.length;
 
+  // When no readers are active (anon visitor) we suppress all per-reader
+  // overlays so the page becomes a pure catalog. Each per-reader block below
+  // checks HAS_READER before rendering anything user-specific.
+  const HAS_READER = ACTIVE_READERS.length > 0;
+  const PRIMARY_READER = HAS_READER ? (SOLO || ACTIVE_READERS[0].id) : null;
+
   // Award scope counts (for the second toggle)
   const hugoCount = DATA.books.filter(b => (b.awards || {}).hugo).length;
   const nebulaCount = DATA.books.filter(b => (b.awards || {}).nebula).length;
@@ -776,22 +782,31 @@ function renderStats() {
   }
   const eras = Object.entries(eraBuckets).map(([d, v]) => [parseInt(d, 10), v]).sort((a, b) => a[0] - b[0]);
   const maxEra = Math.max(1, ...eras.map(([, v]) => v.total));
-  const eraReader = SOLO || (ACTIVE_READERS[0] ? ACTIVE_READERS[0].id : 'tom');
-  const eraFillColor = READER_CONFIG[eraReader].colorVar;
+  const eraReader = PRIMARY_READER;
+  const eraFillColor = eraReader ? READER_CONFIG[eraReader].colorVar : 'transparent';
   const eraBarsHtml = eras.map(([d, v]) => {
     const totalH = (v.total / maxEra) * 100;
-    const readCount = v[eraReader];
-    const readH = v.total > 0 ? (readCount / v.total) * 100 : 0;
-    const tooltip = SOLO
-      ? `${d}s: ${readCount} / ${v.total} winners read`
-      : `${d}s: ` + ACTIVE_READERS.map(r => `${r.label} ${v[r.id]}/${v.total}`).join(' · ');
+    const readCount = eraReader ? v[eraReader] : 0;
+    const readH = (HAS_READER && v.total > 0) ? (readCount / v.total) * 100 : 0;
+    let tooltip;
+    if (!HAS_READER) {
+      tooltip = `${d}s: ${v.total} ${SUBSET}`;
+    } else if (SOLO) {
+      tooltip = `${d}s: ${readCount} / ${v.total} ${SUBSET} read`;
+    } else {
+      tooltip = `${d}s: ` + ACTIVE_READERS.map(r => `${r.label} ${v[r.id]}/${v.total}`).join(' · ');
+    }
+    const fillDiv = HAS_READER
+      ? `<div style="position:absolute;bottom:0;left:0;right:0;height:${readH}%;background:${eraFillColor};border-radius:3px 3px 0 0;"></div>`
+      : '';
+    const countLine = HAS_READER ? `${readCount}/${v.total}` : `${v.total}`;
     return `<div class="era-bar-col">
       <div class="era-bar empty" style="height: ${Math.max(2, totalH)}%;">
         <div class="era-bar-tooltip">${tooltip}</div>
-        <div style="position:absolute;bottom:0;left:0;right:0;height:${readH}%;background:${eraFillColor};border-radius:3px 3px 0 0;"></div>
+        ${fillDiv}
       </div>
       <div class="era-bar-label">${d % 100}s</div>
-      <div class="era-bar-count">${readCount}/${v.total}</div>
+      <div class="era-bar-count">${countLine}</div>
     </div>`;
   }).join('');
 
@@ -970,11 +985,11 @@ function renderStats() {
       <p>Mount Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
     </section>
 
-    <div class="progress-section radar-hero">
+    ${HAS_READER ? `<div class="progress-section radar-hero">
       <h2>Subgenre fingerprint</h2>
       <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre's ${SUBSET} this reader has finished. Bigger / more even shape = broader coverage.</p>
       ${radarHtml}
-    </div>
+    </div>` : ''}
 
     <h1>Progress</h1>
     <div class="toggle-row">
@@ -994,6 +1009,10 @@ function renderStats() {
       ${(() => {
         const totalLabel = STATUS === 'both' ? 'Books on the list' : `${SUBSET_CAP} on the list`;
         const totalSub = STATUS === 'both' ? `${allWinnersCount} winners + ${allNomineesCount} nominees` : 'Hugo + Nebula combined';
+        if (!HAS_READER) {
+          // Anon: just the total card.
+          return card(totalLabel, winnersTotal, totalSub);
+        }
         if (SOLO) {
           const r = SOLO;
           const readBooks = winnersByReader[r];
@@ -1014,34 +1033,34 @@ function renderStats() {
       })()}
     </div>
 
-    ${recentEither.length > 0 ? `<div class="progress-section">
+    ${HAS_READER && recentEither.length > 0 ? `<div class="progress-section">
       <h2>Recent ${SUBSET} read</h2>
       <p style="color: var(--muted); font-size: 13px;">Pills show who read each book. Most recent first.</p>
       <div class="recent-reads">${recentEitherHtml}</div>
     </div>` : ''}
 
 
-    ${nightstandBooks.length > 0 ? `<div class="progress-section">
+    ${HAS_READER && nightstandBooks.length > 0 ? `<div class="progress-section">
       <h2>On the nightstand (${nightstandBooks.length})</h2>
       <p style="color: var(--muted); font-size: 13px;">Books from this list waiting on a to-read shelf. Pills show whose.</p>
       <div class="recent-reads">${nightstandHtml}</div>
     </div>` : ''}
 
-    ${upNext.length > 0 ? `<div class="progress-section">
+    ${HAS_READER && upNext.length > 0 ? `<div class="progress-section">
       <h2>Up next — ${SUBSET} on no nightstand yet</h2>
       <p style="color: var(--muted); font-size: 13px;">Recent ${SUBSET} by publication year. Open one to add it to your shelf.</p>
       <div class="recent-reads">${upNextHtml}</div>
     </div>` : ''}
 
-    <div class="progress-section">
+    ${HAS_READER ? `<div class="progress-section">
       <h2>Most-awarded authors (last 30 years)</h2>
       <p style="color: var(--muted); font-size: 13px;">Authors with the most appearances on the list since ${leaderboardCutoff} (winners + nominees). Bar width = appearances.</p>
       <div class="authors-list">${authorRows}</div>
-    </div>
+    </div>` : ''}
 
     <div class="progress-section">
       <h2>Coverage by era (${SUBSET})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Bar height = ${SUBSET} that decade · filled portion = books ${SOLO === 'nika' ? 'Nika' : (SOLO === 'tom' ? '' : (SOLO === 'westdac' ? 'Westdac' : 'Tom'))} read. Hover for details.</p>
+      <p style="color: var(--muted); font-size: 13px;">Bar height = ${SUBSET} that decade${HAS_READER ? ' · filled portion = books ' + escapeHtml(READER_CONFIG[PRIMARY_READER].label) + ' read' : ''}. Hover for details.</p>
       <div class="era-bars">${eraBarsHtml}</div>
     </div>
 
@@ -1051,17 +1070,21 @@ function renderStats() {
       <p style="color: var(--muted); font-size: 13px;">Top-level genre derived from Open Library subjects. "Blend" means the subjects clearly point at both SF and Fantasy.</p>
       <div class="genre-bars">
         ${primaryList.map(g => {
-          const activeRead = SOLO ? g[SOLO] : g.tom;
-          const pct = g.total > 0 ? (activeRead / g.total) * 100 : 0;
-          const sub = SOLO
-            ? `${activeRead} read`
-            : ACTIVE_READERS.map(r => `${r.label} ${g[r.id]}`).join(' · ');
+          const activeRead = PRIMARY_READER ? g[PRIMARY_READER] : 0;
+          const pct = (HAS_READER && g.total > 0) ? (activeRead / g.total) * 100 : 0;
+          const sub = !HAS_READER
+            ? ''
+            : (SOLO ? `${activeRead} read`
+                    : ACTIVE_READERS.map(r => `${r.label} ${g[r.id]}`).join(' · '));
+          const countHtml = HAS_READER
+            ? `${activeRead} / ${g.total}<span style="color:var(--muted)"> · ${sub}</span>`
+            : `${g.total}`;
           return `<div class="genre-row">
             <div class="genre-name">${escapeHtml(g.name)}</div>
             <div class="genre-bar">
               <div class="genre-bar-fill" style="width: ${pct}%;"></div>
             </div>
-            <div class="genre-count">${activeRead} / ${g.total}<span style="color:var(--muted)"> · ${sub}</span></div>
+            <div class="genre-count">${countHtml}</div>
           </div>`;
         }).join('')}
       </div>
@@ -1074,17 +1097,21 @@ function renderStats() {
         ${Object.entries(subBuckets).map(([name, s]) => ({name, ...s}))
           .sort((a, b) => b.total - a.total)
           .map(g => {
-            const activeRead = SOLO ? g[SOLO] : g.tom;
-            const pct = g.total > 0 ? (activeRead / g.total) * 100 : 0;
-            const sub = SOLO
-              ? `${activeRead} read`
-              : ACTIVE_READERS.map(r => `${r.label} ${g[r.id]}`).join(' · ');
+            const activeRead = PRIMARY_READER ? g[PRIMARY_READER] : 0;
+            const pct = (HAS_READER && g.total > 0) ? (activeRead / g.total) * 100 : 0;
+            const sub = !HAS_READER
+              ? ''
+              : (SOLO ? `${activeRead} read`
+                      : ACTIVE_READERS.map(r => `${r.label} ${g[r.id]}`).join(' · '));
+            const countHtml = HAS_READER
+              ? `${activeRead} / ${g.total}<span style="color:var(--muted)"> · ${sub}</span>`
+              : `${g.total}`;
             return `<div class="genre-row">
               <div class="genre-name">${escapeHtml(g.name)}</div>
               <div class="genre-bar">
                 <div class="genre-bar-fill" style="width: ${pct}%;"></div>
               </div>
-              <div class="genre-count">${activeRead} / ${g.total}<span style="color:var(--muted)"> · ${sub}</span></div>
+              <div class="genre-count">${countHtml}</div>
             </div>`;
           }).join('')}
       </div>
@@ -1099,7 +1126,7 @@ function renderStats() {
         ${['female', 'male', 'unknown'].map(g => {
           const total = genderBuckets[g];
           const label = g === 'female' ? 'Female-authored' : g === 'male' ? 'Male-authored' : 'Unknown / non-binary / pen name';
-          const readerRows = ACTIVE_READERS.map(r => {
+          const readerRows = HAS_READER ? ACTIVE_READERS.map(r => {
             const read = genderReadByReader[r.id][g];
             const pct = total > 0 ? Math.round(read / total * 100) : 0;
             return `<div class="gender-reader-row">
@@ -1107,7 +1134,7 @@ function renderStats() {
               <span class="gender-reader-stat">${read} / ${total} (${pct}%)</span>
               <div class="progress"><div class="progress-bar" style="width: ${pct}%; background: ${r.colorVar};"></div></div>
             </div>`;
-          }).join('');
+          }).join('') : '';
           return `<div class="gender-card gender-${g}">
             <div class="gender-card-label">${label}</div>
             <div class="gender-card-stat"><strong>${total}</strong> ${SUBSET}</div>
@@ -1123,13 +1150,15 @@ function renderStats() {
       <div class="stats-grid">
         ${Object.entries(byAward).map(([a, s]) => {
           if (s.total === 0) return '';
-          const activeCount = SOLO ? s[SOLO] : s.tom;
-          const pct = Math.round(activeCount / s.total * 100);
-          const sub = SOLO
-            ? `${pct}% complete`
-            : ACTIVE_READERS.map(r => `${r.label}: ${Math.round(s[r.id] / s.total * 100)}%`).join(' · ');
+          const activeCount = PRIMARY_READER ? s[PRIMARY_READER] : 0;
+          const pct = HAS_READER ? Math.round(activeCount / s.total * 100) : 0;
+          const sub = !HAS_READER
+            ? ''
+            : (SOLO ? `${pct}% complete`
+                    : ACTIVE_READERS.map(r => `${r.label}: ${Math.round(s[r.id] / s.total * 100)}%`).join(' · '));
           const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
-          return linkCard(`#/books?award=${a}${statusParam}`, AWARD_LABELS[a], `${activeCount} / ${s.total}`, sub, activeCount / s.total * 100);
+          const valueText = HAS_READER ? `${activeCount} / ${s.total}` : `${s.total}`;
+          return linkCard(`#/books?award=${a}${statusParam}`, AWARD_LABELS[a], valueText, sub, HAS_READER ? activeCount / s.total * 100 : null);
         }).join('')}
       </div>
     </div>
@@ -1139,13 +1168,15 @@ function renderStats() {
       <p style="color: var(--muted); font-size: 13px;">Tap a card to see those ${SUBSET} in the Books tab.</p>
       <div class="stats-grid">
         ${Object.entries(byCategory).map(([c, s]) => {
-          const activeCount = SOLO ? s[SOLO] : s.tom;
-          const pct = Math.round(activeCount / s.total * 100);
-          const sub = SOLO
-            ? `${pct}% complete`
-            : ACTIVE_READERS.map(r => `${r.label}: ${Math.round(s[r.id] / s.total * 100)}%`).join(' · ');
+          const activeCount = PRIMARY_READER ? s[PRIMARY_READER] : 0;
+          const pct = HAS_READER ? Math.round(activeCount / s.total * 100) : 0;
+          const sub = !HAS_READER
+            ? ''
+            : (SOLO ? `${pct}% complete`
+                    : ACTIVE_READERS.map(r => `${r.label}: ${Math.round(s[r.id] / s.total * 100)}%`).join(' · '));
           const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
-          return linkCard(`#/books?category=${encodeURIComponent(c)}${statusParam}`, c, `${activeCount} / ${s.total}`, sub, activeCount / s.total * 100);
+          const valueText = HAS_READER ? `${activeCount} / ${s.total}` : `${s.total}`;
+          return linkCard(`#/books?category=${encodeURIComponent(c)}${statusParam}`, c, valueText, sub, HAS_READER ? activeCount / s.total * 100 : null);
         }).join('')}
       </div>
     </div>
@@ -1160,12 +1191,12 @@ function renderStats() {
           <div>Winners</div>
           <div>Nominees</div>
           <div>Win rate</div>
-          <div>${ACTIVE_READERS.map(r => `${r.initial} read`).join(' · ')}</div>
+          <div>${HAS_READER ? ACTIVE_READERS.map(r => `${r.initial} read`).join(' · ') : ''}</div>
         </div>
         ${genreVectors.map(v => {
           const winRatePct = Math.round(v.winRate * 100);
           const nominees = v.total - v.winners;
-          const readCol = ACTIVE_READERS.map(r => `<span style="color:${r.colorVar}">${r.initial} ${v[r.id + 'Read']}</span>`).join(' · ');
+          const readCol = HAS_READER ? ACTIVE_READERS.map(r => `<span style="color:${r.colorVar}">${r.initial} ${v[r.id + 'Read']}</span>`).join(' · ') : '';
           return `<div class="vector-row">
             <div class="vector-combo">${escapeHtml(v.combo)}</div>
             <div>${v.total}</div>
