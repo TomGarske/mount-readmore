@@ -10,11 +10,11 @@ let DATA = { books: [], meta: {} };
 // Canonical reader config — adding a reader: drop in here, no other code changes.
 // colorRgb matches the hex of the CSS --accent-* variable (for SVG fills + rgba mixing).
 const READER_CONFIG = {
-  tom:     { id: 'tom',     label: 'Tom',     initial: 'T', cls: 'reader-t', colorVar: 'var(--accent)',   colorRgb: '45,138,115' },
-  nika:    { id: 'nika',    label: 'Nika',    initial: 'N', cls: 'reader-n', colorVar: 'var(--accent-2)', colorRgb: '142,77,125' },
+  tom:     { id: 'tom',     label: 'Tom',     initial: 'T', cls: 'reader-t', colorVar: 'var(--accent)',   colorRgb: '44,93,150' },
+  nika:    { id: 'nika',    label: 'Nika',    initial: 'N', cls: 'reader-n', colorVar: 'var(--accent-2)', colorRgb: '198,68,79' },
   westdac: { id: 'westdac', label: 'Westdac', initial: 'W', cls: 'reader-w', colorVar: 'var(--accent-3)', colorRgb: '182,120,60' },
-  colton:  { id: 'colton',  label: 'Colton',  initial: 'C', cls: 'reader-c', colorVar: 'var(--accent-4)', colorRgb: '67,101,135' },
-  schupp:  { id: 'schupp',  label: 'Schupp',  initial: 'S', cls: 'reader-s', colorVar: 'var(--accent-5)', colorRgb: '168,63,89' },
+  colton:  { id: 'colton',  label: 'Colton',  initial: 'C', cls: 'reader-c', colorVar: 'var(--accent-4)', colorRgb: '74,122,90' },
+  schupp:  { id: 'schupp',  label: 'Schupp',  initial: 'S', cls: 'reader-s', colorVar: 'var(--accent-5)', colorRgb: '122,68,134' },
 };
 const ALL_READER_IDS = Object.keys(READER_CONFIG);
 // Initial → id map (T->tom, N->nika, W->westdac, C->colton, S->schupp). Used to
@@ -611,15 +611,17 @@ function renderStats() {
   }).filter(s => s.books.length > 0);
 
   // ===== Author-gender breakdown (winners only) =====
-  // When multiple readers are active, prefer Tom for the read counts; in solo mode pick that reader
+  // Per-reader read counts so all active readers show in the gender cards.
   const genderBuckets = { male: 0, female: 0, unknown: 0 };
-  const genderRead = { male: 0, female: 0, unknown: 0 };
-  const genderReadActive = SOLO || (ACTIVE_READERS[0] ? ACTIVE_READERS[0].id : 'tom');
+  const genderReadByReader = {};
+  for (const id of ALL_READER_IDS) genderReadByReader[id] = { male: 0, female: 0, unknown: 0 };
   for (const b of winners) {
     const g = b.primary_author_gender || 'unknown';
     if (!(g in genderBuckets)) continue;
     genderBuckets[g]++;
-    if (readStatus(b, genderReadActive) === 'read') genderRead[g]++;
+    for (const id of ALL_READER_IDS) {
+      if (readStatus(b, id) === 'read') genderReadByReader[id][g]++;
+    }
   }
 
   // ===== Author leaderboard (last 30 years) =====
@@ -875,8 +877,8 @@ function renderStats() {
 
     <section class="awards-intro">
       <h2 class="awards-intro-title">The awards</h2>
-      <p><strong style="color: var(--sf)">Hugo Awards</strong> — the oldest annual literary award in science fiction and fantasy, presented since <strong>1953</strong> by members of the World Science Fiction Convention (Worldcon). Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. The current Hugo Awards site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.</p>
-      <p><strong style="color: var(--fantasy)">Nebula Awards</strong> — peer-voted award presented annually since <strong>1965</strong> by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.</p>
+      <p><strong style="color: var(--sf)">Hugo Awards</strong> <span class="awards-tag awards-tag-fans">Fans</span> — the oldest annual literary award in science fiction and fantasy, presented since <strong>1953</strong> by members of the World Science Fiction Convention (Worldcon). Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. The current Hugo Awards site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.</p>
+      <p><strong style="color: var(--fantasy)">Nebula Awards</strong> <span class="awards-tag awards-tag-writers">Writers</span> — peer-voted award presented annually since <strong>1965</strong> by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.</p>
       <p>Mount Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Mount Readmore.</p>
     </section>
 
@@ -1068,15 +1070,20 @@ function renderStats() {
       <div class="gender-grid">
         ${['female', 'male', 'unknown'].map(g => {
           const total = genderBuckets[g];
-          const read = genderRead[g];
-          const pct = total > 0 ? Math.round(read / total * 100) : 0;
           const label = g === 'female' ? 'Female-authored' : g === 'male' ? 'Male-authored' : 'Unknown / non-binary / pen name';
-          const readerLabel = SOLO ? '' : (READER_CONFIG[genderReadActive] ? READER_CONFIG[genderReadActive].label : 'Reader');
+          const readerRows = ACTIVE_READERS.map(r => {
+            const read = genderReadByReader[r.id][g];
+            const pct = total > 0 ? Math.round(read / total * 100) : 0;
+            return `<div class="gender-reader-row">
+              <span class="gender-reader-name" style="color:${r.colorVar}">${r.label}</span>
+              <span class="gender-reader-stat">${read} / ${total} (${pct}%)</span>
+              <div class="progress"><div class="progress-bar" style="width: ${pct}%; background: ${r.colorVar};"></div></div>
+            </div>`;
+          }).join('');
           return `<div class="gender-card gender-${g}">
             <div class="gender-card-label">${label}</div>
             <div class="gender-card-stat"><strong>${total}</strong> ${SUBSET}</div>
-            <div class="gender-card-sub">${readerLabel} read ${read} (${pct}%)</div>
-            <div class="progress"><div class="progress-bar" style="width: ${pct}%; background: ${g === 'female' ? 'var(--accent-2)' : g === 'male' ? 'var(--accent)' : 'var(--muted)'};"></div></div>
+            <div class="gender-card-readers">${readerRows}</div>
           </div>`;
         }).join('')}
       </div>

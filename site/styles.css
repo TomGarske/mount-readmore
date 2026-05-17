@@ -20,12 +20,12 @@
   --read: #4a8b6f;        /* forest green */
   --queued: #c47a3d;      /* terracotta */
 
-  /* Per-reader accents — tuned for the cream background */
-  --accent:   #2d8a73;    /* Tom — deep teal */
-  --accent-2: #8e4d7d;    /* Nika — deep mauve */
+  /* Per-reader accents — Time War duality: Tom blue, Nika red */
+  --accent:   #2c5d96;    /* Tom — fantasy blue */
+  --accent-2: #c6444f;    /* Nika — SF red */
   --accent-3: #b6783c;    /* Westdac — burnt sienna */
-  --accent-4: #436587;    /* Colton — slate blue */
-  --accent-5: #a83f59;    /* Schupp — wine rose */
+  --accent-4: #4a7a5a;    /* Colton — deep moss (was slate, now distinct from Tom) */
+  --accent-5: #7a4486;    /* Schupp — plum */
 }
 
 * { box-sizing: border-box; }
@@ -182,6 +182,27 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
   line-height: 1.55;
   color: var(--text);
+}
+.awards-tag {
+  display: inline-block;
+  margin-left: 2px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  vertical-align: 2px;
+}
+.awards-tag-fans {
+  background: rgba(198, 68, 79, 0.14);
+  color: var(--sf);
+  border: 1px solid rgba(198, 68, 79, 0.4);
+}
+.awards-tag-writers {
+  background: rgba(44, 93, 150, 0.14);
+  color: var(--fantasy);
+  border: 1px solid rgba(44, 93, 150, 0.4);
 }
 
 /* Awards banner at top of Progress */
@@ -444,9 +465,9 @@ a:hover { text-decoration: underline; }
 .vector-pct {
   display: inline-block;
   padding: 2px 8px;
-  background: rgba(45, 138, 115, 0.12);
+  background: rgba(44, 93, 150, 0.12);
   color: var(--accent);
-  border: 1px solid rgba(45, 138, 115, 0.4);
+  border: 1px solid rgba(44, 93, 150, 0.4);
   border-radius: 999px;
   font-weight: 600;
   font-size: 12px;
@@ -564,8 +585,13 @@ a:hover { text-decoration: underline; }
 .gender-card.gender-female { border-left: 3px solid var(--accent-2); }
 .gender-card.gender-male { border-left: 3px solid var(--accent); }
 .gender-card-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-.gender-card-stat { font-size: 24px; font-weight: 600; margin: 6px 0 4px; }
+.gender-card-stat { font-size: 24px; font-weight: 600; margin: 6px 0 10px; }
 .gender-card-sub { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.gender-card-readers { display: flex; flex-direction: column; gap: 8px; }
+.gender-reader-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 8px; font-size: 12.5px; align-items: baseline; }
+.gender-reader-row .progress { grid-column: 1 / -1; }
+.gender-reader-name { font-weight: 600; }
+.gender-reader-stat { color: var(--muted); }
 
 /* Decade heatmap (kept for backwards compat — no longer rendered) */
 .decade-grid {
@@ -655,11 +681,11 @@ a:hover { text-decoration: underline; }
   border: 1px solid transparent;
   letter-spacing: 0.02em;
 }
-.rr-pill-t { background: rgba(45, 138, 115, 0.12); color: var(--accent);   border-color: rgba(45, 138, 115, 0.4); }
-.rr-pill-n { background: rgba(142, 77, 125, 0.12); color: var(--accent-2); border-color: rgba(142, 77, 125, 0.4); }
+.rr-pill-t { background: rgba(44, 93, 150, 0.12);  color: var(--accent);   border-color: rgba(44, 93, 150, 0.4); }
+.rr-pill-n { background: rgba(198, 68, 79, 0.12);  color: var(--accent-2); border-color: rgba(198, 68, 79, 0.4); }
 .rr-pill-w { background: rgba(182, 120, 60, 0.12); color: var(--accent-3); border-color: rgba(182, 120, 60, 0.4); }
-.rr-pill-c { background: rgba(67, 101, 135, 0.12); color: var(--accent-4); border-color: rgba(67, 101, 135, 0.4); }
-.rr-pill-s { background: rgba(168, 63, 89, 0.12); color: var(--accent-5); border-color: rgba(168, 63, 89, 0.4); }
+.rr-pill-c { background: rgba(74, 122, 90, 0.12);  color: var(--accent-4); border-color: rgba(74, 122, 90, 0.4); }
+.rr-pill-s { background: rgba(122, 68, 134, 0.12); color: var(--accent-5); border-color: rgba(122, 68, 134, 0.4); }
 
 .year-progress-grid {
   display: grid;
@@ -921,10 +947,11 @@ fieldset label input { margin-right: 8px; }
 .badge.reader-w .reader-initial { background: var(--accent-3); color: #fff; }
 .badge.reader-c .reader-initial { background: var(--accent-4); color: #fff; }
 .badge.reader-s .reader-initial { background: var(--accent-5); color: #fff; }
-.badge.reader-n { color: var(--accent-2); border-color: rgba(142, 77, 125, 0.4); background: rgba(142, 77, 125, 0.12); }
+.badge.reader-t { color: var(--accent);   border-color: rgba(44, 93, 150, 0.4);  background: rgba(44, 93, 150, 0.12); }
+.badge.reader-n { color: var(--accent-2); border-color: rgba(198, 68, 79, 0.4);  background: rgba(198, 68, 79, 0.12); }
 .badge.reader-w { color: var(--accent-3); border-color: rgba(182, 120, 60, 0.4); background: rgba(182, 120, 60, 0.12); }
-.badge.reader-c { color: var(--accent-4); border-color: rgba(67, 101, 135, 0.4); background: rgba(67, 101, 135, 0.12); }
-.badge.reader-s { color: var(--accent-5); border-color: rgba(168, 63, 89, 0.4); background: rgba(168, 63, 89, 0.12); }
+.badge.reader-c { color: var(--accent-4); border-color: rgba(74, 122, 90, 0.4);  background: rgba(74, 122, 90, 0.12); }
+.badge.reader-s { color: var(--accent-5); border-color: rgba(122, 68, 134, 0.4); background: rgba(122, 68, 134, 0.12); }
 
 /* Detail view */
 .detail {
