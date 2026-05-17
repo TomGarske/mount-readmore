@@ -45,3 +45,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4"
           command: pages deploy site --project-name=mount-readmore --branch=${{ github.head_ref || github.ref_name }} --commit-dirty=true
+
+      - name: Attach custom domain
+        if: github.ref == 'refs/heads/main'
+        run: npx -y wrangler@4 pages domain add mount-readmore readmore.tomgarske.com 2>&1 || true
