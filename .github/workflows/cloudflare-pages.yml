@@ -48,4 +48,10 @@ jobs:
 
       - name: Attach custom domain
         if: github.ref == 'refs/heads/main'
-        run: npx -y wrangler@4 pages domain add mount-readmore readmore.tomgarske.com 2>&1 || true
+        run: |
+          curl -sS -X POST \
+            "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/pages/projects/mount-readmore/domains" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{"name":"readmore.tomgarske.com"}' \
+            | python3 -c "import json,sys; r=json.load(sys.stdin); print('OK' if r.get('success') else 'INFO: '+'; '.join(e.get('message','') for e in r.get('errors',[])))"
