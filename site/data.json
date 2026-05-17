@@ -1159,6 +1159,8 @@
         "hugo": 2024,
         "nebula": 2024
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1707333565i/61884985.jpg",
+      "description": "Vajra Chandrasekera's debut novel. Fetter was raised to kill — honed from childhood as the knife meant for his sainted father. He has the shadow-loss to prove it, a habit of secrecy, and plenty to talk about in therapy. He has escaped his rural hometown for the big city, only to find that in Luriat divine destinies are a dime a dozen: every group therapy doubles as a revolutionary cadre, junk email hints at the arrival of a god, and the bright doors are anything but ordinary.",
       "author_genders": [
         "male"
       ],
@@ -1361,6 +1363,7 @@
       "first_pub_year": 2023,
       "isbn": "1529082951",
       "pages": 280,
+      "description": "John Scalzi at his most playful. Charlie's life is going nowhere fast — divorced substitute teacher, cat, a house his siblings want to sell, a pub he can't get the loan for — until his estranged uncle Jake dies and leaves him a working supervillain business, complete with island volcano lair. Becoming a supervillain turns out to involve fewer lava pits and more lawyers than expected, and Uncle Jake's enemies are very much real, very much rich, and very much coming for Charlie.",
       "subjects": [
         "nyt:combined-print-and-e-book-fiction=2023-10-08",
         "New York Times bestseller",
@@ -1407,10 +1410,12 @@
       "award_years": {
         "nebula": 2024
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1677768646i/63896470.jpg",
       "ol_key": "/works/OL42402505W",
       "first_pub_year": 2025,
       "isbn": "0756418933",
       "pages": 320,
+      "description": "Wole Talabi's debut novel. Shigidi is the lowliest nightmare god of the Orisha Spirit Company — bodyless, made of mud, scraping by on too few prayers — until one night Nneoma, a succubus with her own complicated history, offers to remake him into a beautiful incubus in exchange for his godhood. Then the elder gods of the Orisha Spirit Company assign him one last job: an impossible-looking heist at the British Museum to retrieve the Brass Head of Obalufon.",
       "subjects": [
         "English literature"
       ],
@@ -1455,6 +1460,8 @@
       "award_years": {
         "nebula": 2024
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1663597469i/61884755.jpg",
+      "description": "S. L. Huang's reimagining of the Chinese classic Water Margin, gender-flipped and angrier. Lin Chong is an arms instructor training the Emperor's soldiers — the kind of woman who keeps her head down. A powerful man with a vendetta tears that carefully-built life away, leaving her tattooed as a criminal and on the run. Disgraced, she finds herself drawn into the jianghu, where the bandits of Liangshan have made breaking the law into a way of remaking it.",
       "author_genders": [
         "female"
       ],
@@ -1495,9 +1502,11 @@
       "award_years": {
         "nebula": 2024
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1649899400i/60784471.jpg",
       "ol_key": "/works/OL31112951W",
       "first_pub_year": 2022,
       "isbn": "9781250907547",
+      "description": "Annalee Newitz's far-future ecology novel. On the rented planet Sask-E, top network analyst Destry — partner: a taciturn moose named Whistle — discovers an entire city that isn't supposed to exist, hidden inside a volcano. The decision she makes echoes down generations. Centuries later, the planet's transit network and its very atmosphere become contested terrain between the people who live there and the real-estate company that holds the deed.",
       "author_genders": [
         "female"
       ],
@@ -38260,6 +38269,8 @@
       "award_years": {
         "hugo": 2024
       },
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1676554049i/61884932.jpg",
+      "description": "T. Kingfisher's Sleeping Beauty retelling, told from the wrong side of the bramble. There is a princess trapped in a tower; this isn't her story. Toadling was stolen at birth, raised in the warm waters of faerieland, and sent back into the human world to lay a single blessing of protection on a newborn. Nothing with fairies is ever that simple. Centuries later, a knight arrives at her wall of thorns hoping to break a curse — which Toadling will do anything to keep intact.",
       "author_genders": [
         "female"
       ],
@@ -42201,6 +42212,8 @@
       "award_years": {
         "hugo": 2024
       },
+      "cover_url": "https://www.uncannymagazine.com/wp-content/uploads/2023/10/Issue-55-cover-med-340x510.png",
+      "description": "Naomi Kritzer's 2024 Hugo Novelette winner (Uncanny Magazine, Issue 55). After a string of smaller catastrophes — a pandemic, civil disorder — a Minneapolis block has already become a tight WhatsApp-coordinated community when the really big disaster arrives and the sky goes dark for a year. A warm, granular story about mutual aid, sourdough, and the neighbors you only get to know when the lights stop coming on.",
       "author_genders": [
         "female"
       ],
@@ -45183,8 +45196,8 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novella": 78,
       "Novel": 638,
+      "Novella": 78,
       "Novelette": 78
     }
   }

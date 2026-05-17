@@ -154,7 +154,10 @@
     "isbn": "345332319X",
     "pages": 464
   },
-  "the saint of bright doors|vajra chandrasekera": {},
+  "the saint of bright doors|vajra chandrasekera": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1707333565i/61884985.jpg",
+    "description": "Vajra Chandrasekera's debut novel. Fetter was raised to kill \u2014 honed from childhood as the knife meant for his sainted father. He has the shadow-loss to prove it, a habit of secrecy, and plenty to talk about in therapy. He has escaped his rural hometown for the big city, only to find that in Luriat divine destinies are a dime a dozen: every group therapy doubles as a revolutionary cadre, junk email hints at the arrival of a god, and the bright doors are anything but ordinary."
+  },
   "witch king|martha wells": {
     "ol_key": "/works/OL28764208W",
     "cover_url": "https://covers.openlibrary.org/b/id/13773363-M.jpg",
@@ -181,22 +184,28 @@
     "cover_url": "https://covers.openlibrary.org/b/id/13472546-M.jpg",
     "first_pub_year": 2023,
     "isbn": "1529082951",
-    "pages": 280
+    "pages": 280,
+    "description": "John Scalzi at his most playful. Charlie's life is going nowhere fast \u2014 divorced substitute teacher, cat, a house his siblings want to sell, a pub he can't get the loan for \u2014 until his estranged uncle Jake dies and leaves him a working supervillain business, complete with island volcano lair. Becoming a supervillain turns out to involve fewer lava pits and more lawyers than expected, and Uncle Jake's enemies are very much real, very much rich, and very much coming for Charlie."
   },
   "shigidi and the brass head of obalufon|wole talabi": {
     "ol_key": "/works/OL42402505W",
-    "cover_url": "",
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1677768646i/63896470.jpg",
     "first_pub_year": 2025,
     "isbn": "0756418933",
-    "pages": 320
+    "pages": 320,
+    "description": "Wole Talabi's debut novel. Shigidi is the lowliest nightmare god of the Orisha Spirit Company \u2014 bodyless, made of mud, scraping by on too few prayers \u2014 until one night Nneoma, a succubus with her own complicated history, offers to remake him into a beautiful incubus in exchange for his godhood. Then the elder gods of the Orisha Spirit Company assign him one last job: an impossible-looking heist at the British Museum to retrieve the Brass Head of Obalufon."
   },
-  "the water outlaws|s. l. huang": {},
+  "the water outlaws|s. l. huang": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1663597469i/61884755.jpg",
+    "description": "S. L. Huang's reimagining of the Chinese classic Water Margin, gender-flipped and angrier. Lin Chong is an arms instructor training the Emperor's soldiers \u2014 the kind of woman who keeps her head down. A powerful man with a vendetta tears that carefully-built life away, leaving her tattooed as a criminal and on the run. Disgraced, she finds herself drawn into the jianghu, where the bandits of Liangshan have made breaking the law into a way of remaking it."
+  },
   "the terraformers|annalee newitz": {
     "ol_key": "/works/OL31112951W",
-    "cover_url": "",
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1649899400i/60784471.jpg",
     "first_pub_year": 2022,
     "isbn": "9781250907547",
-    "pages": null
+    "pages": null,
+    "description": "Annalee Newitz's far-future ecology novel. On the rented planet Sask-E, top network analyst Destry \u2014 partner: a taciturn moose named Whistle \u2014 discovers an entire city that isn't supposed to exist, hidden inside a volcano. The decision she makes echoes down generations. Centuries later, the planet's transit network and its very atmosphere become contested terrain between the people who live there and the real-estate company that holds the deed."
   },
   "nettle & bone|ursula vernon (as t. kingfisher)": {
     "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1645110008i/56179377.jpg"
@@ -6267,7 +6276,10 @@
     "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1683668946i/127306440.jpg",
     "description": "The second Sworn Soldier novella, after What Moves the Dead. Retired soldier Alex Easton travels home to Gallacia as a favor to a friend and finds the family hunting lodge empty, the caretaker dead, and an uncanny silence pressing on the land. The villagers whisper of a breath-stealing thing from old Gallacian folklore. Easton, who has slept badly for years, is about to discover what has moved into the lodge \u2014 and into their dreams."
   },
-  "thornhedge|ursula vernon (as t. kingfisher)": {},
+  "thornhedge|ursula vernon (as t. kingfisher)": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1676554049i/61884932.jpg",
+    "description": "T. Kingfisher's Sleeping Beauty retelling, told from the wrong side of the bramble. There is a princess trapped in a tower; this isn't her story. Toadling was stolen at birth, raised in the warm waters of faerieland, and sent back into the human world to lay a single blessing of protection on a newborn. Nothing with fairies is ever that simple. Centuries later, a knight arrives at her wall of thorns hoping to break a curse \u2014 which Toadling will do anything to keep intact."
+  },
   "where the drowned girls go|seanan mcguire": {
     "ol_key": "/works/OL24336678W",
     "cover_url": "https://covers.openlibrary.org/b/id/10858265-M.jpg",
@@ -6676,7 +6688,10 @@
     "cover_url": "https://www.uncannymagazine.com/wp-content/uploads/2024/06/Issue-59-cover-med-340x510.png",
     "description": "Sarah Pinsker's 2025 Hugo Novelette finalist (Uncanny Magazine, Issue 59). Narrated from a tourist-friendly present looking back at the first time the narrator drove up the unpaved road to her sister Violet's mountain house \u2014 before that mountain became a destination, and before whatever lives up there started attracting visitors."
   },
-  "the year without sunshine|naomi kritzer": {},
+  "the year without sunshine|naomi kritzer": {
+    "cover_url": "https://www.uncannymagazine.com/wp-content/uploads/2023/10/Issue-55-cover-med-340x510.png",
+    "description": "Naomi Kritzer's 2024 Hugo Novelette winner (Uncanny Magazine, Issue 55). After a string of smaller catastrophes \u2014 a pandemic, civil disorder \u2014 a Minneapolis block has already become a tight WhatsApp-coordinated community when the really big disaster arrives and the sky goes dark for a year. A warm, granular story about mutual aid, sourdough, and the neighbors you only get to know when the lights stop coming on."
+  },
   "the space-time painter|hai ya": {},
   "bots of the lost ark|suzanne palmer": {},
   "two truths and a lie|sarah pinsker": {
@@ -6982,5 +6997,9 @@
   "what feasts at night|t. kingfisher": {
     "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1683668946i/127306440.jpg",
     "description": "The second Sworn Soldier novella, after What Moves the Dead. Retired soldier Alex Easton travels home to Gallacia as a favor to a friend and finds the family hunting lodge empty, the caretaker dead, and an uncanny silence pressing on the land. The villagers whisper of a breath-stealing thing from old Gallacian folklore. Easton, who has slept badly for years, is about to discover what has moved into the lodge \u2014 and into their dreams."
+  },
+  "thornhedge|t. kingfisher": {
+    "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1676554049i/61884932.jpg",
+    "description": "T. Kingfisher's Sleeping Beauty retelling, told from the wrong side of the bramble. There is a princess trapped in a tower; this isn't her story. Toadling was stolen at birth, raised in the warm waters of faerieland, and sent back into the human world to lay a single blessing of protection on a newborn. Nothing with fairies is ever that simple. Centuries later, a knight arrives at her wall of thorns hoping to break a curse \u2014 which Toadling will do anything to keep intact."
   }
 }
