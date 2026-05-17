@@ -352,7 +352,7 @@ function renderDetail(id) {
     : '';
 
   const subjectsHtml = (book.subjects && book.subjects.length > 0)
-    ? `<div class="book-subjects"><h3>Tags from Open Library</h3>${book.subjects.slice(0, 12).map(s => `<span class="subject-tag">${escapeHtml(s)}</span>`).join(' ')}</div>`
+    ? `<div class="book-subjects"><h3>Tags from Open Library</h3><div>${book.subjects.slice(0, 12).map(s => `<span class="subject-tag">${escapeHtml(s)}</span>`).join(' ')}</div></div>`
     : '';
 
   root.innerHTML = `<div class="detail">
@@ -1324,9 +1324,16 @@ function findBook(title, author, category) {
 
 function finalistCard(f, catLabel, theme) {
   const match = findBook(f.title, f.author, catLabel);
+  // When a finalist isn't in the catalog (or no cover URL exists), render a
+  // typographic fallback so the card doesn't look broken. Magazine pieces
+  // and very recent small-press novellas often have no openlibrary entry.
+  const fallback = `<div class="hugo-card-fallback">
+    <div class="hugo-card-fallback-title">${escapeHtml(f.title)}</div>
+    <div class="hugo-card-fallback-meta">${escapeHtml(f.author)}</div>
+  </div>`;
   const cover = match && match.cover_url
     ? `<img src="${escapeHtml(match.cover_url)}" alt="Cover of ${escapeHtml(f.title)}" loading="lazy">`
-    : `<span class="hugo-card-placeholder">📖</span>`;
+    : fallback;
   const body = `<div class="hugo-card-cover">${cover}</div>
     <div class="hugo-card-body">
       <div class="hugo-card-title">${escapeHtml(f.title)}</div>
@@ -1634,9 +1641,14 @@ async function fetchLeaderboards() {
   if (__mrLeaderboardCache) return __mrLeaderboardCache;
   if (!window.MR_AUTH?.client) return { overall: [], byAward: [], error: 'auth-not-ready' };
   const client = window.MR_AUTH.client;
+  // Race against a timeout so a stuck SDK doesn't park the page at "Loading…".
+  const withTimeout = (p, ms, label) => Promise.race([
+    p,
+    new Promise(res => setTimeout(() => res({ data: null, error: { message: `${label} timed out after ${ms}ms` } }), ms)),
+  ]);
   const [overall, byAward] = await Promise.all([
-    client.from('leaderboard_overall').select('*').order('rank'),
-    client.from('leaderboard_by_award').select('*').order('rank'),
+    withTimeout(client.from('leaderboard_overall').select('*').order('rank'), 8000, 'leaderboard_overall'),
+    withTimeout(client.from('leaderboard_by_award').select('*').order('rank'), 8000, 'leaderboard_by_award'),
   ]);
   if (overall.error || byAward.error) {
     return { overall: [], byAward: [], error: overall.error || byAward.error };
@@ -1651,6 +1663,9 @@ async function renderLeaderboard() {
   const root = $('#view-leaderboard');
   if (!root) return;
   root.innerHTML = `<div class="detail"><h1>Leaderboard</h1><p style="color: var(--muted);">Loading…</p></div>`;
+  // Wait for the auth bootstrap so the leaderboard SQL view sees a valid
+  // auth.uid() (friends-only scoping depends on it).
+  await window.MR_AUTH?.ready;
 
   const { overall, byAward, error } = await fetchLeaderboards();
   if (error) {
