@@ -1137,6 +1137,28 @@ function renderStats() {
   });
 }
 
+// Hand-curated list of 2026 Nebula finalists for Novel + Novella.
+// Source: https://nebulas.sfwa.org/9192-2/
+const NEBULA_2026_FINALISTS = {
+  Novel: [
+    { title: 'When We Were Real',          author: 'Daryl Gregory',         publisher: 'Saga' },
+    { title: 'The Buffalo Hunter Hunter',  author: 'Stephen Graham Jones',  publisher: 'Saga; Titan UK' },
+    { title: 'Katabasis',                  author: 'R.F. Kuang',            publisher: 'Harper Voyager US; Harper Voyager UK' },
+    { title: 'Death of the Author',        author: 'Nnedi Okorafor',        publisher: 'Morrow; Gollancz' },
+    { title: 'The Incandescent',           author: 'Emily Tesh',            publisher: 'Tor; Orbit UK' },
+    { title: 'Sour Cherry',                author: 'Natalia Theodoridou',   publisher: 'Tin House; Wildfire' },
+    { title: 'Wearing the Lion',           author: 'John Wiswell',          publisher: 'DAW; Arcadia' },
+  ],
+  Novella: [
+    { title: "Disgraced Return of the Kap's Needle", author: 'Renan Bernardo',   publisher: 'Dark Matter INK' },
+    { title: 'The River Has Roots',                   author: 'Amal El-Mohtar',  publisher: 'Tordotcom; Arcadia' },
+    { title: 'The Death of Mountains',                author: 'Jordan Kurella',  publisher: 'Lethe' },
+    { title: 'Automatic Noodle',                      author: 'Annalee Newitz',  publisher: 'Tordotcom' },
+    { title: 'But Not Too Bold',                      author: 'Hache Pueyo',     publisher: 'Tordotcom' },
+    { title: 'Descent',                               author: 'Wole Talabi',     publisher: 'Clarkesworld, May 2025' },
+  ],
+};
+
 // Hand-curated list of 2026 Hugo finalists for Novel + Novella.
 // Source: https://www.thehugoawards.org/hugo-history/2026-hugo-awards/
 const HUGO_2026_FINALISTS = {
@@ -1169,33 +1191,34 @@ function findBook(title, author, category) {
   );
 }
 
+function finalistCard(f, catLabel, theme) {
+  const match = findBook(f.title, f.author, catLabel);
+  const cover = match && match.cover_url
+    ? `<img src="${escapeHtml(match.cover_url)}" alt="Cover of ${escapeHtml(f.title)}" loading="lazy">`
+    : `<span class="hugo-card-placeholder">📖</span>`;
+  const href = match ? `#/book/${escapeHtml(match.id)}` : '#';
+  return `<a class="hugo-card hugo-card-${theme}" href="${href}">
+    <div class="hugo-card-cover">${cover}</div>
+    <div class="hugo-card-body">
+      <div class="hugo-card-title">${escapeHtml(f.title)}</div>
+      <div class="hugo-card-author">${escapeHtml(f.author)}</div>
+      <div class="hugo-card-pub">${escapeHtml(f.publisher)}</div>
+    </div>
+  </a>`;
+}
+
+function finalistSection(catLabel, items, theme) {
+  return `<section class="hugo-section">
+    <h2>Best ${escapeHtml(catLabel)}</h2>
+    <div class="hugo-grid">${items.map(f => finalistCard(f, catLabel, theme)).join('')}</div>
+  </section>`;
+}
+
 function renderHugo2026() {
   const root = $('#view-hugo2026');
-  const renderCategory = (catLabel, items) => {
-    const cards = items.map(f => {
-      const match = findBook(f.title, f.author, catLabel);
-      const cover = match && match.cover_url
-        ? `<img src="${escapeHtml(match.cover_url)}" alt="Cover of ${escapeHtml(f.title)}" loading="lazy">`
-        : `<span class="hugo-card-placeholder">📖</span>`;
-      const href = match ? `#/book/${escapeHtml(match.id)}` : '#';
-      return `<a class="hugo-card" href="${href}">
-        <div class="hugo-card-cover">${cover}</div>
-        <div class="hugo-card-body">
-          <div class="hugo-card-title">${escapeHtml(f.title)}</div>
-          <div class="hugo-card-author">${escapeHtml(f.author)}</div>
-          <div class="hugo-card-pub">${escapeHtml(f.publisher)}</div>
-        </div>
-      </a>`;
-    }).join('');
-    return `<section class="hugo-section">
-      <h2>Best ${escapeHtml(catLabel)}</h2>
-      <div class="hugo-grid">${cards}</div>
-    </section>`;
-  };
-
   root.innerHTML = `<div class="detail hugo2026">
-    <div class="hugo-hero">
-      <div class="hugo-hero-tag">2026 Hugo Awards · Finalists</div>
+    <div class="hugo-hero hugo-hero-hugo">
+      <div class="hugo-hero-tag hugo-hero-tag-hugo">2026 Hugo Awards · Finalists</div>
       <h1>The ballot is out.</h1>
       <p>Announced for <strong>LAcon V</strong> — the 84th World Science Fiction Convention, Anaheim, August 27–31, 2026. Ceremony: <strong>Sunday, August 30, 2026</strong>.</p>
       <div class="hugo-hero-stats">
@@ -1219,10 +1242,44 @@ function renderHugo2026() {
       </div>
     </section>
 
-    ${renderCategory('Novel', HUGO_2026_FINALISTS.Novel)}
-    ${renderCategory('Novella', HUGO_2026_FINALISTS.Novella)}
+    ${finalistSection('Novel', HUGO_2026_FINALISTS.Novel, 'hugo')}
+    ${finalistSection('Novella', HUGO_2026_FINALISTS.Novella, 'hugo')}
 
     <p class="hugo-source">Source: <a href="https://www.thehugoawards.org/hugo-history/2026-hugo-awards/" target="_blank" rel="noopener">thehugoawards.org · 2026 Hugo Awards announcement</a></p>
+  </div>`;
+}
+
+function renderNebula2026() {
+  const root = $('#view-nebula2026');
+  root.innerHTML = `<div class="detail hugo2026 nebula2026">
+    <div class="hugo-hero hugo-hero-nebula">
+      <div class="hugo-hero-tag hugo-hero-tag-nebula">2026 Nebula Awards · Finalists</div>
+      <h1>What the writers chose.</h1>
+      <p>The 61st annual Nebulas, voted on by members of the <strong>Science Fiction and Fantasy Writers Association</strong>. Ceremony: <strong>Saturday, June 6, 2026</strong>, at the SFWA Nebula Conference in Chicago.</p>
+      <div class="hugo-hero-stats">
+        <span>Voting closes <strong>11:59 PM PDT · April 15, 2026</strong></span>
+        <span>Winners announced <strong>Jun 6, 2026 · Chicago</strong></span>
+      </div>
+    </div>
+
+    <section class="hugo-vote">
+      <h2>How to vote</h2>
+      <ol>
+        <li><strong>You need an active SFWA membership.</strong> Unlike the Hugos, the Nebulas are peer-voted: only Active, Associate, and Senior SFWA members may vote. If you qualify (typically through pro-rate fiction sales), join at <a href="https://www.sfwa.org/join/" target="_blank" rel="noopener">sfwa.org/join</a>.</li>
+        <li><strong>Sign in to the SFWA portal.</strong> The ballot lives on the member side of the SFWA Nebula Conference site. You can rank as many or as few finalists as you've read.</li>
+        <li><strong>Vote before April 15.</strong> The ballot closes 11:59 PM PDT, April 15, 2026 — winners are announced June 6 at the Nebula Conference in Chicago.</li>
+        <li><strong>Not a member?</strong> You can still attend or stream the ceremony. Conference registration is at <a href="https://nebulas.sfwa.org/" target="_blank" rel="noopener">nebulas.sfwa.org</a>.</li>
+      </ol>
+      <div class="hugo-vote-links">
+        <a class="hugo-btn hugo-btn-nebula" href="https://www.sfwa.org/nebula-conference/" target="_blank" rel="noopener">Nebula Conference + ballot →</a>
+        <a class="hugo-btn hugo-btn-secondary" href="https://www.sfwa.org/join/" target="_blank" rel="noopener">SFWA membership →</a>
+      </div>
+    </section>
+
+    ${finalistSection('Novel', NEBULA_2026_FINALISTS.Novel, 'nebula')}
+    ${finalistSection('Novella', NEBULA_2026_FINALISTS.Novella, 'nebula')}
+
+    <p class="hugo-source">Source: <a href="https://nebulas.sfwa.org/9192-2/" target="_blank" rel="noopener">nebulas.sfwa.org · 2026 Nebula Awards Finalists</a></p>
   </div>`;
 }
 
@@ -1298,6 +1355,12 @@ function route() {
   if (path === '#/hugo2026') {
     renderHugo2026();
     showView('hugo2026');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (path === '#/nebula2026') {
+    renderNebula2026();
+    showView('nebula2026');
     window.scrollTo(0, 0);
     return;
   }

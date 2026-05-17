@@ -1125,14 +1125,11 @@ fieldset label input { margin-right: 8px; }
   margin-top: 60px;
 }
 
-/* Hugo 2026 finalists tab */
+/* 2026 finalists tabs (Hugo + Nebula) */
 .nav-hot {
   position: relative;
   padding: 4px 10px;
-  background: linear-gradient(135deg, rgba(198, 68, 79, 0.16), rgba(184, 149, 72, 0.18));
-  border: 1px solid rgba(198, 68, 79, 0.4);
   border-radius: 999px;
-  color: var(--sf) !important;
   font-weight: 600;
 }
 .nav-hot::before {
@@ -1140,29 +1137,52 @@ fieldset label input { margin-right: 8px; }
   margin-right: 5px;
   color: var(--winner);
 }
+.nav-hot-hugo {
+  background: linear-gradient(135deg, rgba(198, 68, 79, 0.16), rgba(184, 149, 72, 0.18));
+  border: 1px solid rgba(198, 68, 79, 0.4);
+  color: var(--sf) !important;
+}
+.nav-hot-nebula {
+  background: linear-gradient(135deg, rgba(44, 93, 150, 0.16), rgba(184, 149, 72, 0.16));
+  border: 1px solid rgba(44, 93, 150, 0.4);
+  color: var(--fantasy) !important;
+}
 .nav-hot:hover, .nav-hot.active { color: var(--text) !important; }
 
 .hugo2026 { max-width: 1100px; margin: 0 auto; }
 .hugo-hero {
   padding: 32px 32px 28px;
   border-radius: var(--radius);
-  background: linear-gradient(135deg, rgba(198, 68, 79, 0.10), rgba(184, 149, 72, 0.12));
   border: 1px solid var(--border);
-  border-left: 4px solid var(--sf);
   margin: 12px 0 28px;
+}
+.hugo-hero-hugo {
+  background: linear-gradient(135deg, rgba(198, 68, 79, 0.10), rgba(184, 149, 72, 0.12));
+  border-left: 4px solid var(--sf);
+}
+.hugo-hero-nebula {
+  background: linear-gradient(135deg, rgba(44, 93, 150, 0.10), rgba(184, 149, 72, 0.10));
+  border-left: 4px solid var(--fantasy);
 }
 .hugo-hero-tag {
   display: inline-block;
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--sf);
   font-weight: 700;
   padding: 3px 10px;
-  border: 1px solid rgba(198, 68, 79, 0.4);
   border-radius: 999px;
-  background: rgba(198, 68, 79, 0.08);
   margin-bottom: 12px;
+}
+.hugo-hero-tag-hugo {
+  color: var(--sf);
+  border: 1px solid rgba(198, 68, 79, 0.4);
+  background: rgba(198, 68, 79, 0.08);
+}
+.hugo-hero-tag-nebula {
+  color: var(--fantasy);
+  border: 1px solid rgba(44, 93, 150, 0.4);
+  background: rgba(44, 93, 150, 0.08);
 }
 .hugo-hero h1 {
   font-size: 32px;
@@ -1201,8 +1221,11 @@ fieldset label input { margin-right: 8px; }
   text-decoration: none;
 }
 .hugo-btn:hover { filter: brightness(1.08); }
+.hugo-btn-nebula { background: var(--fantasy); }
 .hugo-btn-secondary { background: var(--bg); color: var(--text) !important; border: 1px solid var(--border); }
 .hugo-btn-secondary:hover { border-color: var(--sf); }
+.nebula2026 .hugo-btn-secondary:hover { border-color: var(--fantasy); }
+.nebula2026 .hugo-section h2 { border-bottom-color: rgba(44, 93, 150, 0.25); }
 
 .hugo-section { margin: 32px 0; }
 .hugo-section h2 {
@@ -1231,6 +1254,10 @@ fieldset label input { margin-right: 8px; }
   transform: translateY(-2px);
   border-color: var(--sf);
   box-shadow: 0 4px 14px rgba(198, 68, 79, 0.15);
+}
+.hugo-card-nebula:hover {
+  border-color: var(--fantasy);
+  box-shadow: 0 4px 14px rgba(44, 93, 150, 0.15);
 }
 .hugo-card-cover {
   aspect-ratio: 2/3;
