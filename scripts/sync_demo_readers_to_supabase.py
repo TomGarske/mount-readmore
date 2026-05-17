@@ -14,7 +14,8 @@ Requirements:
 
 Env vars:
     SUPABASE_URL          https://<project-ref>.supabase.co
-    SUPABASE_SERVICE_KEY  service_role key (Settings → API). NEVER ship to clients.
+    SUPABASE_SERVICE_KEY  Supabase secret key (`sb_secret_*` in Settings → API,
+                          or the legacy service_role JWT). NEVER ship to clients.
 
 Usage:
     SUPABASE_URL=... SUPABASE_SERVICE_KEY=... \

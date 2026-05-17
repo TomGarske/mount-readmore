@@ -8,7 +8,9 @@ Requirements:
 
 Env vars (don't commit these — drop into ~/.env or pass on the command line):
     SUPABASE_URL          https://<project-ref>.supabase.co
-    SUPABASE_SERVICE_KEY  service_role key (Settings → API). NEVER ship to clients.
+    SUPABASE_SERVICE_KEY  Supabase secret key. In Settings → API → API Keys this
+                          shows as `sb_secret_*` under "Secret keys" (the legacy
+                          `service_role` JWT also works). NEVER ship to clients.
 
 Usage:
     SUPABASE_URL=...  SUPABASE_SERVICE_KEY=... python scripts/sync_books_to_supabase.py
