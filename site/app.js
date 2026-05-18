@@ -509,8 +509,10 @@ function renderDetail(id) {
   });
 }
 
-// SVG donut chart. `slices` is [{ key, label, value, color }]. Animates in
-// via stroke-dashoffset on each segment. Returns the chart + legend HTML.
+// SVG donut chart. `slices` is [{ key, label, value, color }]. Segments
+// render statically — the earlier dasharray animation never reached the
+// inline final value because the @keyframes had no explicit 100% block,
+// leaving the dasharray stuck partway through the cubic-bezier curve.
 function buildDonut(slices, options = {}) {
   const total = slices.reduce((s, x) => s + x.value, 0);
   if (total === 0) return '<p style="color: var(--muted); font-size: 13px;">No data.</p>';
@@ -520,7 +522,7 @@ function buildDonut(slices, options = {}) {
   const STROKE = options.stroke || 36;
   const C = 2 * Math.PI * R;
   let offset = 0;
-  const segments = slices.map((s, i) => {
+  const segments = slices.map((s) => {
     const frac = s.value / total;
     const dash = frac * C;
     const gap = C - dash;
@@ -528,7 +530,6 @@ function buildDonut(slices, options = {}) {
       fill="none" stroke="${s.color}" stroke-width="${STROKE}"
       stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
       stroke-dashoffset="${(-offset).toFixed(2)}"
-      style="animation-delay: ${i * 0.18}s;"
       transform="rotate(-90 ${cx} ${cy})"></circle>`;
     offset += dash;
     return seg;
