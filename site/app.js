@@ -347,6 +347,7 @@ function bookCard(book) {
 }
 
 function renderList() {
+  pushFiltersToUrl();
   const filtered = DATA.books.filter(matchesFilters);
   const sorted = sortBooks(filtered);
   const activeFilters = [];
@@ -2830,12 +2831,29 @@ function resetFilterState() {
 
 function applyFilterParams(params) {
   resetFilterState();
+  // Comma-separated multi-value params (pushFiltersToUrl emits these). Older
+  // single-value links (?award=hugo) still work — split with one item.
   const award = params.get('award');
-  if (award) state.awards = new Set([award]);
+  if (award) {
+    const valid = award.split(',').filter(s => Object.keys(AWARD_LABELS).includes(s));
+    if (valid.length) state.awards = new Set(valid);
+  }
   const status = params.get('status');
-  if (status) state.statuses = new Set([status]);
+  if (status) {
+    const valid = status.split(',').filter(s => ['winner', 'nominee'].includes(s));
+    if (valid.length) state.statuses = new Set(valid);
+  }
   const category = params.get('category');
-  if (category) state.categories = new Set([category]);
+  if (category) {
+    const valid = category.split(',').filter(s => ['Novel', 'Novella', 'Novelette'].includes(s));
+    if (valid.length) state.categories = new Set(valid);
+  }
+  const search = params.get('search');
+  if (search) state.search = search;
+  const yMin = params.get('yearMin');
+  if (yMin) state.yearMin = parseInt(yMin, 10);
+  const yMax = params.get('yearMax');
+  if (yMax) state.yearMax = parseInt(yMax, 10);
   // readTom param is comma-separated list of states (e.g. ?readTom=read,started)
   const readTom = params.get('readTom');
   if (readTom) {
@@ -2876,6 +2894,39 @@ function syncFiltersToDom() {
   $$('input[name="author-gender"]').forEach(el => { el.checked = state.authorGender.has(el.value); });
   $$('input[name="missing"]').forEach(el => { el.checked = state.missingFilter.has(el.value); });
   $('#sort').value = state.sort;
+}
+
+// Serialize filter state back to the URL hash so Books page filters are
+// shareable. Only emit params for non-default values to keep URLs short.
+// Uses replaceState so checkbox flicks don't pollute history.
+function pushFiltersToUrl() {
+  // Only sync the URL while we're on the Books page — other routes have
+  // their own URL semantics we shouldn't clobber.
+  if (!location.hash.startsWith('#/books')) return;
+  const p = new URLSearchParams();
+  if (state.search) p.set('search', state.search);
+  if (state.awards.size && state.awards.size < Object.keys(AWARD_LABELS).length) {
+    p.set('award', [...state.awards].join(','));
+  }
+  if (state.statuses.size && state.statuses.size < 2) {
+    p.set('status', [...state.statuses].join(','));
+  }
+  if (state.categories.size && state.categories.size < 3) {
+    p.set('category', [...state.categories].join(','));
+  }
+  if (state.yearMin != null) p.set('yearMin', state.yearMin);
+  if (state.yearMax != null) p.set('yearMax', state.yearMax);
+  if (state.authorGender.size > 0 && state.authorGender.size < 3) {
+    p.set('gender', [...state.authorGender].join(','));
+  }
+  if (state.missingFilter.size > 0) {
+    p.set('missing', [...state.missingFilter].join(','));
+  }
+  const qs = p.toString();
+  const target = '#/books' + (qs ? '?' + qs : '');
+  if (location.hash !== target) {
+    history.replaceState(null, '', target);
+  }
 }
 
 function route() {
