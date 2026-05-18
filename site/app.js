@@ -1867,69 +1867,10 @@ async function renderCompare(params) {
     // 'me' is only valid when signed in
     .filter(id => id !== 'me' || !!window.MR_AUTH?.user);
 
+  // Bare /#/compare (no u= params) is now redirected to /#/friends in route().
+  // If we somehow land here with less than 2 ids (malformed URL), bounce home.
   if (ids.length !== 2) {
-    // Anon: sign-in CTA
-    if (!window.MR_AUTH?.user) {
-      root.innerHTML = `<div class="detail">
-        <a href="#/" class="back">← back</a>
-        <h1>Compare reads</h1>
-        <p style="color: var(--muted); max-width: 620px;">
-          Sign in to compare your Readmore progress against another reader
-          — see what you've both read, what only one of you has read, and what's
-          still waiting for both of you.
-        </p>
-        <div style="margin-top: 14px;">
-          <button type="button" class="user-status-signin" id="compare-signin">Sign in</button>
-        </div>
-      </div>`;
-      $('#compare-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
-      return;
-    }
-    // Friends + per-friend read counts are preloaded by MR_AUTH.bootstrap.
-    // Read synchronously, no spinner, no Supabase round-trip on this nav.
-    const friends = window.MR_AUTH.friends;
-    const myHandle = window.MR_AUTH.profile?.handle || 'you';
-
-    if (friends.length === 0) {
-      root.innerHTML = `<div class="detail">
-        <a href="#/" class="back">← back</a>
-        <h1>Compare reads</h1>
-        <p style="color: var(--muted); max-width: 620px;">
-          You don't have any friends yet. <a href="#/settings">Add some from Settings</a>
-          and they'll show up here.
-        </p>
-      </div>`;
-      return;
-    }
-
-    const counts = {};
-    for (const row of window.MR_AUTH.leaderboardOverall || []) {
-      counts[row.user_id] = row.read_count;
-    }
-
-    const meSlug = encodeURIComponent(myHandle);
-    const friendRow = (f) => `
-      <a class="compare-friend-row" href="#/compare?u=${meSlug}&amp;u=${encodeURIComponent(f.handle)}">
-        <div class="compare-friend-handle">@${escapeHtml(f.handle)}</div>
-        <div class="compare-friend-meta">${counts[f.id] || 0} read · ${f.profile_visibility}</div>
-        <div class="compare-friend-cta">Compare →</div>
-      </a>`;
-
-    root.innerHTML = `<div class="detail compare-picker-page">
-      <a href="#/" class="back">← back</a>
-      <h1>Compare reads</h1>
-      <p style="color: var(--muted); max-width: 620px;">
-        Pick a friend to head-to-head with — you'll see what you've both read,
-        what only one of you has read, and the gap.
-      </p>
-      <div class="compare-self-row">Signed in as <strong>@${escapeHtml(myHandle)}</strong></div>
-      <div class="compare-friend-list">${friends.map(friendRow).join('')}</div>
-      <p style="color: var(--muted); font-size: 13px; margin-top: 18px;">
-        Want to compare with someone not in the list? Add them as a friend in
-        <a href="#/settings">Settings</a>, or hit a direct URL like
-        <code>#/compare?u=${escapeHtml(myHandle)}&amp;u=&lt;their-handle&gt;</code>.
-      </p>
-    </div>`;
+    location.hash = '#/friends';
     return;
   }
 
@@ -1941,7 +1882,7 @@ async function renderCompare(params) {
   ]);
   if (!aSide || !bSide) {
     root.innerHTML = `<div class="detail">
-      <a href="#/compare" class="back">← back</a>
+      <a href="#/friends" class="back">← back to Friends</a>
       <h1>Compare reads</h1>
       <p style="color: var(--sf);">Couldn't find one of those readers (${escapeHtml(ids.join(' / '))}).</p>
     </div>`;
@@ -2149,7 +2090,7 @@ async function renderCompare(params) {
     .join('');
 
   root.innerHTML = `<div class="detail compare-page">
-    <a href="#/compare" class="back">← compare another</a>
+    <a href="#/friends" class="back">← compare another</a>
     <div class="compare-header">
       <h1>
         <span style="color: ${aSide.colorVar}">@${escapeHtml(aSide.label)}</span>
@@ -2242,13 +2183,15 @@ async function renderCompare(params) {
   </div>`;
 }
 
-// Readmore leaderboard — reads from MR_AUTH.leaderboardOverall /
-// .leaderboardByAward, which the bootstrap loads from the SQL views.
-// Only profiles with on_leaderboard = true appear (filter inside the view).
+// Friends page — combined leaderboard + per-row head-to-head compare entry.
+// Reads from MR_AUTH.leaderboardOverall / .leaderboardByAward, which the
+// bootstrap loads from the SQL views. Only profiles with on_leaderboard = true
+// appear (filter is inside the view). Each row has a Compare → button that
+// deep-links into the existing /#/compare?u=me&u=them head-to-head view.
 let __mrLeaderboardScope = 'overall';   // 'overall' | 'hugo' | 'nebula'
 
-async function renderLeaderboard() {
-  const root = $('#view-leaderboard');
+async function renderFriends() {
+  const root = $('#view-friends');
   if (!root) return;
   // Wait for the auth bootstrap so the leaderboard data is populated.
   await window.MR_AUTH?.ready;
@@ -2295,8 +2238,8 @@ async function renderLeaderboard() {
 
   const emptyState = !isAuthed
     ? `<div class="lb-empty">
-        <p><strong>Leaderboards are friends-only.</strong></p>
-        <p style="color: var(--muted);">Sign in to see how you stack up against your friends — and against @tom, who's auto-friends with everyone.</p>
+        <p><strong>Friends are sign-in-only.</strong></p>
+        <p style="color: var(--muted);">Sign in to see your reading head-to-head with friends — and with @tom, who's auto-friends with everyone.</p>
         <p><button type="button" class="user-status-signin" id="lb-signin-empty">Sign in</button></p>
       </div>`
     : !onLeaderboard
@@ -2310,8 +2253,8 @@ async function renderLeaderboard() {
         </div>`;
 
   root.innerHTML = `<div class="detail leaderboard-page">
-    <h1>Leaderboard</h1>
-    <p style="color: var(--muted);">You and your friends, ranked by how many of the ${totalLabel} you've read. Friends-only — add friends and opt in from <a href="#/settings">Settings</a>.</p>
+    <h1>Friends</h1>
+    <p style="color: var(--muted);">You and your friends, ranked by how many of the ${totalLabel} you've read. Tap <strong>Compare</strong> on any row to see the head-to-head. Add friends and opt in from <a href="#/settings">Settings</a>.</p>
 
     <div class="status-toggle leaderboard-toggle">
       ${tab('overall', 'Overall')}
@@ -2337,7 +2280,7 @@ async function renderLeaderboard() {
   $$('.leaderboard-toggle .status-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       __mrLeaderboardScope = btn.dataset.lbScope;
-      renderLeaderboard();
+      renderFriends();
     });
   });
   $('#lb-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
@@ -2929,14 +2872,27 @@ function route() {
   }
   if (path === '#/compare') {
     const params = new URLSearchParams(qs || '');
+    // Head-to-head requires two u= values. Without them this used to render
+    // a friend-picker, which is now part of the Friends page — redirect.
+    const hasPair = params.getAll('u').length + params.getAll('reader').length + params.getAll('readers').length >= 2;
+    if (!hasPair) {
+      location.hash = '#/friends';
+      return;
+    }
     renderCompare(params);
     showView('compare');
     window.scrollTo(0, 0);
     return;
   }
   if (path === '#/leaderboard') {
-    renderLeaderboard();
-    showView('leaderboard');
+    // Legacy URL — Friends absorbed the leaderboard. Rewrite so the address
+    // bar reflects the canonical path.
+    location.hash = '#/friends';
+    return;
+  }
+  if (path === '#/friends') {
+    renderFriends();
+    showView('friends');
     window.scrollTo(0, 0);
     return;
   }
