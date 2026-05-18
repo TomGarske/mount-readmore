@@ -1,0 +1,21 @@
+# CF Pages reads this. Keep the SPA shell + JS short-cached so deploys
+# show up on the next nav without users having to hard-reload. The book
+# data + images + CSS get longer TTLs (they change less frequently).
+
+/index.html
+  Cache-Control: no-cache
+
+/app.js
+  Cache-Control: public, max-age=300, must-revalidate
+
+/auth.js
+  Cache-Control: public, max-age=300, must-revalidate
+
+/config.js
+  Cache-Control: public, max-age=300, must-revalidate
+
+/data.json
+  Cache-Control: public, max-age=600, must-revalidate
+
+/styles.css
+  Cache-Control: public, max-age=600, must-revalidate
