@@ -228,10 +228,17 @@
   async function setBookStatus(bookId, status) {
     // status: 'read' | 'started' | 'nightstand' | null (null = remove)
     if (!currentUser) throw new Error('Not signed in');
+    // Bound the call: if Supabase hangs (web-locks contention, network
+    // hiccup, hung CDN) we must throw so the optimistic UI in
+    // wireUserStatusControls can revert. Without a timeout the button stays
+    // 'active' and the user sees themselves as Read without a DB row.
     if (status === null) {
-      const { error } = await client.from('user_books')
-        .delete()
-        .eq('user_id', currentUser.id).eq('book_id', bookId);
+      const { error } = await withTimeout(
+        client.from('user_books')
+          .delete()
+          .eq('user_id', currentUser.id).eq('book_id', bookId),
+        10000, 'clear book status'
+      );
       if (error) throw error;
       delete userBooksById[bookId];
     } else {
@@ -239,10 +246,13 @@
       if (status === 'read' && !userBooksById[bookId]?.date_read) {
         row.date_read = new Date().toISOString().slice(0, 10);
       }
-      const { data, error } = await client.from('user_books')
-        .upsert(row, { onConflict: 'user_id,book_id' })
-        .select('book_id,status,date_read,updated_at')
-        .single();
+      const { data, error } = await withTimeout(
+        client.from('user_books')
+          .upsert(row, { onConflict: 'user_id,book_id' })
+          .select('book_id,status,date_read,updated_at')
+          .single(),
+        10000, 'save book status'
+      );
       if (error) throw error;
       userBooksById[bookId] = data;
     }
