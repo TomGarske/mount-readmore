@@ -101,6 +101,9 @@ let state = {
   // Books page: missing-data debug filter. Set of {'desc','cover'}.
   // Empty = no filter; any checked = books missing at least one selected.
   missingFilter: new Set(),
+  // Books page: filter by the signed-in user's status. Driven by Home-page
+  // featured-shelf CTAs (?meStatus=read|nightstand|started). null = no filter.
+  meStatus: null,
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
@@ -168,6 +171,11 @@ function matchesFilters(book) {
   if (state.authorGender && state.authorGender.size < 3) {
     const g = book.primary_author_gender || 'unknown';
     if (!state.authorGender.has(g)) return false;
+  }
+  // Signed-in user's status (read/nightstand/started). URL-driven only.
+  if (state.meStatus && window.MR_AUTH?.user) {
+    const myStatus = window.MR_AUTH.statusFor(book.id);
+    if (state.meStatus !== myStatus) return false;
   }
   // Missing-data filter: any checked → book must be missing at least one of
   // the checked criteria. Empty set = no filter.
@@ -359,6 +367,10 @@ function renderList() {
     const label = [...state.missingFilter].map(k => names[k]).join(' or ');
     activeFilters.push({ label, clear: 'missing' });
   }
+  if (state.meStatus) {
+    const names = { read: 'Read by you', nightstand: 'On your nightstand', started: 'Started by you' };
+    activeFilters.push({ label: names[state.meStatus], clear: 'meStatus' });
+  }
   $('#result-count').innerHTML = `${sorted.length} of ${DATA.books.length} books` +
     (activeFilters.length
       ? ' · ' + activeFilters.map(f => `<span class="active-filter-chip" data-clear="${f.clear}">${f.label} <span class="afc-x">×</span></span>`).join(' ')
@@ -373,6 +385,7 @@ function renderList() {
       state.missingFilter = new Set();
       $$('input[name="missing"]').forEach(el => el.checked = false);
     }
+    if (w === 'meStatus') { state.meStatus = null; }
     renderList();
   }));
   $('#grid').innerHTML = sorted.map(bookCard).join('');
@@ -504,6 +517,39 @@ function renderDetail(id) {
   $$('.swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/book/${el.dataset.id}`; });
   });
+}
+
+// Nightstand visual — books rendered as vertical spines stacked side by
+// side on a "wooden" surface. Each spine is a colored rectangle with the
+// title written vertically along it; clicking opens the book detail.
+function buildNightstandShelf(books) {
+  if (!books || books.length === 0) return '';
+  // Deterministic per-book palette so the same book always picks the same
+  // spine color across renders. A small hash on the book id picks a hue.
+  const hueFor = (id) => {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffffffff;
+    return Math.abs(h) % 360;
+  };
+  const spines = books.map(b => {
+    const hue = hueFor(b.id);
+    // Two-tone spine: darker band on the left, lighter body. Suggests a
+    // bound book without trying to look photorealistic.
+    const bodyHsl = `hsl(${hue}, 38%, 32%)`;
+    const bandHsl = `hsl(${hue}, 42%, 22%)`;
+    const textHsl = `hsl(${hue}, 35%, 92%)`;
+    const author = (b.authors && b.authors[0]) || '';
+    return `<a class="spine" data-id="${escapeHtml(b.id)}" href="#/book/${escapeHtml(b.id)}"
+        style="--body: ${bodyHsl}; --band: ${bandHsl}; --ink: ${textHsl};"
+        title="${escapeHtml(b.title)} — ${escapeHtml(author)}">
+      <span class="spine-title">${escapeHtml(b.title)}</span>
+      <span class="spine-author">${escapeHtml(author)}</span>
+    </a>`;
+  }).join('');
+  return `<div class="nightstand">
+    <div class="nightstand-spines">${spines}</div>
+    <div class="nightstand-surface"></div>
+  </div>`;
 }
 
 // SVG donut chart via explicit arc paths. Earlier stroke-dasharray
@@ -1200,24 +1246,38 @@ function renderStats() {
       })()}
     </div>
 
-    ${HAS_READER && recentEither.length > 0 ? `<div class="progress-section">
-      <h2>Recent ${SUBSET} read</h2>
-      <p style="color: var(--muted); font-size: 13px;">Pills show who read each book. Most recent first.</p>
+    ${HAS_READER && recentEither.length > 0 ? `<section class="featured-shelf featured-shelf-recent">
+      <div class="featured-shelf-head">
+        <div>
+          <h2>Recently read</h2>
+          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Read books by publication year.</p>
+        </div>
+        <a class="featured-shelf-cta" href="#/books?meStatus=read">View all <span class="featured-arrow">→</span></a>
+      </div>
       <div class="recent-reads">${recentEitherHtml}</div>
-    </div>` : ''}
+    </section>` : ''}
 
+    ${HAS_READER && nightstandBooks.length > 0 ? `<section class="featured-shelf featured-shelf-nightstand">
+      <div class="featured-shelf-head">
+        <div>
+          <h2>On the nightstand <span class="featured-shelf-count">${nightstandBooks.length}</span></h2>
+          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Books you have, but haven't finished yet.</p>
+        </div>
+        <a class="featured-shelf-cta" href="#/books?meStatus=nightstand">View all <span class="featured-arrow">→</span></a>
+      </div>
+      ${buildNightstandShelf(nightstandBooks)}
+    </section>` : ''}
 
-    ${HAS_READER && nightstandBooks.length > 0 ? `<div class="progress-section">
-      <h2>On the nightstand (${nightstandBooks.length})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Books from this list waiting on a to-read shelf. Pills show whose.</p>
-      <div class="recent-reads">${nightstandHtml}</div>
-    </div>` : ''}
-
-    ${HAS_READER && upNext.length > 0 ? `<div class="progress-section">
-      <h2>Up next — ${SUBSET} on no nightstand yet</h2>
-      <p style="color: var(--muted); font-size: 13px;">Recent ${SUBSET} by publication year. Open one to add it to your shelf.</p>
+    ${HAS_READER && upNext.length > 0 ? `<section class="featured-shelf featured-shelf-upnext">
+      <div class="featured-shelf-head">
+        <div>
+          <h2>Up next</h2>
+          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Recent winners on no nightstand yet. Open one to add it to your shelf.</p>
+        </div>
+        <a class="featured-shelf-cta" href="#/books?status=winner">View all <span class="featured-arrow">→</span></a>
+      </div>
       <div class="recent-reads">${upNextHtml}</div>
-    </div>` : ''}
+    </section>` : ''}
 
     <div class="progress-section">
       <div class="authors-head">
@@ -2772,6 +2832,7 @@ function resetFilterState() {
   state.yearMax = null;
   state.authorGender = new Set(['female', 'male', 'unknown']);
   state.missingFilter = new Set();
+  state.meStatus = null;
 }
 
 function applyFilterParams(params) {
@@ -2822,6 +2883,10 @@ function applyFilterParams(params) {
     }
     if (set.size > 0) state.missingFilter = set;
   }
+  const meStatus = params.get('meStatus');
+  if (meStatus && ['read', 'nightstand', 'started'].includes(meStatus)) {
+    state.meStatus = meStatus;
+  }
   syncFiltersToDom();
 }
 
@@ -2866,6 +2931,9 @@ function pushFiltersToUrl() {
   }
   if (state.missingFilter.size > 0) {
     p.set('missing', [...state.missingFilter].join(','));
+  }
+  if (state.meStatus) {
+    p.set('meStatus', state.meStatus);
   }
   const qs = p.toString();
   const target = '#/books' + (qs ? '?' + qs : '');
@@ -3081,6 +3149,7 @@ function wireFilters() {
       genderFilter: null,
       authorGender: new Set(['female', 'male', 'unknown']),
       missingFilter: new Set(),
+      meStatus: null,
     };
     $('#search').value = '';
     $('#year-min').value = '';
