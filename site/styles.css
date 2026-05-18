@@ -424,6 +424,10 @@ a:hover { text-decoration: underline; }
   gap: 16px;
   margin: 18px 0 32px;
 }
+
+/* Hugo/Nebula 2026 content embedded inline on the Home page. Offset the
+   scroll target below the sticky topbar so the section h1 isn't hidden. */
+.awards-2026-embed { scroll-margin-top: 80px; margin-top: 24px; }
 .featured-banner {
   position: relative;
   display: flex;

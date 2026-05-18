@@ -1183,9 +1183,12 @@ function renderStats() {
     </section>
 
     <div class="featured-banners">
-      ${featuredBanner('hugo', '2026 Hugo Awards', 'Aug 30, 2026', 'LAcon V · Anaheim', 'Best Novel + Novella finalists', HUGO_2026_FINALISTS, '#/hugo2026')}
-      ${featuredBanner('nebula', '2026 Nebula Awards', 'Jun 6, 2026', 'SFWA Conference · Chicago', 'Peer-voted finalists from the writers', NEBULA_2026_FINALISTS, '#/nebula2026')}
+      ${featuredBanner('hugo', '2026 Hugo Awards', 'Aug 30, 2026', 'LAcon V · Anaheim', 'Best Novel + Novella finalists', HUGO_2026_FINALISTS, '#hugo2026-section')}
+      ${featuredBanner('nebula', '2026 Nebula Awards', 'Jun 6, 2026', 'SFWA Conference · Chicago', 'Peer-voted finalists from the writers', NEBULA_2026_FINALISTS, '#nebula2026-section')}
     </div>
+
+    <div class="awards-2026-embed hugo2026" id="hugo2026-section">${hugo2026Body()}</div>
+    <div class="awards-2026-embed hugo2026 nebula2026" id="nebula2026-section">${nebula2026Body()}</div>
 
     <section class="completionist-intro">
       <p>Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
@@ -1722,12 +1725,13 @@ function finalistSection(catLabel, items, theme) {
   </section>`;
 }
 
-function renderHugo2026() {
-  const root = $('#view-hugo2026');
-  root.innerHTML = `<div class="detail hugo2026">
-    <div class="hugo-hero hugo-hero-hugo">
+// Body HTML for the 2026 Hugo Awards page — hero, voting steps, finalist
+// grids, source attribution. Extracted so the same content can be embedded on
+// the Home page directly without a roundtrip to /hugo2026.
+function hugo2026Body() {
+  return `<div class="hugo-hero hugo-hero-hugo">
       <div class="hugo-hero-tag hugo-hero-tag-hugo">2026 Hugo Awards · Finalists</div>
-      <h1>The ballot is out.</h1>
+      <h1 id="hugo2026">The ballot is out.</h1>
       <p>Announced for <strong>LAcon V</strong> — the 84th World Science Fiction Convention, Anaheim, August 27–31, 2026. Ceremony: <strong>Sunday, August 30, 2026</strong>.</p>
       <div class="hugo-hero-stats">
         <span><strong>1,153</strong> ballots cast</span>
@@ -1753,16 +1757,13 @@ function renderHugo2026() {
     ${finalistSection('Novel', HUGO_2026_FINALISTS.Novel, 'hugo')}
     ${finalistSection('Novella', HUGO_2026_FINALISTS.Novella, 'hugo')}
 
-    <p class="hugo-source">Source: <a href="https://www.thehugoawards.org/hugo-history/2026-hugo-awards/" target="_blank" rel="noopener">thehugoawards.org · 2026 Hugo Awards announcement</a></p>
-  </div>`;
+    <p class="hugo-source">Source: <a href="https://www.thehugoawards.org/hugo-history/2026-hugo-awards/" target="_blank" rel="noopener">thehugoawards.org · 2026 Hugo Awards announcement</a></p>`;
 }
 
-function renderNebula2026() {
-  const root = $('#view-nebula2026');
-  root.innerHTML = `<div class="detail hugo2026 nebula2026">
-    <div class="hugo-hero hugo-hero-nebula">
+function nebula2026Body() {
+  return `<div class="hugo-hero hugo-hero-nebula">
       <div class="hugo-hero-tag hugo-hero-tag-nebula">2026 Nebula Awards · Finalists</div>
-      <h1>What the writers chose.</h1>
+      <h1 id="nebula2026">What the writers chose.</h1>
       <p>The 61st annual Nebulas, voted on by members of the <strong>Science Fiction and Fantasy Writers Association</strong>. Ceremony: <strong>Saturday, June 6, 2026</strong>, at the SFWA Nebula Conference in Chicago.</p>
       <div class="hugo-hero-stats">
         <span>Voting closes <strong>11:59 PM PDT · April 15, 2026</strong></span>
@@ -1787,8 +1788,15 @@ function renderNebula2026() {
     ${finalistSection('Novel', NEBULA_2026_FINALISTS.Novel, 'nebula')}
     ${finalistSection('Novella', NEBULA_2026_FINALISTS.Novella, 'nebula')}
 
-    <p class="hugo-source">Source: <a href="https://nebulas.sfwa.org/9192-2/" target="_blank" rel="noopener">nebulas.sfwa.org · 2026 Nebula Awards Finalists</a></p>
-  </div>`;
+    <p class="hugo-source">Source: <a href="https://nebulas.sfwa.org/9192-2/" target="_blank" rel="noopener">nebulas.sfwa.org · 2026 Nebula Awards Finalists</a></p>`;
+}
+
+function renderHugo2026() {
+  $('#view-hugo2026').innerHTML = `<div class="detail hugo2026">${hugo2026Body()}</div>`;
+}
+
+function renderNebula2026() {
+  $('#view-nebula2026').innerHTML = `<div class="detail hugo2026 nebula2026">${nebula2026Body()}</div>`;
 }
 
 // Standalone two-reader comparison page.
@@ -2899,6 +2907,16 @@ function syncFiltersToDom() {
 
 function route() {
   const h = location.hash || '#/';
+  // Bare in-page anchors like "#hugo2026-section" — not a SPA route, just a
+  // native scroll target. Skip the re-render so the browser keeps the scroll
+  // position it picked from the matching element id.
+  if (h.length > 1 && !h.startsWith('#/')) {
+    const target = document.getElementById(h.slice(1));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      return;
+    }
+  }
   const [path, qs] = h.split('?');
   if (path.startsWith('#/book/')) {
     const id = path.slice('#/book/'.length);
