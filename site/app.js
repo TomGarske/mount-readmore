@@ -2480,6 +2480,13 @@ async function renderFriends() {
     return;
   }
 
+  // Friends is sign-in-only; redirect anon visitors back to Home so the
+  // empty leaderboard placeholder doesn't linger in the address bar.
+  if (!window.MR_AUTH?.user) {
+    location.hash = '#/';
+    return;
+  }
+
   const overall = window.MR_AUTH?.leaderboardOverall || [];
   const byAward = window.MR_AUTH?.leaderboardByAward || [];
 
@@ -2714,13 +2721,9 @@ async function renderDiscover() {
 
   const auth = window.MR_AUTH;
   if (!auth?.user) {
-    root.innerHTML = `<div class="detail discover-page">
-      <h1>Discover</h1>
-      ${discoverIntroHtml()}
-      <p style="color: var(--muted); max-width: 540px;">Swipe through every Hugo and Nebula finalist and decide whether you've read it, want to read it, or want to skip it. Sign in to start labeling.</p>
-      <p style="margin-top: 18px;"><button type="button" class="user-status-signin" id="discover-signin">Sign in</button></p>
-    </div>`;
-    $('#discover-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
+    // Discover is sign-in-only; redirect anon visitors back to Home so the
+    // route doesn't leave a stale view in the address bar.
+    location.hash = '#/';
     return;
   }
 
@@ -3897,6 +3900,13 @@ function renderAuthPill() {
   if (progressLink) {
     progressLink.setAttribute('href', handle ? `#/u/${encodeURIComponent(handle)}` : '#/');
   }
+  // Hide Friends + Discover nav links when signed out — both pages are
+  // sign-in-only and the route handlers redirect anon visitors to Home.
+  const signedIn = !!window.MR_AUTH?.user;
+  const navDiscover = document.getElementById('nav-discover');
+  const navFriends = document.getElementById('nav-friends');
+  if (navDiscover) navDiscover.hidden = !signedIn;
+  if (navFriends) navFriends.hidden = !signedIn;
   if (!window.MR_AUTH) {
     slot.innerHTML = '';
     return;
