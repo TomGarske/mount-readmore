@@ -1629,12 +1629,13 @@ a:hover { text-decoration: underline; }
 .vbar-chart {
   display: flex;
   align-items: flex-end;
-  gap: 18px;
+  gap: 28px;
   margin-top: 16px;
-  padding: 8px 4px;
+  padding: 8px 4px 0;
+  border-bottom: 1px solid var(--border);
 }
 .vbar-col {
-  flex: 1;
+  flex: 0 0 110px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1643,7 +1644,6 @@ a:hover { text-decoration: underline; }
 .vbar-value { font-size: 13px; font-weight: 700; color: var(--text); }
 .vbar-track {
   width: 100%;
-  max-width: 90px;
   height: var(--vbar-height, 180px);
   display: flex;
   align-items: flex-end;
@@ -1652,6 +1652,7 @@ a:hover { text-decoration: underline; }
 .vbar {
   width: 100%;
   height: var(--bar-h, 2%);
+  min-height: 4px;
   border-radius: 4px 4px 0 0;
   background: var(--accent);
   transform-origin: bottom;
@@ -1663,7 +1664,13 @@ a:hover { text-decoration: underline; }
   0%   { transform: scaleY(0); }
   100% { transform: scaleY(1); }
 }
-.vbar-label { font-size: 13px; font-weight: 600; color: var(--text); text-align: center; }
+.vbar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+  padding-top: 6px;
+}
 .vbar-sub { font-size: 11px; color: var(--muted); text-align: center; }
 
 /* Decade heatmap (kept for backwards compat — no longer rendered) */
