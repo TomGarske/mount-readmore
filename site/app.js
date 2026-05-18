@@ -540,6 +540,27 @@ function buildDonut(slices, options = {}) {
   </div>`;
 }
 
+// Callout grid — GigaOm-report-style stat cards. Each item:
+//   { value, label, sublabel?, href?, color?, key? }
+// Cards start at opacity 0 / translateY(12px); the IntersectionObserver wired
+// in renderStats() adds .ready on intersection to trigger the fade-up.
+function buildCalloutGrid(items, options = {}) {
+  const cls = options.cls || '';
+  return `<div class="callout-grid ${cls}">${items.map((it, i) => {
+    const tag = it.href ? 'a' : 'div';
+    const hrefAttr = it.href ? ` href="${it.href}"` : '';
+    const accent = it.color ? ` style="--cc-accent: ${it.color};"` : '';
+    const dataKey = it.key ? ` data-key="${escapeHtml(it.key)}"` : '';
+    return `<${tag} class="callout-card"${hrefAttr}${accent}${dataKey} data-stagger="${i}">
+      <div class="cc-value">${it.value}</div>
+      <div class="cc-rule"></div>
+      <div class="cc-label">${escapeHtml(it.label)}</div>
+      ${it.sublabel ? `<div class="cc-sublabel">${it.sublabel}</div>` : ''}
+      ${it.href ? `<div class="cc-arrow" aria-hidden="true">→</div>` : ''}
+    </${tag}>`;
+  }).join('')}</div>`;
+}
+
 // Vertical bar chart with animated grow-from-bottom. data = [{key, label, value, color, sub}]
 function buildBarChart(data, options = {}) {
   const maxV = Math.max(1, ...data.map(d => d.value));
@@ -1319,12 +1340,12 @@ function renderStats() {
             centerSub: SUBSET,
           }
         )}
-        <div class="gender-filter-cards">
-          ${[
-            { key: 'female', label: 'Female-authored', cls: 'gender-female', color: 'var(--accent-2)' },
-            { key: 'male', label: 'Male-authored', cls: 'gender-male', color: 'var(--accent)' },
-            { key: 'unknown', label: 'Unknown / pen name', cls: 'gender-unknown', color: 'var(--accent-3)' },
-          ].map(({ key, label, cls, color }) => {
+        ${buildCalloutGrid(
+          [
+            { key: 'female', label: 'Female-authored', color: 'var(--accent-2)' },
+            { key: 'male', label: 'Male-authored', color: 'var(--accent)' },
+            { key: 'unknown', label: 'Unknown / pen name', color: 'var(--accent-3)' },
+          ].map(({ key, label, color }) => {
             const total = genderBuckets[key];
             const pctOfAll = winnersTotal > 0 ? Math.round(total / winnersTotal * 100) : 0;
             const readerLine = HAS_READER
@@ -1335,69 +1356,58 @@ function renderStats() {
                 }).join(' · ')
               : '';
             const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
-            const href = `#/books?gender=${key}${statusParam}`;
-            return `<a class="gender-filter-card ${cls}" href="${href}" style="--gc-color: ${color};">
-              <span class="gc-dot"></span>
-              <div class="gc-body">
-                <div class="gc-label">${label}</div>
-                <div class="gc-stat"><strong>${total}</strong> ${SUBSET} · ${pctOfAll}%</div>
-                ${readerLine ? `<div class="gc-readers">${readerLine}</div>` : ''}
-              </div>
-              <span class="gc-arrow">→</span>
-            </a>`;
-          }).join('')}
-        </div>
+            return {
+              key,
+              value: total,
+              label,
+              sublabel: `${pctOfAll}% of ${SUBSET}${readerLine ? ' · ' + readerLine : ''}`,
+              href: `#/books?gender=${key}${statusParam}`,
+              color,
+            };
+          }),
+          { cls: 'callout-grid-stack' }
+        )}
       </div>
     </div>
 
     <div class="progress-section">
       <h2>By award (${SUBSET})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Tap a bar to see those ${SUBSET} in the Books tab.${HAS_READER ? ' Coloured fill = your read share.' : ''}</p>
-      ${buildBarChart(
+      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those ${SUBSET} in the Books tab.${HAS_READER ? ' Sublabel shows your read share.' : ''}</p>
+      ${buildCalloutGrid(
         Object.entries(byAward).filter(([, s]) => s.total > 0).map(([a, s]) => {
           const activeCount = PRIMARY_READER ? s[PRIMARY_READER] : 0;
           const pct = HAS_READER ? Math.round(activeCount / s.total * 100) : 0;
           const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
-          const valueLabel = HAS_READER ? `${activeCount}/${s.total}` : `${s.total}`;
-          const subBits = [];
-          if (HAS_READER) subBits.push(`${pct}% complete`);
           return {
             key: a,
-            label: AWARD_LABELS[a],
             value: s.total,
-            valueLabel,
-            sub: subBits.join(' · '),
+            label: `${AWARD_LABELS[a]} ${SUBSET}`,
+            sublabel: HAS_READER ? `${activeCount} read · ${pct}% complete` : '',
             color: a === 'hugo' ? 'var(--sf)' : 'var(--fantasy)',
             href: `#/books?award=${a}${statusParam}`,
-            tooltip: `${AWARD_LABELS[a]}: ${s.total} ${SUBSET}${HAS_READER ? ' · you read ' + activeCount : ''}`,
           };
-        }),
-        { height: 180 }
+        })
       )}
     </div>
 
     <div class="progress-section">
       <h2>By category (${SUBSET})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Tap a bar to see those ${SUBSET} in the Books tab.</p>
-      ${buildBarChart(
+      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those ${SUBSET} in the Books tab.</p>
+      ${buildCalloutGrid(
         Object.entries(byCategory).filter(([, s]) => s.total > 0).map(([c, s], i) => {
           const activeCount = PRIMARY_READER ? s[PRIMARY_READER] : 0;
           const pct = HAS_READER ? Math.round(activeCount / s.total * 100) : 0;
           const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
-          const valueLabel = HAS_READER ? `${activeCount}/${s.total}` : `${s.total}`;
           const palette = ['var(--accent)', 'var(--accent-2)', 'var(--accent-3)', 'var(--accent-4)', 'var(--accent-5)'];
           return {
             key: c,
-            label: c,
             value: s.total,
-            valueLabel,
-            sub: HAS_READER ? `${pct}% complete` : '',
+            label: c,
+            sublabel: HAS_READER ? `${activeCount} read · ${pct}% complete` : '',
             color: palette[i % palette.length],
             href: `#/books?category=${encodeURIComponent(c)}${statusParam}`,
-            tooltip: `${c}: ${s.total} ${SUBSET}${HAS_READER ? ' · you read ' + activeCount : ''}`,
           };
-        }),
-        { height: 180 }
+        })
       )}
     </div>
 
@@ -1435,6 +1445,29 @@ function renderStats() {
       location.hash = `#/books?gender=${key}${statusParam}`;
     });
   });
+
+  // Fade-up callout cards on scroll — same pattern as the GigaOm benchmark
+  // reports. Each card gets a stagger delay from its data-stagger index so
+  // siblings in a row cascade in. Observer disconnects after firing to avoid
+  // re-triggering on scroll.
+  const cards = $$('.callout-card', root);
+  if (cards.length && 'IntersectionObserver' in window) {
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const card = e.target;
+          const stagger = parseInt(card.dataset.stagger || '0', 10);
+          card.style.transitionDelay = `${stagger * 80}ms`;
+          card.classList.add('ready');
+          io.unobserve(card);
+        }
+      });
+    }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+    cards.forEach(c => io.observe(c));
+  } else {
+    // No IO support → just mark them ready so they're not invisible
+    cards.forEach(c => c.classList.add('ready'));
+  }
 
   // Author-window slider: recompute in place, no full page re-render.
   const slider = $('#authors-window', root);
