@@ -509,30 +509,45 @@ function renderDetail(id) {
   });
 }
 
-// SVG donut chart. `slices` is [{ key, label, value, color }]. Segments
-// render statically — the earlier dasharray animation never reached the
-// inline final value because the @keyframes had no explicit 100% block,
-// leaving the dasharray stuck partway through the cubic-bezier curve.
+// SVG donut chart via explicit arc paths. Earlier stroke-dasharray
+// approach rendered segments at the wrong arc length under some browser
+// quirks (visible coverage didn't match the expected percentages).
+// Arc paths put exact start/end coordinates in the d attribute — what you
+// see is what's in the path.
 function buildDonut(slices, options = {}) {
   const total = slices.reduce((s, x) => s + x.value, 0);
   if (total === 0) return '<p style="color: var(--muted); font-size: 13px;">No data.</p>';
   const size = options.size || 220;
   const cx = size / 2, cy = size / 2;
-  const R = size * 0.36;             // ring radius
+  const R = size * 0.36;
   const STROKE = options.stroke || 36;
-  const C = 2 * Math.PI * R;
-  let offset = 0;
+  // Polar → cartesian. Angle 0° = 12 o'clock, then clockwise (screen y down).
+  const polar = (angle) => {
+    const rad = (angle - 90) * Math.PI / 180;
+    return { x: cx + R * Math.cos(rad), y: cy + R * Math.sin(rad) };
+  };
+  let cursorAngle = 0;
   const segments = slices.map((s) => {
     const frac = s.value / total;
-    const dash = frac * C;
-    const gap = C - dash;
-    const seg = `<circle class="donut-seg" data-key="${escapeHtml(s.key)}" cx="${cx}" cy="${cy}" r="${R}"
-      fill="none" stroke="${s.color}" stroke-width="${STROKE}"
-      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
-      stroke-dashoffset="${(-offset).toFixed(2)}"
-      transform="rotate(-90 ${cx} ${cy})"></circle>`;
-    offset += dash;
-    return seg;
+    if (frac <= 0) return '';
+    const sweep = frac * 360;
+    const startA = cursorAngle;
+    const endA = cursorAngle + sweep;
+    cursorAngle = endA;
+    const p0 = polar(startA);
+    const p1 = polar(endA);
+    const largeArc = sweep > 180 ? 1 : 0;
+    // Edge case: a single slice covering 100% — SVG arc can't draw a full
+    // 360° arc in one command. Use two semicircles.
+    let d;
+    if (frac >= 1 - 1e-6) {
+      const pMid = polar(startA + 180);
+      d = `M ${p0.x},${p0.y} A ${R},${R} 0 1 1 ${pMid.x},${pMid.y} A ${R},${R} 0 1 1 ${p0.x},${p0.y}`;
+    } else {
+      d = `M ${p0.x},${p0.y} A ${R},${R} 0 ${largeArc} 1 ${p1.x},${p1.y}`;
+    }
+    return `<path class="donut-seg" data-key="${escapeHtml(s.key)}" d="${d}"
+      fill="none" stroke="${s.color}" stroke-width="${STROKE}"></path>`;
   }).join('');
   const centerLabel = options.centerLabel || `${total}`;
   const centerSub = options.centerSub || '';
