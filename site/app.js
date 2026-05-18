@@ -783,10 +783,20 @@ function renderStats() {
     .map(b => ({ ...b, _t: new Date(b.tom_date_read.replace(/-/g, '/')) }))
     .sort((a, b) => b._t - a._t);
 
-  // Combined recent reads — union across active readers, deduped, sorted
+  // Combined recent reads — union across active readers, deduped, sorted.
+  // Includes the signed-in 'me' user via MR_AUTH.userBooks, plus any legacy
+  // CSV reader that's been URL-activated for debug compare views.
   const recentEither = [];
   const seenRecent = new Set();
   const recentSources = [];
+  if (showReader('me')) {
+    const myBooks = window.MR_AUTH?.userBooks || {};
+    const myRead = DATA.books
+      .filter(b => myBooks[b.id]?.status === 'read')
+      .map(b => ({ ...b, _meDate: myBooks[b.id]?.date_read || '' }))
+      .sort((a, b) => (b._meDate || '').localeCompare(a._meDate || ''));
+    recentSources.push(...myRead);
+  }
   if (SHOW_TOM) recentSources.push(...dated, ...winnersTom);
   if (SHOW_NIKA) recentSources.push(...winnersNika);
   if (SHOW_WESTDAC) recentSources.push(...winnersWestdac);
@@ -798,22 +808,33 @@ function renderStats() {
     recentEither.push(b);
   }
   recentEither.sort((a, b) => {
-    // If both have Tom dates, sort by date desc; otherwise by year desc
-    if (a.tom_date_read && b.tom_date_read) return b.tom_date_read.localeCompare(a.tom_date_read);
-    if (a.tom_date_read && !b.tom_date_read) return -1;
-    if (!a.tom_date_read && b.tom_date_read) return 1;
+    // Prefer the signed-in user's date_read; fall back to tom CSV; then year.
+    const aDate = a._meDate || a.tom_date_read || '';
+    const bDate = b._meDate || b.tom_date_read || '';
+    if (aDate && bDate) return bDate.localeCompare(aDate);
+    if (aDate && !bDate) return -1;
+    if (!aDate && bDate) return 1;
     return (b.year || 0) - (a.year || 0);
   });
 
-  // Combined nightstand across active readers, deduped, sorted
+  // Combined nightstand across active readers, deduped, sorted.
+  // 'me' uses MR_AUTH.userBooks status='nightstand'; legacy readers use
+  // the CSV `<reader>_shelf === 'to-read'` columns.
   const nightstandBooks = [];
   const seenShelf = new Set();
+  const myBooksForShelf = window.MR_AUTH?.userBooks || {};
   for (const b of DATA.books) {
     if (seenShelf.has(b.id)) continue;
-    const anyOn = ACTIVE_READERS.some(r =>
-      b[`${r.id}_shelf`] === 'to-read' && readStatus(b, r.id) !== 'read'
-    );
-    if (anyOn) {
+    let on = false;
+    if (showReader('me') && myBooksForShelf[b.id]?.status === 'nightstand') on = true;
+    if (!on) {
+      on = ACTIVE_READERS.some(r =>
+        r.id !== 'me'
+          && b[`${r.id}_shelf`] === 'to-read'
+          && readStatus(b, r.id) !== 'read'
+      );
+    }
+    if (on) {
       seenShelf.add(b.id);
       nightstandBooks.push(b);
     }
@@ -1081,9 +1102,20 @@ function renderStats() {
     </div>`;
   }).join('');
 
-  // Up Next: winners not read by Tom AND not on Tom's shelf, sorted by year desc
+  // Up Next: winners the active reader hasn't read AND isn't on their
+  // nightstand. When signed in, use MR_AUTH.userBooks; otherwise fall back
+  // to the legacy CSV 'tom' columns.
+  const upNextReaderId = showReader('me') ? 'me' : (SOLO || 'tom');
+  const meBooksUpNext = window.MR_AUTH?.userBooks || {};
   const upNext = winners
-    .filter(b => readStatus(b, 'tom') !== 'read' && !b.tom_shelf)
+    .filter(b => {
+      const r = upNextReaderId;
+      if (r === 'me') {
+        const status = meBooksUpNext[b.id]?.status;
+        return status !== 'read' && status !== 'nightstand';
+      }
+      return readStatus(b, r) !== 'read' && !b[`${r}_shelf`];
+    })
     .sort((a, b) => (b.year || 0) - (a.year || 0))
     .slice(0, 12);
 
