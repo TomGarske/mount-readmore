@@ -2374,8 +2374,8 @@ fieldset label input { margin-right: 8px; }
 }
 .hugo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  gap: 10px;
 }
 .hugo-card {
   display: flex;
@@ -2408,7 +2408,7 @@ fieldset label input { margin-right: 8px; }
 .hugo-card-cover img { width: 100%; height: 100%; object-fit: contain; }
 .hugo-card-stub { cursor: default; }
 .hugo-card-stub:hover { transform: none; box-shadow: none; }
-.hugo-card-placeholder { font-size: 40px; opacity: 0.4; }
+.hugo-card-placeholder { font-size: 30px; opacity: 0.4; }
 .hugo-card-fallback {
   width: 100%;
   height: 100%;
@@ -2417,29 +2417,29 @@ fieldset label input { margin-right: 8px; }
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 16px 12px;
+  padding: 10px 8px;
   box-sizing: border-box;
   background: linear-gradient(135deg, var(--bg-2) 0%, var(--bg) 100%);
-  border-bottom: 3px solid var(--border);
+  border-bottom: 2px solid var(--border);
 }
 .hugo-card-fallback-title {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: 14px;
+  font-size: 11.5px;
   font-weight: 600;
   line-height: 1.2;
   color: var(--text);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 .hugo-card-fallback-meta {
-  font-size: 11px;
+  font-size: 9.5px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
-.hugo-card-body { padding: 9px 11px 11px; }
-.hugo-card-title { font-weight: 700; font-size: 13.5px; line-height: 1.25; margin-bottom: 3px; }
-.hugo-card-author { font-size: 12px; color: var(--text); margin-bottom: 4px; }
-.hugo-card-pub { font-size: 10.5px; color: var(--muted); line-height: 1.3; }
+.hugo-card-body { padding: 7px 9px 9px; }
+.hugo-card-title { font-weight: 700; font-size: 12px; line-height: 1.22; margin-bottom: 2px; }
+.hugo-card-author { font-size: 11px; color: var(--text); margin-bottom: 3px; }
+.hugo-card-pub { font-size: 10px; color: var(--muted); line-height: 1.25; }
 
 .hugo-source {
   margin: 40px 0 0;
