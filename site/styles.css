@@ -386,6 +386,24 @@ a:hover { text-decoration: underline; }
   .radar-hero { max-width: 100%; }
 }
 
+/* Genre tab two-up: spider chart on the left, bar list on the right. */
+.genre-twoup {
+  display: grid;
+  grid-template-columns: minmax(340px, 1fr) minmax(0, 1fr);
+  gap: 22px;
+  align-items: start;
+  margin-top: 28px;
+}
+.genre-twoup .genre-twoup-chart.radar-hero {
+  max-width: 100%;
+  margin: 0;
+}
+.genre-twoup-bars { min-width: 0; }
+.genre-twoup-bars .genre-bars { margin-top: 0; }
+@media (max-width: 880px) {
+  .genre-twoup { grid-template-columns: 1fr; gap: 14px; }
+}
+
 /* Audience pill (Fans / Writers) — used inside featured banners */
 .awards-tag {
   display: inline-block;
@@ -923,7 +941,50 @@ a:hover { text-decoration: underline; }
   color: var(--text);
 }
 
-/* Era bars (was year bars) */
+/* Era coverage — vertical list of horizontal bars (one row per decade).
+   Half-width on desktop; full-width below 720px. */
+.era-coverage-section { max-width: 540px; }
+.era-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 14px;
+}
+.era-row {
+  display: grid;
+  grid-template-columns: 38px 1fr 64px;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.era-row-label { color: var(--muted); font-weight: 600; }
+.era-row-track-wrap {
+  height: 14px;
+  background: var(--bg-3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.era-row-track {
+  height: 100%;
+  background: var(--border);
+  border-radius: 4px;
+  position: relative;
+  min-width: 4px;
+}
+.era-row-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+.era-row-count {
+  text-align: right;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 720px) {
+  .era-coverage-section { max-width: 100%; }
+}
+
+/* Era bars (legacy vertical chart — left for any other caller) */
 .era-bars {
   display: grid;
   grid-auto-flow: column;
@@ -2537,9 +2598,15 @@ fieldset label input { margin-right: 8px; }
 }
 .discover-stage {
   display: grid;
-  grid-template-columns: 80px 1fr 80px;
+  grid-template-columns: 96px 1fr;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+}
+.discover-side-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-self: center;
 }
 .discover-side-btn {
   background: var(--bg-2);
@@ -2550,7 +2617,7 @@ fieldset label input { margin-right: 8px; }
   font-weight: 600;
   padding: 14px 8px;
   cursor: pointer;
-  height: 100px;
+  width: 100%;
   transition: background 0.15s, border-color 0.15s;
 }
 .discover-side-btn:hover:not(:disabled) {
@@ -2757,7 +2824,11 @@ fieldset label input { margin-right: 8px; }
 @media (max-width: 600px) {
   .discover-stage {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: auto 1fr;
+  }
+  .discover-side-controls {
+    flex-direction: row;
+    justify-content: center;
   }
   .discover-side-btn {
     height: auto;

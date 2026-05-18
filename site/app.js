@@ -1125,32 +1125,25 @@ function renderStats() {
   const eras = Object.entries(eraBuckets).map(([d, v]) => [parseInt(d, 10), v]).sort((a, b) => a[0] - b[0]);
   const maxEra = Math.max(1, ...eras.map(([, v]) => v.total));
   const eraReader = PRIMARY_READER;
-  const eraFillColor = eraReader ? READER_CONFIG[eraReader].colorVar : 'transparent';
+  const eraFillColor = eraReader ? READER_CONFIG[eraReader].colorVar : 'var(--accent)';
+  // Vertical list of horizontal bars. Width = decade total ÷ busiest decade.
+  // Filled inner bar = reader's reads in that decade.
   const eraBarsHtml = eras.map(([d, v]) => {
-    const totalH = (v.total / maxEra) * 100;
+    const totalPct = (v.total / maxEra) * 100;
     const readCount = eraReader ? v[eraReader] : 0;
-    const readH = (HAS_READER && v.total > 0) ? (readCount / v.total) * 100 : 0;
-    let tooltip;
-    if (!HAS_READER) {
-      tooltip = `${d}s: ${v.total} ${SUBSET}`;
-    } else if (SOLO) {
-      tooltip = `${d}s: ${readCount} / ${v.total} ${SUBSET} read`;
-    } else {
-      tooltip = `${d}s: ` + ACTIVE_READERS.map(r => `${r.label} ${v[r.id]}/${v.total}`).join(' · ');
-    }
-    const fillDiv = HAS_READER
-      ? `<div style="position:absolute;bottom:0;left:0;right:0;height:${readH}%;background:${eraFillColor};border-radius:3px 3px 0 0;"></div>`
-      : '';
+    const readWithinTotal = v.total > 0 ? (readCount / v.total) * 100 : 0;
     const countLine = HAS_READER ? `${readCount}/${v.total}` : `${v.total}`;
-    return `<div class="era-bar-col">
-      <div class="era-bar-track">
-        <div class="era-bar empty" style="--bar-h: ${Math.max(2, totalH)}%;">
-          <div class="era-bar-tooltip">${tooltip}</div>
+    const fillDiv = HAS_READER
+      ? `<div class="era-row-fill" style="width:${readWithinTotal}%;background:${eraFillColor};"></div>`
+      : '';
+    return `<div class="era-row">
+      <div class="era-row-label">${d % 100}s</div>
+      <div class="era-row-track-wrap">
+        <div class="era-row-track" style="width:${Math.max(3, totalPct)}%;">
           ${fillDiv}
         </div>
       </div>
-      <div class="era-bar-label">${d % 100}s</div>
-      <div class="era-bar-count">${countLine}</div>
+      <div class="era-row-count">${countLine}</div>
     </div>`;
   }).join('');
 
@@ -1274,6 +1267,7 @@ function renderStats() {
   const authorRows = renderAuthorRows(topAuthors, maxAppearances);
 
   root.innerHTML = `<div class="detail">
+    ${awardFeaturedBannersHtml()}
     <h1>Home</h1>
     <div class="toggle-row">
       <div class="status-toggle" data-status="${STATUS}">
@@ -1365,10 +1359,10 @@ function renderStats() {
       <div class="authors-list" id="authors-list">${authorRows}</div>
     </div>
 
-    <div class="progress-section">
-      <h2>Coverage by era (${SUBSET})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Bar height = ${SUBSET} that decade${HAS_READER ? ' · filled portion = books ' + escapeHtml(READER_CONFIG[PRIMARY_READER].label) + ' read' : ''}. Hover for details.</p>
-      <div class="era-bars">${eraBarsHtml}</div>
+    <div class="progress-section era-coverage-section">
+      <h2>Coverage by era</h2>
+      <p style="color: var(--muted); font-size: 13px;">Bar width = ${SUBSET} that decade${HAS_READER ? ' · filled portion = ' + escapeHtml(READER_CONFIG[PRIMARY_READER].label) + ' read' : ''}.</p>
+      <div class="era-rows">${eraBarsHtml}</div>
     </div>
 
     ${HAS_READER ? (() => {
@@ -1624,6 +1618,24 @@ function renderGenre() {
   const HAS_READER = ACTIVE_READERS.length > 0;
   const PRIMARY_READER = HAS_READER ? (SOLO || ACTIVE_READERS[0].id) : null;
 
+  // Same Status + Award toggles as the Home page — bucket buttons drive the
+  // whole Genre tab, so swapping winners/nominees or hugo/nebula re-counts
+  // every chart and bar list below.
+  const STATUS = state.progressStatus;  // 'winner' | 'nominee' | 'both'
+  const AWARD = state.progressAward;    // 'both' | 'hugo' | 'nebula'
+  const inAwardScope = (b) => AWARD === 'both' || !!(b.awards || {})[AWARD];
+  const matchesStatusAward = (b) => {
+    if (!inAwardScope(b)) return false;
+    const entries = Object.entries(b.awards || {}).filter(([a]) => AWARD === 'both' || a === AWARD);
+    if (STATUS === 'both') return entries.length > 0;
+    return entries.some(([, s]) => s === STATUS);
+  };
+  const scopedBooks = DATA.books.filter(matchesStatusAward);
+  const allHugoCount = DATA.books.filter(b => (b.awards || {}).hugo).length;
+  const allNebulaCount = DATA.books.filter(b => (b.awards || {}).nebula).length;
+  const allWinnersCount = DATA.books.filter(b => Object.values(b.awards || {}).includes('winner')).length;
+  const allNomineesCount = DATA.books.filter(b => Object.values(b.awards || {}).includes('nominee')).length;
+
   const emptyBucket = () => {
     const b = { total: 0 };
     for (const id of READER_KEYS) b[id] = 0;
@@ -1632,7 +1644,7 @@ function renderGenre() {
 
   // Subgenre buckets (a book can be tagged with multiple subgenres)
   const subBuckets = {};
-  for (const b of DATA.books) {
+  for (const b of scopedBooks) {
     for (const g of (b.subgenres || [])) {
       if (!subBuckets[g]) subBuckets[g] = emptyBucket();
       subBuckets[g].total++;
@@ -1644,7 +1656,7 @@ function renderGenre() {
 
   // Primary genre buckets (single top-level label per book)
   const primaryBuckets = {};
-  for (const b of DATA.books) {
+  for (const b of scopedBooks) {
     const p = b.primary_genre || 'Unclassified';
     if (!primaryBuckets[p]) primaryBuckets[p] = emptyBucket();
     primaryBuckets[p].total++;
@@ -1655,6 +1667,21 @@ function renderGenre() {
   const primaryList = ['Science Fiction', 'Fantasy', 'Blend', 'Horror', 'Unclassified']
     .filter(p => primaryBuckets[p] && primaryBuckets[p].total > 0)
     .map(p => ({ name: p, ...primaryBuckets[p] }));
+
+  // Primary-genre radar — axes are the primary genres themselves so the
+  // shape shows where each reader has put their time. Values = % of that
+  // genre's scoped books they've read.
+  const PRIMARY_RADAR_AXES = primaryList.map(g => g.name);
+  const primaryRadarValues = {};
+  for (const r of ACTIVE_READERS) {
+    primaryRadarValues[r.id] = PRIMARY_RADAR_AXES.map(g => {
+      const bucket = primaryBuckets[g] || { total: 0 };
+      return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
+    });
+  }
+  const primaryRadarHtml = (HAS_READER && PRIMARY_RADAR_AXES.length >= 3)
+    ? buildRadar(PRIMARY_RADAR_AXES, primaryRadarValues)
+    : '';
 
   // Radar (subgenre fingerprint) — top 8 most-populated subgenres, dropping
   // axes where every active reader is at zero so the chart isn't sparse.
@@ -1726,24 +1753,42 @@ function renderGenre() {
 
   root.innerHTML = `<div class="detail">
     <h1>Genre</h1>
-    <p style="color: var(--muted); max-width: 720px;">Every book on the canonical Hugo + Nebula list, grouped by genre. Numbers show <strong>read / total</strong> for the active reader (if any). All time — no winner / nominee / year filtering.</p>
+    <p style="color: var(--muted); max-width: 720px;">Every book on the canonical Hugo + Nebula list, grouped by genre. Numbers show <strong>read / total</strong> for the active reader (if any). Toggle below to flip between winners, nominees, both — and across awards.</p>
 
-    ${HAS_READER ? `<div class="progress-section radar-hero">
-      <h2>Subgenre fingerprint</h2>
-      <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre this reader has finished. Bigger / more even shape = broader coverage.</p>
-      ${radarHtml}
-    </div>` : ''}
-
-    <div class="progress-section">
-      <h2>By primary genre</h2>
-      <p style="color: var(--muted); font-size: 13px;">Top-level genre derived from Open Library subjects. "Blend" means the tags clearly point at both SF and Fantasy.</p>
-      <div class="genre-bars">${renderBars(primaryList)}</div>
+    <div class="toggle-row">
+      <div class="status-toggle" data-status="${STATUS}">
+        <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
+        <button class="status-tab${STATUS === 'nominee' ? ' active' : ''}" data-status="nominee">Nominees <span class="status-count">${allNomineesCount}</span></button>
+        <button class="status-tab${STATUS === 'both' ? ' active' : ''}" data-status="both">Both <span class="status-count">${DATA.books.length}</span></button>
+      </div>
+      <div class="status-toggle award-toggle" data-award="${AWARD}">
+        <button class="status-tab${AWARD === 'both' ? ' active' : ''}" data-award="both">Both <span class="status-count">${DATA.books.length}</span></button>
+        <button class="status-tab status-tab-hugo${AWARD === 'hugo' ? ' active' : ''}" data-award="hugo">Hugo <span class="status-count">${allHugoCount}</span></button>
+        <button class="status-tab status-tab-nebula${AWARD === 'nebula' ? ' active' : ''}" data-award="nebula">Nebula <span class="status-count">${allNebulaCount}</span></button>
+      </div>
     </div>
 
-    <div class="progress-section">
-      <h2>By subgenre</h2>
-      <p style="color: var(--muted); font-size: 13px;">Specific subgenre tags. A book can carry multiple (e.g. Space Opera + Hard SF + Military SF).</p>
-      <div class="genre-bars">${renderBars(subList)}</div>
+    <div class="genre-twoup">
+      <div class="genre-twoup-chart radar-hero">
+        <h2>By primary genre</h2>
+        <p style="color: var(--muted); font-size: 13px;">Top-level genre derived from Open Library subjects. "Blend" means the tags clearly point at both SF and Fantasy.</p>
+        ${primaryRadarHtml || '<p style="color:var(--muted); font-size:13px;">Sign in to see the per-reader fingerprint.</p>'}
+      </div>
+      <div class="genre-twoup-bars">
+        <div class="genre-bars">${renderBars(primaryList)}</div>
+      </div>
+    </div>
+
+    <div class="genre-twoup">
+      <div class="genre-twoup-chart radar-hero">
+        <h2>Subgenre fingerprint</h2>
+        <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre this reader has finished. Bigger / more even shape = broader coverage.</p>
+        ${HAS_READER ? radarHtml : '<p style="color:var(--muted); font-size:13px;">Sign in to see the per-reader fingerprint.</p>'}
+      </div>
+      <div class="genre-twoup-bars">
+        <p style="color: var(--muted); font-size: 13px; margin: 0 0 10px;">Specific subgenre tags. A book can carry multiple.</p>
+        <div class="genre-bars">${renderBars(subList)}</div>
+      </div>
     </div>
 
     <div class="progress-section">
@@ -1805,6 +1850,21 @@ function renderGenre() {
 
   $$('.swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/book/${el.dataset.id}`; });
+  });
+  $$('.status-tab', root).forEach(btn => {
+    btn.addEventListener('click', () => {
+      const newStatus = btn.dataset.status;
+      const newAward = btn.dataset.award;
+      if (newStatus && state.progressStatus !== newStatus) {
+        state.progressStatus = newStatus;
+        renderGenre();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (newAward && state.progressAward !== newAward) {
+        state.progressAward = newAward;
+        renderGenre();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    });
   });
 }
 
@@ -2619,15 +2679,18 @@ function discoverPeekBook(offset) {
   return null;
 }
 
-// Marketing intro for the Discover tab: the SFF Readmore mission statement plus
-// the two award featured-banners. Lives here (not on Home) because Home is now
-// the personal progress dashboard. Anon visitors see this on Discover before
-// the sign-in CTA.
+// SFF Readmore mission statement — sits at the top of the Discover tab.
+// The two award featured banners live on the Home page now (kept separate
+// from this CTA so anon visitors on Discover see the elevator pitch).
 function discoverIntroHtml() {
   return `<section class="home-cta">
       <p><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
-    </section>
-    <div class="featured-banners featured-banners-full">
+    </section>`;
+}
+
+// Hugo + Nebula featured banners — used on Home above the toggle row.
+function awardFeaturedBannersHtml() {
+  return `<div class="featured-banners featured-banners-full">
       ${featuredBanner({
         theme: 'hugo',
         name: 'Hugo Awards',
@@ -2807,7 +2870,10 @@ function drawDiscover() {
     ${discoverIntroHtml()}
     ${statsRow}
     <div class="discover-stage">
-      <button type="button" class="discover-side-btn discover-skip" title="Skip — show again later" aria-label="Skip">⤼ Skip</button>
+      <div class="discover-side-controls">
+        <button type="button" class="discover-side-btn discover-skip" title="Skip — show again later" aria-label="Skip">⤼ Skip</button>
+        <button type="button" class="discover-side-btn discover-undo" title="Undo last decision" aria-label="Undo" ${__discoverState.history.length === 0 ? 'disabled' : ''}>↶ Undo</button>
+      </div>
       <div class="discover-cardstack">
         ${peekCard(peek2, 2)}
         ${peekCard(peek1, 1)}
@@ -2827,7 +2893,6 @@ function drawDiscover() {
           </div>
         </div>
       </div>
-      <button type="button" class="discover-side-btn discover-undo" title="Undo last decision" aria-label="Undo" ${__discoverState.history.length === 0 ? 'disabled' : ''}>↶ Undo</button>
     </div>
     <div class="discover-actions">
       <button type="button" class="discover-action discover-action-read" data-action="read">✓ Read</button>
@@ -3959,6 +4024,19 @@ async function init() {
   try {
     const res = await fetch('data.json');
     DATA = await res.json();
+    // Normalize award statuses — the source CSV occasionally annotates a
+    // winner row with a pseudonym ("winner (as lewis padgett)"), which
+    // breaks every strict `s === 'winner'` check downstream. Clamp the
+    // value to 'winner' / 'nominee' based on prefix, drop anything else.
+    for (const b of DATA.books) {
+      if (!b.awards) continue;
+      for (const k of Object.keys(b.awards)) {
+        const v = String(b.awards[k] || '').toLowerCase().trim();
+        if (v.startsWith('winner')) b.awards[k] = 'winner';
+        else if (v.startsWith('nominee')) b.awards[k] = 'nominee';
+        else delete b.awards[k];
+      }
+    }
   } catch (e) {
     $('#grid').innerHTML = '<p>Failed to load data.</p>';
     return;
