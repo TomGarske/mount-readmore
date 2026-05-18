@@ -487,12 +487,12 @@ function renderDetail(id) {
     ? `<a class="btn-primary" href="https://www.goodreads.com/search?q=${searchQ}" target="_blank" rel="noopener" title="Opens Goodreads search — click 'Want to Read' on the result">+ Add to Goodreads shelf</a>`
     : '';
 
-  // Goodreads link: use book id if we have one (from Goodreads shelf data we don't capture id directly — use search)
-  // Amazon link: ISBN-based if available
-  const amazonUrl = book.isbn
-    ? `https://www.amazon.com/dp/${encodeURIComponent(book.isbn)}`
-    : `https://www.amazon.com/s?k=${searchQ}&i=stripbooks`;
-  const goodreadsUrl = `https://www.goodreads.com/search?q=${searchQ}`;
+  // Goodreads link: deep-link to /book/show/<id> when we have a harvested
+  // Book Id (from the Goodreads CSV export → data/goodreads_ids.json),
+  // otherwise fall back to a search URL.
+  const goodreadsUrl = book.goodreads_id
+    ? `https://www.goodreads.com/book/show/${encodeURIComponent(book.goodreads_id)}`
+    : `https://www.goodreads.com/search?q=${searchQ}`;
 
   // Truncate long descriptions and clean up Open Library markup ([source][1] etc)
   let description = book.description || '';
@@ -561,7 +561,6 @@ function renderDetail(id) {
         ${addToShelfBtn ? `<div style="margin-top: 16px;">${addToShelfBtn}</div>` : ''}
         <div class="detail-links">
           <a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a>
-          <a href="${escapeHtml(amazonUrl)}" target="_blank" rel="noopener">Amazon</a>
           <a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a>
         </div>
       </div>

@@ -55,7 +55,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "213618143"
     },
     {
       "id": "death-of-the-author-okorafor-2026-novel",
@@ -600,7 +601,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "150247395"
     },
     {
       "id": "alien-clay-tchaikovsky-2025-novel",
@@ -1373,7 +1375,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "61885029"
     },
     {
       "id": "shigidi-and-the-brass-head-of-obalufon-talabi-2024-novel",
@@ -2317,7 +2320,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "54906250"
     },
     {
       "id": "she-who-became-the-sun-parker-chan-2022-novel",
@@ -2599,7 +2603,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "52680842"
     },
     {
       "id": "piranesi-clarke-2021-novel",
@@ -3258,7 +3263,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "42288661"
     },
     {
       "id": "the-city-in-the-middle-of-the-night-anders-2020-novel",
@@ -4964,7 +4970,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "28147302"
     },
     {
       "id": "all-the-birds-in-the-sky-anders-2017-novel",
@@ -5448,7 +5455,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "38213103"
     },
     {
       "id": "uprooted-novik-2016-novel",
@@ -6089,7 +6097,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "20944489"
     },
     {
       "id": "the-dark-between-the-stars-anderson-2015-novel",
@@ -6224,7 +6233,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "20572455"
     },
     {
       "id": "annihilation-vandermeer-2015-novel",
@@ -6291,7 +6301,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "17934530"
     },
     {
       "id": "trial-by-fire-gannon-2015-novel",
@@ -6486,7 +6497,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "35696749"
     },
     {
       "id": "neptune-s-brood-stross-2014-novel",
@@ -7223,7 +7235,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "13055592"
     },
     {
       "id": "2312-robinson-2013-novel",
@@ -8087,7 +8100,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "38213061"
     },
     {
       "id": "god-s-war-hurley-2012-novel",
@@ -10533,8 +10547,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Ragamuffin is the second novel by Caribbean science fiction writer Tobias S. Buckell. It is the sequel to his first novel, Crystal Rain."
+      "primary_author_gender": "male"
     },
     {
       "id": "rainbows-end-vinge-2007-novel",
@@ -11024,14 +11037,14 @@
       "award_years": {
         "nebula": 2007
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/6875512-L.jpg",
       "ol_key": "/works/OL26778017W",
       "first_pub_year": 2009,
       "isbn": "9780061800832",
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/9780061800832-L.jpg"
+      "primary_author_gender": "male"
     },
     {
       "id": "farthing-walton-2007-novel",
@@ -11215,8 +11228,7 @@
       "author_genders": [
         "unknown"
       ],
-      "primary_author_gender": "unknown",
-      "description": "The Queendom of Sol is a science fiction book series by American author Wil McCarthy. It includes The Collapsium (2000), The Wellstone (2003), Lost in Transmission (2004), and To Crush the Moon (2005). The first two novels of the series were also printed together as The Monarchs of Sol by Science Fiction Book Club (ISBN 0739433881)."
+      "primary_author_gender": "unknown"
     },
     {
       "id": "spin-wilson-2006-novel",
@@ -11486,7 +11498,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "36510196"
     },
     {
       "id": "accelerando-stross-2006-novel",
@@ -11668,8 +11681,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Polaris is a science fiction mystery novel by American writer Jack McDevitt. It is the second book of his Alex Benedict series. Antiquities dealer Alex Benedict and his employee, Chase Kolpath, become involved in a mystery involving the disappearance of the passengers and crew of an interstellar yacht from 60 years earlier."
+      "primary_author_gender": "male"
     },
     {
       "id": "going-postal-pratchett-2006-novel",
@@ -12049,8 +12061,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "River of Gods is a 2004 science fiction novel by British writer Ian McDonald. It depicts a futuristic India in 2047, a century after its independence from Britain, characterized both by ancient traditions and advanced technologies such as artificial intelligences, robots and nanotechnology. The novel won the British Science Fiction Award in 2004 and was nominated for a Hugo. It was followed by a short story collection called Cyberabad Days in 2009."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-algebraist-banks-2005-novel",
@@ -12177,8 +12188,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Iron Sunrise is a 2004 hard science fiction novel by British writer Charles Stross, which follows the events in Singularity Sky. The book was nominated for both the Hugo and Locus Awards in 2005."
+      "primary_author_gender": "male"
     },
     {
       "id": "perfect-circle-stewart-2005-novel",
@@ -12237,8 +12247,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Perfect Circle is a 2004 novel by Sean Stewart. It was nominated for Nebula Award for Best Novel in 2004 and the World Fantasy Award for Best Novel in 2005. It is a contemporary realistic fantasy about an exorcist in Texas."
+      "primary_author_gender": "male"
     },
     {
       "id": "down-and-out-in-the-magic-kingdom-doctorow-2005-novel",
@@ -12347,8 +12356,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Omega is a book by Jack McDevitt that won the John W. Campbell Award, and was nominated for the Nebula Award in 2004."
+      "primary_author_gender": "male"
     },
     {
       "id": "cloud-atlas-mitchell-2005-novel",
@@ -12661,8 +12669,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Singularity Sky is a science fiction novel by British writer Charles Stross, published in 2003. It was nominated for the Hugo Award for Best Novel in 2004. A sequel, Iron Sunrise, was published that same year. Together the two are referred to as the Eschaton novels, after a near-godlike intelligence that exists in both."
+      "primary_author_gender": "male"
     },
     {
       "id": "blind-lake-wilson-2004-novel",
@@ -12715,8 +12722,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Blind Lake is a science fiction novel by Canadian writer Robert Charles Wilson. It was published in 2003, and won a Prix Aurora Award for Best Long Form and was nominated for the Hugo Award for Best Novel, both in 2004."
+      "primary_author_gender": "male"
     },
     {
       "id": "humans-sawyer-2004-novel",
@@ -12777,8 +12783,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Neanderthal Parallax is a trilogy of novels written by Robert J. Sawyer and published by Tor. It depicts the effects of the opening of a connection between two versions of Earth in different parallel universes: the world familiar to the reader, and another where Neanderthals became the dominant intelligent hominid. The societal, spiritual, and technological differences between the two worlds form the focus of the story."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-speed-of-dark-moon-2004-novel",
@@ -12897,8 +12902,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "Diplomatic Immunity is a 2002 science fiction novel by American writer Lois McMaster Bujold, part of the Vorkosigan Saga. It was nominated for the Nebula Award for Best Novel in 2003."
+      "primary_author_gender": "female"
     },
     {
       "id": "the-mount-emshwiller-2004-novel",
@@ -13371,6 +13375,23 @@
       "award_years": {
         "hugo": 2003
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/524001-L.jpg",
+      "ol_key": "/works/OL58707W",
+      "first_pub_year": 2002,
+      "description": "\"Thanks to the new technology of imprinting, people in a near-future America can copy their personalities into animated clay bodies (called \"dittos\" or \"golems\"), which last a single day. Albert Morris, private investigator, is his own sidekick as he attempts to uncover the murderer of a prominent imprinting research scientist.\"--Amazon.com.",
+      "subjects": [
+        "Science fiction",
+        "Fiction",
+        "Cloning",
+        "Long Now Manual for Civilization",
+        "American Science fiction",
+        "Fiction, science fiction, general",
+        "Private investigators"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -13942,8 +13963,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Chronoliths is a 2001 science fiction novel by American-Canadian writer Robert Charles Wilson. It was nominated for the 2002 Hugo Award for Best Novel and tied for the 2002 John W. Campbell Memorial Award for Best Science Fiction Novel."
+      "primary_author_gender": "male"
     },
     {
       "id": "cosmonaut-keep-macleod-2002-novel",
@@ -14010,8 +14030,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Cosmonaut Keep is a science fiction novel by Scottish writer Ken MacLeod, published in 2000. It is the first book in the Engines of Light Trilogy, a 2001 nominee for the Arthur C. Clarke Award, and a 2002 Hugo Award Nominee for best novel."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-quantum-rose-asaro-2002-novel",
@@ -14067,8 +14086,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "The Quantum Rose is a science fiction novel by Catherine Asaro which tells the story of Kamoj Argali and Skolian Prince Havyrl Valdoria. The book is situated within Asaro's Saga of the Skolian Empire series. The Quantum Rose won the 2001 Nebula Award for Best Novel and the 2001 Affaire de Coeur Award for Best Science Fiction. Additionally, it received the Romantic Times Reviewers choice award for best science fiction novel. The first third of the novel appeared as a three-part serialization in Analog magazine in the 1999 May, June, and July/August issues. In 2000, Tor Books published the novel in its entirety. In 2003, an excerpt from the novel appeared in Nebula Awards Showcase 2003 anthology."
+      "primary_author_gender": "female"
     },
     {
       "id": "declare-powers-2002-novel",
@@ -14240,8 +14258,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Mars Crossing is a science-fiction novel by Geoffrey A. Landis about an expedition to Mars, published by Tor Books in 2000. The novel was a nominee for the Nebula award, and won the Locus Award for best first novel in 2001."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-collapsium-mccarthy-2002-novel",
@@ -15900,8 +15917,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "The Last Hawk is a 1997 science fiction novel by Catherine Asaro. The novel is an installment in the Saga of the Skolian Empire series and details the life of Kelricson Garlin Valdoria Skolia during his eighteen years of imprisonment on the planet Coba"
+      "primary_author_gender": "female"
     },
     {
       "id": "moonfall-mcdevitt-1999-novel",
@@ -16194,8 +16210,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "City on Fire is a fantasy novel by American writer Walter Jon Williams, first published in 1997 and nominated for the Nebula Award in 1997 and the Hugo Award in 1998. It is the sequel to 1995's Metropolitan."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-rise-of-endymion-simmons-1998-novel",
@@ -16426,8 +16441,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "The Moon and the Sun is a novel by American writer Vonda N. McIntyre, published in 1997. The book combines two major genres: science fiction and historical romance. It won the Nebula Award for Best Novel in 1997, beating out A Game of Thrones by George R. R. Martin. The novel was inspired by the short story \"The Natural History and Extinction of the People of the Sea\", also by McIntyre, which was illustrated by fellow author Ursula K. Le Guin."
+      "primary_author_gender": "female"
     },
     {
       "id": "a-game-of-thrones-martin-1998-novel",
@@ -17307,8 +17321,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Time Ships is a 1995 hard science fiction novel by Stephen Baxter. A canonical sequel to the 1895 novella The Time Machine by H. G. Wells, it was officially authorized by the Wells estate to mark the centenary of the original's publication. The Time Ships won critical acclaim. It won the John W. Campbell Memorial Award and the Philip K. Dick Award in 1996, as well as the British Science Fiction Association Award in 1995. It was also nominated for the Hugo, Clarke and Locus Awards in 1996."
+      "primary_author_gender": "male"
     },
     {
       "id": "brightness-reef-brin-1996-novel",
@@ -17414,6 +17427,28 @@
       "award_years": {
         "hugo": 1996
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/44047-L.jpg",
+      "ol_key": "/works/OL17029W",
+      "first_pub_year": 1995,
+      "description": "Dr. Peter Hobson invents a machine that detects a brain pattern that leaves the body after death, a pattern many believe is a soul. In order to test their theories on immortality and life after death, Hobson and his friend Sarkar Muhammed create three electronic simulations of Hobson's own personality. When people Hobson had a grudge against begin to die, he and Sarkar must try to find out which is responsible. But all three simulations – two modified, one a \"control\" – escape Sarkar's computer, into the Internet and the World Wide Web.\r\n\r\nThe book won the 1995 Nebula Award for Best Novel, and was nominated for the Hugo Award for Best Novel in 1996. Sawyer received a writer's reserve grant from the Ontario Arts Council in 1993 in support of his writing the novel.\r\n\r\n<a href=\"https://en.wikipedia.org/wiki/The_Terminal_Experiment\">Wikipedia</a>",
+      "subjects": [
+        "Canadian Science fiction",
+        "Canadian Detective and mystery stories",
+        "Science fiction, Canadian",
+        "Detective and mystery stories, Canadian",
+        "award:nebula_award=novel",
+        "Fiction, science fiction, hard science fiction",
+        "Fiction, science fiction, general",
+        "Fiction, mystery & detective, general"
+      ],
+      "primary_genre": "Science Fiction",
+      "subgenres": [
+        "Hard SF"
+      ],
+      "genres": [
+        "Science Fiction",
+        "Hard SF"
+      ],
       "author_genders": [
         "male"
       ],
@@ -17633,6 +17668,7 @@
       "award_years": {
         "nebula": 1996
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9367245-L.jpg",
       "ol_key": "/works/OL20034143W",
       "first_pub_year": 1996,
       "isbn": "9780061054419",
@@ -17647,8 +17683,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/9780061054419-L.jpg"
+      "primary_author_gender": "male"
     },
     {
       "id": "calde-of-the-long-sun-wolfe-1996-novel",
@@ -17967,8 +18002,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Brittle Innings is a 1994 science fiction/fantasy novel by American author Michael Bishop."
+      "primary_author_gender": "male"
     },
     {
       "id": "parable-of-the-sower-butler-1995-novel",
@@ -18100,8 +18134,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Gun, with Occasional Music is a 1994 novel by American writer Jonathan Lethem that blends science fiction and hardboiled detective fiction. The novel won Lethem the Locus Award for Best First Novel in 1995. It was also nominated for the Nebula Award for Best Novel in 1994 and the cover art, illustrated by pulp artist Michael Koelsch, was nominated for the Hugo Award for Best Original Art Work in 1995."
+      "primary_author_gender": "male"
     },
     {
       "id": "temporary-agency-pollack-1995-novel",
@@ -19017,8 +19050,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Steel Beach is a 1992 science fiction novel by American writer John Varley."
+      "primary_author_gender": "male"
     },
     {
       "id": "briar-rose-yolen-1993-novel",
@@ -19392,8 +19424,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "Bone Dance is a 1991 novel by American writer Emma Bull, described variously as fantasy, hard science fiction and cyberpunk. It was nominated for the Hugo, Nebula and World Fantasy Awards in 1992."
+      "primary_author_gender": "female"
     },
     {
       "id": "all-the-weyrs-of-pern-mccaffrey-1992-novel",
@@ -19583,7 +19614,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "8648"
     },
     {
       "id": "orbital-resonance-barnes-1992-novel",
@@ -19645,8 +19677,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Orbital Resonance is a science fiction novel by John Barnes. It is the first of four books comprising the Century Next Door series, followed by Kaleidoscope Century, Candle, and The Sky So Big and Black."
+      "primary_author_gender": "male"
     },
     {
       "id": "synners-cadigan-1992-novel",
@@ -19838,8 +19869,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "The Vor Game is a science fiction novel by Lois McMaster Bujold, first published in September 1990. It won the 1991 Hugo Award for Best Novel. The Vor Game is a part of the Vorkosigan Saga, and is the sixth full-length novel in publication order, and is the sixth story, including novellas, in the internal chronology of the series. It was included in the 1997 omnibus Young Miles."
+      "primary_author_gender": "female"
     },
     {
       "id": "the-fall-of-hyperion-simmons-1991-novel",
@@ -19898,7 +19928,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "10429950"
     },
     {
       "id": "earth-brin-1991-novel",
@@ -20399,7 +20430,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "10240738"
     },
     {
       "id": "prentice-alvin-card-1990-novel",
@@ -20527,8 +20559,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Boat of a Million Years is a science fiction novel by American writer Poul Anderson, first published in 1989 and nominated for the Nebula Award for Best Novel that same year. It was also nominated for the Hugo Award for Best Novel and the Prometheus Award in 1990."
+      "primary_author_gender": "male"
     },
     {
       "id": "a-fire-in-the-sun-effinger-1990-novel",
@@ -20581,8 +20612,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "A Fire in the Sun is a cyberpunk science fiction novel by American writer George Alec Effinger, published in 1989. It is the second novel in the three-book Marîd Audran series, following the events of When Gravity Fails, and concentrating on Marîd's experience as he becomes the main lieutenant of Friedlander Bey's business empire while realizing that his new master has darker aspects than he suspected."
+      "primary_author_gender": "male"
     },
     {
       "id": "grass-tepper-1990-novel",
@@ -20696,8 +20726,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "The Healer's War is a 1988 science fiction novel by American writer Elizabeth Ann Scarborough. It won the Nebula Award for Best Novel in 1989. The story is about a military nurse during the Vietnam War."
+      "primary_author_gender": "female"
     },
     {
       "id": "good-news-from-outer-space-kessel-1990-novel",
@@ -21795,8 +21824,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Soldier of the Mist is a 1986 historical fantasy novel by American writer Gene Wolfe, published by Gollancz in the UK and then Tor Books in the US. It has two sequels: Soldier of Arete (1989) and Soldier of Sidon (2006). Soldier of the Mist and Soldier of Arete have been collected as Latro in the Mist."
+      "primary_author_gender": "male"
     },
     {
       "id": "vergil-in-averno-davidson-1988-novel",
@@ -21841,8 +21869,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Vergil in Averno is a fantasy novel by American writer Avram Davidson, the second volume in his Vergil Magus series. It was first published in hardcover by Doubleday in January 1987. The first ebook edition was issued by Prologue Books in August 2012. The first British edition was published as an ebook by Gollancz in September 2013. An audio edition was issued by Or All the Seas with Oysters Publishing in April 2022."
+      "primary_author_gender": "male"
     },
     {
       "id": "speaker-for-the-dead-card-1987-novel",
@@ -21915,7 +21942,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "7967"
     },
     {
       "id": "count-zero-gibson-1987-novel",
@@ -22030,8 +22058,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Ragged Astronauts is a novel by Bob Shaw published in 1986 by Gollancz. It is the first book in the series Land and Overland. It won the BSFA Award for Best Novel."
+      "primary_author_gender": "male"
     },
     {
       "id": "marooned-in-realtime-vinge-1987-novel",
@@ -22152,8 +22179,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Mission Earth is a ten-volume science fiction novel series by L. Ron Hubbard. Hubbard died three months after the publication of volume 1, and other volumes were published posthumously."
+      "primary_author_gender": "male"
     },
     {
       "id": "free-live-free-wolfe-1987-novel",
@@ -22449,7 +22475,8 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "male",
+      "goodreads_id": "375802"
     },
     {
       "id": "the-postman-brin-1986-novel",
@@ -22853,6 +22880,7 @@
       "award_years": {
         "nebula": 1986
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/12529944-L.jpg",
       "ol_key": "/works/OL11253383W",
       "first_pub_year": 1985,
       "isbn": "0345318617",
@@ -22860,8 +22888,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/0345318617-L.jpg"
+      "primary_author_gender": "male"
     },
     {
       "id": "schismatrix-sterling-1986-novel",
@@ -23106,8 +23133,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Integral Trees is a 1984 science fiction novel by American writer Larry Niven. Like much of Niven's work, the story is heavily influenced by the setting: a gas torus, a ring of air around a neutron star. A sequel, The Smoke Ring, was published in 1987."
+      "primary_author_gender": "male"
     },
     {
       "id": "emergence-palmer-1985-novel",
@@ -23598,8 +23624,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "Moreta: Dragonlady of Pern is a science fiction novel by the American-Irish author Anne McCaffrey. It is the seventh book in the Dragonriders of Pern series."
+      "primary_author_gender": "female"
     },
     {
       "id": "the-robots-of-dawn-asimov-1984-novel",
@@ -23830,8 +23855,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Citadel of the Autarch is a science fantasy novel by American writer Gene Wolfe, first released in 1983. It is the fourth and final volume in the four-volume series The Book of the New Sun."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-void-captain-s-tale-spinrad-1984-novel",
@@ -24133,8 +24157,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "The Chanur novels are a series of five science fiction novels, forming three separate stories, written by American author C. J. Cherryh and published by DAW Books between 1981 and 1992. The first novel in the series is The Pride of Chanur (1981), which was nominated for both the Hugo and Locus Awards in 1983. The Pride of Chanur, originally a stand-alone story, was followed by the Chanur's Venture trilogy, Chanur's Venture (1984), which was shortlisted for a Locus Award in 1985; The Kif Strike Back (1985) and Chanur's Homecoming (1986). These were followed by a later sequel, Chanur's Legacy (1992). The five novels were also published in two omnibus editions: the first three in The Chanur Saga in 2000 and the next two in Chanur's Endgame in 2007."
+      "primary_author_gender": "female"
     },
     {
       "id": "2010-odyssey-two-clarke-1983-novel",
@@ -24249,8 +24272,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Courtship Rite is a science fiction novel by Canadian writer Donald Kingsbury, originally serialized in Analog magazine in 1982. The book is set in the same universe as some of Kingsbury's other stories, such as \"Shipwright\" (1978) and the unpublished The Finger Pointing Solward."
+      "primary_author_gender": "male"
     },
     {
       "id": "no-enemy-but-time-bishop-1983-novel",
@@ -25284,8 +25306,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Timescape is a 1980 science fiction novel by American writer Gregory Benford. It won the 1981 Nebula and 1980 British Science Fiction Award, and the 1981 John W. Campbell Memorial Award for Best Science Fiction Novel. It won the 1981 Ditmar Award for Best International Fiction. The novel was widely hailed by both critics of science fiction and mainstream literature for its fusion of detailed character development and interpersonal drama with more standard science fiction fare such as time travel and ecological issues."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-shadow-of-the-torturer-wolfe-1981-novel",
@@ -25569,8 +25590,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Titan is a science fiction novel by American writer John Varley, the first book in his Gaea Trilogy, published in 1979. It won the 1980 Locus Award for Best Science Fiction Novel and was nominated for both the Nebula Award for Best Novel in 1979, and the Hugo Award for Best Novel in 1980. It imagines a visit to Saturn's satellites by a scientific team from Earth who are soon enwrapped in a mystery after they discover extraterrestrial life."
+      "primary_author_gender": "male"
     },
     {
       "id": "jem-pohl-1980-novel",
@@ -25693,8 +25713,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "On Wings of Song is a 1979 science fiction novel by American writer Thomas M. Disch (1940-2008). It was first published as a serial in The Magazine of Fantasy & Science Fiction in three installments in February to April 1979. Like Disch's previous novel 334, it is a bitter satire that depicts a near-future America falling into worsening economic and social crisis. It was critically well received and is often considered Disch's best work. It was, however, a commercial failure."
+      "primary_author_gender": "male"
     },
     {
       "id": "harpist-in-the-wind-mckillip-1980-novel",
@@ -27329,8 +27348,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Doorways in the Sand is a science fiction novel by American writer Roger Zelazny. Featuring both detective fiction and comic elements, it was originally published in serial form in the magazine Analog Science Fiction and Science Fact; the hardcover edition was first published in 1976 and the paperback in 1977. Zelazny wrote the whole story in one draft, with no rewrites, and it subsequently became one of his five favorites among his own work. Doorways in the Sand was nominated for the Nebula and Hugo awards."
+      "primary_author_gender": "male"
     },
     {
       "id": "inferno-niven-1976-novel",
@@ -27493,6 +27511,21 @@
       "award_years": {
         "hugo": 1976
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/404894-L.jpg",
+      "ol_key": "/works/OL1819365W",
+      "first_pub_year": 1975,
+      "description": "Alfred Bester's first science fiction novel since The Stars My Destination was a major event--a fast-moving adventure story set in Earth's future. A band of immortals--as charming a bunch of eccentrics as you'll ever come across--recruit a new member, the brilliant Cherokee physicist Sequoya Guess. Dr. Guess, with the group's help, gains control of Extro, the super-computer that controls all mechanical activity on Earth. The plan to rid Earth of political repression and to further Guess's researches--which may lead to a great leap in human evolution to produce a race of supermen. But Extro takes over Guess instead of turns malevolent. The task of the merry band suddenly becomes a fight in deadly earnest for the future of Earth.Sequoya Guess, whom they love, must be killed. And how do you kill an immortal?",
+      "subjects": [
+        "Fiction",
+        "Science Fiction",
+        "American Science fiction",
+        "Fiction, science fiction, general",
+        "Fiction, mystery & detective, general"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -28153,8 +28186,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Invisible Cities is a postmodern novel by the Italian writer Italo Calvino. It was published in Italy in 1972 by Einaudi."
+      "primary_author_gender": "male"
     },
     {
       "id": "missing-man-maclean-1976-novel",
@@ -28349,7 +28381,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "54297097"
     },
     {
       "id": "flow-my-tears-the-policeman-said-dick-1975-novel",
@@ -28836,8 +28869,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Time Enough for Love is a science fiction novel by American writer Robert A. Heinlein, first published in 1973. The book made the shortlist for the Nebula, Hugo and Locus awards for best science fiction novel of that year, although it did not win. It did win a retrospective Libertarian Futurist Society award: the Prometheus Hall of Fame award for 1988."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-people-of-the-wind-anderson-1974-novel",
@@ -28893,8 +28925,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The People of the Wind is a science fiction novel by American writer Poul Anderson, first published in 1973. It was a 1974 nominee of the Nebula Award for Science Fiction. The novel is the last book in Anderson’s Polesotechnic League series. However, since the setting of the book is many generations after the series' two main characters, Nicholas van Rijn and David Falkayn, and many generations before Anderson's follow-up series, the Terran Empire, it is more proper to consider this book a bridge between the two series."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-man-who-folded-himself-gerrold-1974-novel",
@@ -29494,8 +29525,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Iron Dream is a metafictional 1972 alternate history novel by American author Norman Spinrad. The book has a nested narrative that tells a story within a story. On the surface, the novel presents a post-apocalyptic adventure tale entitled Lord of the Swastika, written by an alternate-history Adolf Hitler shortly before his death in 1953. In this timeline, Hitler emigrated from Germany to the United States in 1919 after the Great War, and used his modest artistic skills to become first a pulp science fiction illustrator and later a successful writer, telling lurid, purple-prosed, pro-fascism stories under a thin science fiction veneer. The nested narrative is followed by a faux-scholarly analysis by a fictional literary critic, Homer Whipple, which is said to have been written in 1959."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-sheep-look-up-brunner-1973-novel",
@@ -30093,8 +30123,7 @@
       "author_genders": [
         "unknown"
       ],
-      "primary_author_gender": "unknown",
-      "description": "Half Past Human is a fixup science fiction novel by American author T. J. Bass, published in 1971. Two short stories were combined and fleshed out to form this novel: \"Half Past Human\", first published in Galaxy Science Fiction in December 1969, and \"G.I.T.A.R.\", first published in If in November and December 1970. The novel belongs to the Hive series, which also includes The Godwhale."
+      "primary_author_gender": "unknown"
     },
     {
       "id": "margaret-and-i-wilhelm-1972-novel",
@@ -30138,8 +30167,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/0671834304-L.jpg"
+      "primary_author_gender": "female"
     },
     {
       "id": "ringworld-niven-1971-novel",
@@ -30945,8 +30973,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Isle of the Dead is a science fiction novel by American writer Roger Zelazny, published in 1969 with cover art by Leo and Diane Dillon. It was nominated for the Nebula Award for Best Novel in 1969, and it won the French Prix Apollo in 1972. The title refers to the several paintings by Swiss-German painter Arnold Böcklin. In the novel, Francis Sandow refers to “that mad painting by Boecklin, The Isle of the Dead.” Böcklin created at least five paintings with that title, each depicting an oarsman and a standing figure in a small boat, crossing dark water toward a forbidding island. A later edition by Ace Books featured a cover painting by Dean Ellis that was intentionally reminiscent of Böcklin's work."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-jagged-orbit-brunner-1970-novel",
@@ -31184,8 +31211,7 @@
       "author_genders": [
         "unknown"
       ],
-      "primary_author_gender": "unknown",
-      "description": "Past Master is a science fiction novel by American writer R. A. Lafferty, first published in 1968. The novel follows the attempt of a future Utopian society in preventing its decline, by bringing Sir Thomas More to the year 2535."
+      "primary_author_gender": "unknown"
     },
     {
       "id": "nova-delany-1969-novel",
@@ -31550,8 +31576,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "The Adventures of Alyx is a 1976 collection of feminist science fiction stories by American writer Joanna Russ, initially titled Alyx by Gregg Press in hardback without a dustjacket. It was published in 1983 with the title The Adventures of Alyx by Timescape Books."
+      "primary_author_gender": "female"
     },
     {
       "id": "lord-of-light-zelazny-1968-novel",
@@ -32356,6 +32381,30 @@
       "award_years": {
         "hugo": 1966
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8775174-L.jpg",
+      "ol_key": "/works/OL13994W",
+      "first_pub_year": 1966,
+      "description": "Après une explosion atomique, la plupart des terriens survivants sont partis s'installer sur les planètes de la Confédération de Véga. L'espérance de vie de certains hommes a augmenté. Ainsi, personne ne connaît l'âge de Conrad Nomikos, le conservateur de la Terre, qui vit sur une île grecque miraculeusement préservée. Il a pour mission de guider Cort Myshtigo, un végan venu explorer la planète.",
+      "subjects": [
+        "American Science fiction",
+        "Fiction, science fiction, general",
+        "Hugo Award Winner",
+        "award:hugo_award=1966",
+        "award:hugo_award=novel",
+        "Human-alien encounters",
+        "Fiction",
+        "Rencontres avec les extraterrestres",
+        "Romans, nouvelles",
+        "Science Fiction"
+      ],
+      "primary_genre": "Science Fiction",
+      "subgenres": [
+        "First Contact"
+      ],
+      "genres": [
+        "Science Fiction",
+        "First Contact"
+      ],
       "author_genders": [
         "male"
       ],
@@ -32416,8 +32465,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Squares of the City is a science fiction novel by British writer John Brunner, first published in 1965 (ISBN 0-345-27739-2). It was nominated for the Hugo Award for Best Novel in 1966."
+      "primary_author_gender": "male"
     },
     {
       "id": "skylark-duquesne-smith-1966-novel",
@@ -32575,9 +32623,7 @@
         "male",
         "female"
       ],
-      "primary_author_gender": "male",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/9780709103219-L.jpg",
-      "description": "The Clone is a science fiction novel written by Theodore L. Thomas and Kate Wilhelm, first published by Berkley in 1965. It is based on a short story of the same name written solely by Thomas that appeared in the December 1959 edition of Fantastic Science Fiction Stories."
+      "primary_author_gender": "male"
     },
     {
       "id": "dr-bloodmoney-or-how-we-got-along-after-the-bomb-dick-1966-novel",
@@ -32617,8 +32663,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Dr. Bloodmoney, or How We Got Along After the Bomb is a 1965 science fiction novel by American writer Philip K. Dick. It was nominated for the Nebula Award for Best Novel in 1965."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-escape-orbit-white-1966-novel",
@@ -32876,6 +32921,7 @@
       "award_years": {
         "nebula": 1966
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/854280-L.jpg",
       "ol_key": "/works/OL33057686W",
       "first_pub_year": 1965,
       "pages": 142,
@@ -32988,8 +33034,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "The Star Fox is a science fiction novel by Poul Anderson, first published in 1965. It was nominated for the Nebula Award for Best Novel in 1965."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-three-stigmata-of-palmer-eldritch-dick-1966-novel",
@@ -33277,6 +33322,13 @@
       "award_years": {
         "hugo": 1965
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/14377390-L.jpg",
+      "ol_key": "/works/OL10571542W",
+      "first_pub_year": 1964,
+      "subjects": [
+        "Fiction in English"
+      ],
+      "genres": [],
       "author_genders": [
         "unknown"
       ],
@@ -33317,6 +33369,24 @@
       "award_years": {
         "hugo": 1964
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/14169-L.jpg",
+      "ol_key": "/works/OL4088396W",
+      "first_pub_year": 1963,
+      "subjects": [
+        "Fiction in English",
+        "Hugo Award Winner",
+        "award:hugo_award=1964",
+        "award:hugo_award=novel",
+        "Immortalism",
+        "Fiction",
+        "American Science fiction",
+        "Fiction, science fiction, general",
+        "Translations into Russian"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -33846,6 +33916,9 @@
       "award_years": {
         "hugo": 1963
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9803612-L.jpg",
+      "ol_key": "/works/OL1198312W",
+      "first_pub_year": 1961,
       "author_genders": [
         "male"
       ],
@@ -34006,6 +34079,29 @@
       "award_years": {
         "hugo": 1962
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/5542306-L.jpg",
+      "ol_key": "/works/OL467291W",
+      "first_pub_year": 1900,
+      "description": "Man always expands his horizons, when Earth is full, man will venture out to space and colonize other worlds.  Governments fail and contact with colonies is lost - leaving them to fend for themselves.  When government is stabilized after many centuries and exploration along with searches for the old colonies is made.  Mutations are likely in such circumstances and this is one of the themes of this story - with unexpected twists, turns and the likely destruction of a planet ruled by madmen because they are not only a threat to themselves, but to others as they have cobalt bombs and every intention of using them on a neighboring world.  Fast paced and full of action makes this a very good read.",
+      "subjects": [
+        "Fiction in English",
+        "Fiction",
+        "Science Fiction",
+        "American Science fiction",
+        "Human-alien encounters",
+        "Life on other planets",
+        "Fiction, science fiction, general",
+        "Extraterrestrial beings",
+        "Fiction, fantasy, general"
+      ],
+      "primary_genre": "Blend",
+      "subgenres": [
+        "First Contact"
+      ],
+      "genres": [
+        "Blend",
+        "First Contact"
+      ],
       "author_genders": [
         "male"
       ],
@@ -34046,6 +34142,27 @@
       "award_years": {
         "hugo": 1962
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/7398927-L.jpg",
+      "ol_key": "/works/OL4088386W",
+      "first_pub_year": 1961,
+      "description": "Space travel has been abandoned in the twenty-second century. It is deemed too dangerous, expensive, and inconvenient—and now the all-powerful Fishhook company holds the monopoly on interstellar exploration for commercial gain. Their secret is the use of \"parries,\" human beings with the remarkable telepathic ability to expand their minds throughout the universe.\r\n\r\nOn what should have been a routine assignment, however, loyal Fishhook employee Shepherd Blaine is accidentally implanted with a copy of an alien consciousness, becoming something more than human. Now he's a company pariah, forced to flee the safe confines of the Fishhook complex. But the world he escapes into is not a sanctuary. Its people have been taught to hate and fear his parapsychological gift—and there is nowhere on Earth, or elsewhere, for Blaine to hide.",
+      "subjects": [
+        "Fiction",
+        "Life on other planets",
+        "Telepathy",
+        "American Science fiction",
+        "Fiction, science fiction, general",
+        "Vie extraterrestre",
+        "Romans, nouvelles",
+        "Télépathie",
+        "LITERARY CRITICISM",
+        "European",
+        "English, Irish, Scottish, Welsh"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -34505,6 +34622,19 @@
       "award_years": {
         "hugo": 1960
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/4629374-L.jpg",
+      "ol_key": "/works/OL155455W",
+      "first_pub_year": 1970,
+      "subjects": [
+        "American Science Fiction",
+        "Science Fiction",
+        "Dorsai (imaginary place), fiction",
+        "Fiction, science fiction, general"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -34545,6 +34675,21 @@
       "award_years": {
         "hugo": 1960
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8665544-L.jpg",
+      "ol_key": "/works/OL19859254W",
+      "first_pub_year": 2013,
+      "subjects": [
+        "Fiction, science fiction, space opera",
+        "Fiction, mystery & detective, police procedural"
+      ],
+      "primary_genre": "Science Fiction",
+      "subgenres": [
+        "Space Opera"
+      ],
+      "genres": [
+        "Science Fiction",
+        "Space Opera"
+      ],
       "author_genders": [
         "male"
       ],
@@ -34585,6 +34730,20 @@
       "award_years": {
         "hugo": 1960
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8331502-L.jpg",
+      "ol_key": "/works/OL18168366W",
+      "first_pub_year": 1992,
+      "subjects": [
+        "United States",
+        "United States. Federal Bureau of Investigation",
+        "Telepathy",
+        "Fiction",
+        "Fiction, science fiction, general"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -34752,6 +34911,24 @@
       "award_years": {
         "hugo": 1959
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/14095768-L.jpg",
+      "ol_key": "/works/OL90484W",
+      "first_pub_year": 1958,
+      "subjects": [
+        "Fiction, science fiction, general",
+        "Science fiction",
+        "American Science fiction",
+        "Interplanetary voyages",
+        "Fiction"
+      ],
+      "primary_genre": "Science Fiction",
+      "subgenres": [
+        "Space Opera"
+      ],
+      "genres": [
+        "Science Fiction",
+        "Space Opera"
+      ],
       "author_genders": [
         "male"
       ],
@@ -34862,8 +35039,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/9780991337026-L.jpg"
+      "primary_author_gender": "male"
     },
     {
       "id": "time-killer-also-known-as-immortality-inc-sheckley-1959-novel",
@@ -34900,6 +35076,18 @@
       "award_years": {
         "hugo": 1959
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9020892-L.jpg",
+      "ol_key": "/works/OL1932394W",
+      "first_pub_year": 1963,
+      "description": "A man wakes up after a fatal car accident—in someone else’s body—in this ahead-of-its-time Hugo Award–nominated classic.\r\n\r\nThomas Blaine remembered the car accident that killed him—and then he woke up in the hospital. A nurse told him where he was. “You’d call it being in the future.” A future where bodies are sold to the highest bidder as new homes for the minds of the rich, who are greedy for more life when their own bodies wear out or are damaged. Suddenly, keeping body and soul together has taken on a new, and very sinister, meaning. \r\n \r\nFrom the very beginning of his career, Robert Sheckley was recognized by fans, reviewers, and fellow authors as a master storyteller and the wittiest satirist working in the science fiction field. Open Road is proud to republish his acclaimed body of work, with nearly thirty volumes of full-length fiction and short story collections. Rediscover, or discover for the first time, a master of science fiction who, according to the New York Times, was “a precursor to Douglas Adams.”",
+      "subjects": [
+        "Fiction in English",
+        "Fiction, science fiction, general"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -35071,6 +35259,17 @@
       "award_years": {
         "hugo": 1956
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/7266138-L.jpg",
+      "ol_key": "/works/OL11311629W",
+      "first_pub_year": 1956,
+      "subjects": [
+        "Science fiction",
+        "English Science fiction"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -35198,8 +35397,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Not This August, also known as Christmas Eve, is a Hugo Award shortlisted science fiction novel by Cyril M. Kornbluth. It was originally published in 1955 by Doubleday. It was serialized in Maclean's magazine (Canada) in May and June 1955. A revised edition with a new foreword and afterword by Frederik Pohl was published in 1981 by Tor Books, ISBN 0-523-48518-2. The title comes from author Ernest Hemingway's \"Notes on the Next War\"."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-long-tomorrow-brackett-1956-novel",
@@ -35294,6 +35492,23 @@
       "award_years": {
         "hugo": 1955
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/6874396-L.jpg",
+      "ol_key": "/works/OL15686578W",
+      "first_pub_year": 1954,
+      "description": "One of 3 novels by early Hugo winner Mark Clifton, exploring ideas re closed vs. open mind, individual vs. group thinking",
+      "subjects": [
+        "Hugo Award Winner",
+        "award:hugo_award=1955",
+        "award:hugo_award=novel",
+        "American Science fiction",
+        "Artificial intelligence",
+        "Fiction",
+        "Immortality"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male",
         "male"
@@ -36125,6 +36340,46 @@
       "award_years": {
         "hugo": 1946
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9184879-L.jpg",
+      "ol_key": "/works/OL71165W",
+      "first_pub_year": 1945,
+      "description": "2.  \tThat hideous strength : a modern fairy-tale for grown-ups \tAdd to My List  \r\n\t  by Lewis, C. S. (Clive Staples), 1898-1963.\r\n... That hideous strength : a modern fairy-tale for grown-ups / C.S. Lewis. ...\r\n     \r\n\r\nPublisher, Date: New York : Scribner Classics, 1996.     \r\n\r\nhttp://www.loc.gov/catdir/bios/simon051/96020722.html - Contributor biographical information\r\nDescription: 380 p. ; 25 cm.     \r\n\r\nLocal Availability 0 (of 1)     System Availability 0 (of 1)     \r\n\r\nCall Number: F Lew 1996      \t\r\n\r\nSummary\r\nTable of Contents\r\nLarge Cover Image\r\nBook Discussion Guides\r\nMore titles like this\r\nMore authors like this\r\nLibrarian's View\r\nEdition: 1st Scribner Classics ed.     \r\nISBN: 0684833670     \r\nSystem Availability: 1     \r\nCurrent Holds: 0     \r\nAvailability \tFull Display \tPlace Request \t  \tHide Details\r\nSummary\r\nWritten during the dark hours immediately before and during the Second World War, C. S. Lewis's Space Trilogy, of whichThat Hideous Strengthis the third volume, stands alongside such works as Albert Camus'sThe Plagueand George Orwell's1984as a timely parable that has become timeless, beloved by succeeding generations as much for the sheer wonder of its storytelling as for the significance of its moral concerns. For the trilogy's central figure, C. S. Lewis created perhaps the most memorable character of his career, the brilliant, clear-eyed, and fiercely brave philologist Dr. Elwin Ransom. Appropriately, Lewis modeled Dr. Ransom on his dear friend J. R. R. Tolkien, for in the scope of its imaginative achievement and the totality of its vision of not one but two imaginary worlds, the Space Trilogy is rivaled in this century only by Tolkien's trilogy The Lord of the Rings. Readers who fall in love with Lewis's fantasy series The Chronicles of Narnia as children unfailingly cherish his Space Trilogy as adults; it, too, brings to life strange and magical realms in which epic battles are fought between the forces of light and those of darkness. But in the many layers of its allegory, and the sophistication and piercing brilliance of its insights into the human condition, it occupies a place among the English language's most extraordinary works for any age, and for all time.InThat Hideous Strength,the final installment of the Space Trilogy, the dark forces that have been repulsed inOut of the Silent PlanetandPerelandraare massed for an assault on the planet Earth itself. Word is on the wind that the mighty wizard Merlin has come back to the land of the living after many centuries, holding the key to ultimate power for the force that can find him and bend him to its will. A sinister technocratic organization that is gaining force throughout England, N.I.C.E. (the National Institute of Coordinated Experiments), secretly controlled by humanity's mortal enemies, plans to use Merlin in their plot to \"recondition\" society. Dr. Ransom forms a countervailing group, Logres, in opposition, and the two groups struggle to a climactic resolution that brings the Space Trilogy to a magnificent, crashing close.",
+      "subjects": [
+        "English Fantasy fiction",
+        "Linguists",
+        "Elwin Ransom (Fictitious character)",
+        "Philologists",
+        "College teachers",
+        "Life on other planets",
+        "English Science fiction",
+        "Fiction",
+        "Good and evil",
+        "Colleges and universities",
+        "Faculty",
+        "Fiction, science fiction, general",
+        "Ransom, elwin (fictitious character), fiction",
+        "College teachers, fiction",
+        "Interplanetary voyages",
+        "Space flight",
+        "Extraterrestrial beings",
+        "Ransom, elwin (fictitious character)",
+        "Ransom, elwin (fictitious character)--fiction",
+        "Life on other planets--fiction",
+        "College teachers--fiction",
+        "Good and evil--fiction",
+        "Philologists--fiction",
+        "Linguists--fiction",
+        "Pr6023.e926 t47 2003",
+        "823/.912"
+      ],
+      "primary_genre": "Blend",
+      "subgenres": [
+        "Space Opera"
+      ],
+      "genres": [
+        "Blend",
+        "Space Opera"
+      ],
       "author_genders": [
         "male"
       ],
@@ -36210,6 +36465,9 @@
       "award_years": {
         "hugo": 1946
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/6628092-L.jpg",
+      "ol_key": "/works/OL15407382W",
+      "first_pub_year": 1969,
       "author_genders": [
         "male"
       ],
@@ -36250,6 +36508,18 @@
       "award_years": {
         "hugo": 1945
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/12387557-L.jpg",
+      "ol_key": "/works/OL2046145W",
+      "first_pub_year": 1951,
+      "description": "First published in the Fall 1944 issue of Startling Stories.\r\nIts first book publication was in 1951, by Sydney Pemberton.\r\nLater republished as \"The Nemesis from Terra\".",
+      "subjects": [
+        "award:retro_hugo",
+        "Fiction, science fiction, general"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "female"
       ],
@@ -36421,8 +36691,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/1727480694-L.jpg"
+      "primary_author_gender": "male"
     },
     {
       "id": "the-wind-on-the-moon-linklater-1945-novel",
@@ -36759,6 +37028,34 @@
       "award_years": {
         "hugo": 1944
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/1017235-L.jpg",
+      "ol_key": "/works/OL872724W",
+      "first_pub_year": 1943,
+      "description": "Hesse’s most highly acclaimed book, The Glass Bead Game is set in a fictional state in Central Europe in the 25th Century. The state of Castalia is the home of an austere order of intellectuals who run a group of boarding schools for boys but also make it their life’s work to extend their knowledge and prowess of the Glass Bead Game, a mysterious game whose rules are never revealed. The story chronicles the life of Magister Ludi, the man responsible for administering the game. Although educated in Castalia he has spent a significant length of time in the outside world and as he reflects on his experiences in China and elsewhere he begins to doubt the value of the introverted life he and his fellow masters are leading.",
+      "subjects": [
+        "Continental european fiction (fictional works by one author)",
+        "Psychological games",
+        "Fiction",
+        "Enlightenment (Buddhism)",
+        "Spiritual formation",
+        "Scholars",
+        "Fictional Works Publication Type",
+        "German fiction",
+        "Manners and Customs",
+        "Philosophical fiction",
+        "German Science fiction",
+        "Germanic literature",
+        "Jeux psychologiques",
+        "Romans, nouvelles",
+        "Formation spirituelle",
+        "Illumination (Bouddhisme)",
+        "German literature",
+        "Translations into English"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -36922,6 +37219,26 @@
       "award_years": {
         "hugo": 1943
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/14632580-L.jpg",
+      "ol_key": "/works/OL59724W",
+      "first_pub_year": 1940,
+      "description": "Synopsis courtesy of GoodReads : Utopia has been achieved. For centuries, disease, hunger, poverty and war have been things found only in the history tapes. And applied genetics has given men and women the bodies of athletes and a lifespan of over a century.\r\nThey should all have been very happy....\r\nBut Hamilton Felix is bored. And he is the culmination of a star line; each of his last thirty ancestors chosen for superior genes. Hamilton is, as far as genetics can produce one, the ultimate man. And this ultimate man can see no reason why the human race should survive, and has no intention of continuing the pointless comedy.\r\nHowever, Hamilton's life is about to become less boring. A secret cabal of revolutionaries who find utopia not just boring, but desperately in need of leaders who know just What Needs to be Done, are planning to revolt and put themselves in charge. Knowing of Hamilton's disenchantment with the modern world, they have recruited him to join their Glorious Revolution. Big mistake! The revolutionaries are about to find out that recruiting a superman was definitely not a good idea....",
+      "subjects": [
+        "Fiction in English",
+        "Fiction",
+        "American Science fiction",
+        "Utopias",
+        "Genetic engineering",
+        "Science fiction",
+        "award:retro_hugo",
+        "Fiction, science fiction, general",
+        "Translations into French",
+        "Long Now Manual for Civilization"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -36978,8 +37295,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Darkness and the Light (1942) is a science fiction novel by British writer Olaf Stapledon."
+      "primary_author_gender": "male"
     },
     {
       "id": "donovan-s-brain-siodmak-1943-novel",
@@ -37039,8 +37355,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Donovan's Brain is a 1942 science fiction novel by American writer Curt Siodmak."
+      "primary_author_gender": "male"
     },
     {
       "id": "islandia-wright-1943-novel",
@@ -37377,8 +37692,7 @@
       "author_genders": [
         "unknown"
       ],
-      "primary_author_gender": "unknown",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/9798731290531-L.jpg"
+      "primary_author_gender": "unknown"
     },
     {
       "id": "kallocain-boye-1941-novel",
@@ -37430,8 +37744,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "Kallocain is a 1940 dystopian novel by Swedish novelist Karin Boye that envisions a future of drab terror. Seen through the eyes of the idealistic scientist Leo Kall, Kallocain is a depiction of a totalitarian world state. An important aspect of the novel is the relationships and connections between the various characters, such as the marriage of the main character and his wife, Linda Kall, and the feelings of jealousy and suspicion that may arise in a society with heavy surveillance and legal uncertainty."
+      "primary_author_gender": "female"
     },
     {
       "id": "the-reign-of-wizardry-williamson-1941-novel",
@@ -38411,7 +38724,7 @@
       "award_years": {
         "hugo": 2023
       },
-      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1620145251i/57693537.jpg",
+      "cover_url": "https://covers.openlibrary.org/b/id/10858265-M.jpg",
       "ol_key": "/works/OL24336678W",
       "first_pub_year": 2022,
       "isbn": "9781250213617",
@@ -38480,7 +38793,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "40864002"
     },
     {
       "id": "the-empress-of-salt-and-fortune-vo-2021-novella",
@@ -38600,7 +38914,8 @@
         "female",
         "male"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "43352954"
     },
     {
       "id": "artificial-condition-wells-2019-novella",
@@ -38667,7 +38982,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "36223859"
     },
     {
       "id": "all-systems-red-wells-2018-novella",
@@ -38734,7 +39050,8 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female"
+      "primary_author_gender": "female",
+      "goodreads_id": "33396171"
     },
     {
       "id": "every-heart-a-doorway-mcguire-2017-novella",
@@ -39826,8 +40143,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "\"Seven Views of Olduvai Gorge\" is a science fiction novella by American writer Mike Resnick, originally published in The Magazine of Fantasy & Science Fiction in 1994. It won the 1994 Nebula Award for Best Novella and the 1995 Hugo Award for Best Novella."
+      "primary_author_gender": "male"
     },
     {
       "id": "down-in-the-bottomlands-turtledove-1994-novella",
@@ -40110,8 +40426,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "The Mountains of Mourning is a science fiction novella by American author Lois McMaster Bujold. It is part of her Vorkosigan Saga, chronologically taking place between the novels The Warrior's Apprentice and The Vor Game. It won the 1990 Hugo Award for Best Novella and the Nebula Award for Best Novella of 1989."
+      "primary_author_gender": "female"
     },
     {
       "id": "the-last-of-the-winnebagos-willis-1989-novella",
@@ -40206,8 +40521,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Eye for Eye (1987) is a science fiction novella by Orson Scott Card."
+      "primary_author_gender": "male"
     },
     {
       "id": "gilgamesh-in-the-outback-silverberg-1987-novella",
@@ -40247,8 +40561,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Gilgamesh in the Outback is a science fiction novella by American writer Robert Silverberg, a sequel to his historical novel Gilgamesh the King as well as a story in the shared universe series Heroes in Hell. It won the Hugo Award for Best Novella in 1987 and was also nominated for the Nebula Award for Best Novella in 1986. Originally published in Asimov's Science Fiction, it was then printed in Rebels in Hell before being incorporated into Silverberg's novel To the Land of the Living. Real-life writers Robert E. Howard and H. P. Lovecraft feature as characters in the novella."
+      "primary_author_gender": "male"
     },
     {
       "id": "24-views-of-mt-fuji-by-hokusai-zelazny-1986-novella",
@@ -40288,8 +40601,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "24 Views of Mt. Fuji, by Hokusai is a science fiction novella by American writer Roger Zelazny, originally published in the July 1985 issue of the Isaac Asimov's Science Fiction Magazine. It won the Hugo Award for Best Novella in 1986 and was also nominated for the Nebula Award for Best Novella in 1985."
+      "primary_author_gender": "male"
     },
     {
       "id": "press-enter-varley-1985-novella",
@@ -40706,8 +41018,7 @@
         "unknown",
         "female"
       ],
-      "primary_author_gender": "unknown",
-      "description": "Stardance is a science fiction novel by Spider Robinson and Jeanne Robinson, published by Dial Press in 1979 as part of its Quantum science fiction line. The novel's opening segment originally appeared in Analog in 1977 as the novella \"Stardance\", followed by the serialized conclusion, \"Stardance II\", in Analog in 1978."
+      "primary_author_gender": "unknown"
     },
     {
       "id": "by-any-other-name-robinson-1977-novella",
@@ -41077,6 +41388,7 @@
       "award_years": {
         "hugo": 1972
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8670520-L.jpg",
       "ol_key": "/works/OL29311724W",
       "first_pub_year": 1973,
       "isbn": "9780451057136",
@@ -41091,8 +41403,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/9780451057136-L.jpg"
+      "primary_author_gender": "male"
     },
     {
       "id": "ill-met-in-lankhmar-leiber-1971-novella",
@@ -41310,8 +41621,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "\"Riders of the Purple Wage\" (1967) is a science fiction novella by American writer Philip José Farmer. It appeared in Dangerous Visions, the New Wave science fiction anthology compiled by Harlan Ellison and won the Hugo Award for best novella in 1968, jointly with Weyr Search by Anne McCaffrey."
+      "primary_author_gender": "male"
     },
     {
       "id": "weyr-search-mccaffrey-1968-novella",
@@ -41355,8 +41665,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "Dragonflight is a science fiction novel by the American-Irish author Anne McCaffrey. It is the first book in the Dragonriders of Pern series. First published by Ballantine Books in July 1968, it was a fix-up of two novellas which between them had made McCaffrey the first woman writer to win a Hugo and a Nebula Award."
+      "primary_author_gender": "female"
     },
     {
       "id": "a-case-of-conscience-blish-1954-novella",
@@ -41693,6 +42002,29 @@
       "award_years": {
         "hugo": 1943
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/14631052-L.jpg",
+      "ol_key": "/works/OL59709W",
+      "first_pub_year": 1950,
+      "description": "Waldo:\r\nNorth Power-Air was in trouble. Their aircraft had begun to crash at an alarming rate, and no one could figure out what was going wrong. Desperate for an answer, they turned to Waldo, the crippled genius who lived in a zero-g home in orbit around Earth. But Waldo had little reason to want to help the rest of humanity -- until he learned that the solution to their problems also held the key to his own...\r\n\r\nMagic, Inc.:\r\nUnder the guise of an agency for magicians, Magic, Inc. was systematically squeezing out the small independent magicians. Then one businessman stood firm. With the help of an Oxford-educated African shaman and a little old lady adept at black magic, he went straight to the demons of Hell to resolve the problem -- once and for all!",
+      "subjects": [
+        "American Science fiction",
+        "Fiction, fantasy, general",
+        "Fiction, science fiction, general",
+        "Magic",
+        "Fiction",
+        "Space travelers",
+        "FICTION / Science Fiction / General",
+        "FICTION / Science Fiction / Adventure",
+        "FICTION / Science Fiction / Space Opera"
+      ],
+      "primary_genre": "Blend",
+      "subgenres": [
+        "Space Opera"
+      ],
+      "genres": [
+        "Blend",
+        "Space Opera"
+      ],
       "author_genders": [
         "male"
       ],
@@ -41773,11 +42105,36 @@
       "award_years": {
         "hugo": 1939
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/4745562-L.jpg",
+      "ol_key": "/works/OL3892381W",
+      "first_pub_year": 1948,
+      "description": "A remote scientific research expedition at the North Pole is invaded by a monstrous alien, reawakened after lying frozen for centuries after a crash-landing.  The alien is intelligent, cunning and a shape-changer who can assume the form and personality of anything it destroys and soon it is among the men of the expedition, killing and replacing them, using its shape-changing ability to lull the scientists one by one into inattention and destruction.  The transformed alien can seemingly pass every effort at detection and the expedition seems doomed until at last the secret vulnerability of the alien is discovered and it is destroyed.Who Goes There? according to the science fiction historian Sam Moskowitz (1920-1997) had an autobiographical impetus: Campbell's mother and aunt were identical twins and enjoyed the \"game\" of substituting for one another in his care as an infant and young child, confusing him again and again with false identity.  It was this uncertainty, this susceptibility to masquerade and his terror at the game which, Moskowitz said, Campbell funneled into this last and greatest of his magazine pieces.  (A short novel, The Moon Is Hell, was published only in book form in the early l950's.)   Carefully and rigorously extrapolated in its portrait of the menaced expedition, the novelette is regarded as perhaps the greatest horror story to emerge form the field of science fiction.  It was the basis for one of the great early science fiction films and its excellent remake decades later.The copyright of the novelette was, typically of the time, owned by Street & Smith Publications to whose magazine Campbell had sold all of the rights.  Hawks paid Street & Smith $900 for all film rights, $500 of that was paid over \"voluntarily\" by Street & Smith to Campbell.  \"Don't you feel cheated?\" Isaac Asimov said he asked Campbell at the time of the film's successful release.  \"No,\" Campbell said, \"If it's a good film and it will get more people to read science fiction and take it seriously, then it's all a very good thing.\"",
+      "subjects": [
+        "American Science fiction",
+        "Fiction",
+        "Horror",
+        "Mystery",
+        "Science Fiction & Fantasy",
+        "Science Fiction",
+        "Antarctica, fiction",
+        "Fiction, science fiction, space opera",
+        "Fiction, science fiction, general",
+        "Fiction, suspense"
+      ],
+      "primary_genre": "Blend",
+      "subgenres": [
+        "Space Opera",
+        "Horror"
+      ],
+      "genres": [
+        "Blend",
+        "Space Opera",
+        "Horror"
+      ],
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "Who Goes There? is a science fiction horror novella by American author John W. Campbell, written under the pen name Don A. Stuart. Its story follows a group of researchers and support personnel trapped in a scientific outpost in Antarctica that has been infested by shapeshifting monsters able to absorb and perfectly imitate any living being, including humans."
+      "primary_author_gender": "male"
     },
     {
       "id": "kaiju-agonistes-lynch-2026-novelette",
@@ -42984,8 +43341,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "\"Shoggoths in Bloom\" is a science fiction novelette by Elizabeth Bear, originally published in the March 2008 issue of the American magazine Asimov's Science Fiction, and subsequently republished in Bear's 2012 collection Shoggoths in Bloom."
+      "primary_author_gender": "female"
     },
     {
       "id": "the-merchant-and-the-alchemist-s-gate-chiang-2008-novelette",
@@ -43075,8 +43431,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "\"The Djinn's Wife\" is a 2006 science fiction short story by British writer Ian McDonald. It was first published in Asimov's Science Fiction."
+      "primary_author_gender": "male"
     },
     {
       "id": "two-hearts-beagle-2006-novelette",
@@ -43277,8 +43632,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "\"Hell Is the Absence of God\" is a 2001 satirical fantasy novelette by American writer Ted Chiang, first published in Starlight #3, and subsequently reprinted in Year's Best Fantasy 2, and in Fantasy: The Best of 2001, as well as in Chiang's 2002 anthology, Stories of Your Life and Others."
+      "primary_author_gender": "male"
     },
     {
       "id": "millennium-babies-rusch-2001-novelette",
@@ -43321,8 +43675,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "cover_url": "https://covers.openlibrary.org/b/isbn/1458170039-L.jpg"
+      "primary_author_gender": "female"
     },
     {
       "id": "1016-to-1-kelly-2000-novelette",
@@ -43534,8 +43887,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "\"Think Like a Dinosaur\" is a science fiction novelette written by James Patrick Kelly, originally published in the June 1995 issue of Asimov's Science Fiction magazine."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-martian-child-gerrold-1995-novelette",
@@ -43690,8 +44042,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "\"The Nutcracker Coup\" is a 1992 science fiction short story by Janet Kagan. It was first published in Asimov's Science Fiction."
+      "primary_author_gender": "female"
     },
     {
       "id": "gold-asimov-1992-novelette",
@@ -43937,8 +44288,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "\"Buffalo Gals, Won't You Come Out Tonight\" is a science fiction novelette by American writer Ursula K. Le Guin, originally published in the November 1987 issue of The Magazine of Fantasy & Science Fiction and collected in Buffalo Gals and Other Animal Presences (1987). The title is borrowed from the song \"Buffalo Gals\" where the first line of the chorus is \"Buffalo gals, won't you come out tonight?\""
+      "primary_author_gender": "female"
     },
     {
       "id": "permafrost-zelazny-1987-novelette",
@@ -44018,8 +44368,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "\"Paladin of the Lost Hour\" is the second segment of the seventh episode of the first season of the first revival of the television series The Twilight Zone, adapted from a novelette by scriptwriter Harlan Ellison. The story follows the friendship between a Vietnam veteran and an old man entrusted with forestalling the end of the universe. The television episode starred Danny Kaye in one of his final screen appearances."
+      "primary_author_gender": "male"
     },
     {
       "id": "bloodchild-butler-1985-novelette",
@@ -44257,8 +44606,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "\"Unicorn Variation\" is a 1981 fantasy story by American writer Roger Zelazny. It was first published in Isaac Asimov's Science Fiction Magazine."
+      "primary_author_gender": "male"
     },
     {
       "id": "the-cloak-and-the-staff-dickson-1981-novelette",
@@ -44439,8 +44787,7 @@
       "author_genders": [
         "female"
       ],
-      "primary_author_gender": "female",
-      "description": "\"Eyes of Amber\" is a science fiction short story by American writer Joan D. Vinge. It was first published as the cover story for the June 1977 issue of Analog Science Fiction and Fact."
+      "primary_author_gender": "female"
     },
     {
       "id": "the-bicentennial-man-asimov-1977-novelette",
@@ -44536,8 +44883,7 @@
       "author_genders": [
         "male"
       ],
-      "primary_author_gender": "male",
-      "description": "\"The Borderland of Sol\" is a science fiction novelette by American writer Larry Niven. It is the fifth in the Known Space series of stories about crashlander Beowulf Shaeffer."
+      "primary_author_gender": "male"
     },
     {
       "id": "adrift-just-off-the-islets-of-langerhans-latitude-38-54-n-longitude-77-00-13-w-ellison-1975-novelette",
@@ -45175,9 +45521,8 @@
       "year": 1944,
       "publisher": "Astounding Science-Fiction",
       "awards": {
-        "hugo": "winner"
+        "hugo": "winner (as lewis padgett)"
       },
-      "pseudonym": "as Lewis Padgett (Henry Kuttner & C. L. Moore)",
       "tom": "",
       "nika": "",
       "tom_date_read": "",
@@ -45240,6 +45585,28 @@
       "award_years": {
         "hugo": 1943
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9261324-L.jpg",
+      "ol_key": "/works/OL46309W",
+      "first_pub_year": 1953,
+      "description": "After years of struggle, the Foundation lay in ruins -- destroyed by the mutant mind power of the Mule. But it was rumored that there was a Second Foundation hidden somewhere at the end of the Galaxy, established to preserve the knowledge of mankind through the long centuries of barbarism. The Mule had failed to find it the first time -- but now he was certain he knew where it lay.\r\n\r\nThe fate of the Foundation rests on young Arkady Darell, only fourteen years old and burdened with a terrible secret. As its scientists girded for a final showdown with the Mule, the survivors of the First Foundation began their desperate search. They too wanted the Second Foundation destroyed... before it destroyed them.",
+      "subjects": [
+        "Fiction",
+        "Psychohistory",
+        "Life on other planets",
+        "Science fiction",
+        "Fiction, science fiction, general",
+        "American literature",
+        "Psychological fiction",
+        "Vie extraterrestre",
+        "Romans, nouvelles",
+        "Psychohistoire",
+        "Hari Seldon (Fictitious character)",
+        "Long Now Manual for Civilization"
+      ],
+      "primary_genre": "Science Fiction",
+      "genres": [
+        "Science Fiction"
+      ],
       "author_genders": [
         "male"
       ],
@@ -45329,9 +45696,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novelette": 78,
       "Novella": 78,
-      "Novel": 638
+      "Novel": 638,
+      "Novelette": 78
     }
   }
 }

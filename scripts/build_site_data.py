@@ -264,6 +264,32 @@ def apply_google_books_cache(records: list[dict], path: Path) -> int:
     return applied
 
 
+def apply_goodreads_ids(records: list[dict], path: Path) -> int:
+    """Fold Goodreads Book IDs (and any ISBNs harvested alongside them) onto
+    canon records. Map is keyed by the site's canonical id, so the lookup is
+    a single dict hit per book."""
+    if not path.exists():
+        return 0
+    with path.open() as f:
+        gr_map = json.load(f)
+    applied = 0
+    for r in records:
+        entry = gr_map.get(r.get("id"))
+        if not entry:
+            continue
+        if entry.get("goodreads_id"):
+            r["goodreads_id"] = entry["goodreads_id"]
+            applied += 1
+        # Backfill ISBN if the canon entry didn't already have one — Goodreads
+        # exports include ISBN13 + ISBN10 for many older paperbacks OL missed.
+        if not r.get("isbn"):
+            if entry.get("isbn"):
+                r["isbn"] = entry["isbn"]
+            elif entry.get("isbn13"):
+                r["isbn"] = entry["isbn13"]
+    return applied
+
+
 def apply_cover_cache(records: list[dict], cache_path: Path, desc_path: Path | None = None) -> int:
     if not cache_path.exists():
         return 0
@@ -388,9 +414,10 @@ def main() -> None:
     google_covers = apply_google_books_cache(all_records, args.data / "google_books_cache.json")
     descs = sum(1 for r in all_records if r.get("description"))
     gend = apply_author_gender(all_records, args.data / "author_gender.json")
+    gr_ids = apply_goodreads_ids(all_records, args.data / "goodreads_ids.json")
     genres = sum(1 for r in all_records if r.get("genres"))
     total_covers = sum(1 for r in all_records if r.get("cover_url"))
-    print(f"  Applied {covers} OL covers + {google_covers} Google Books covers ({total_covers} total) + {descs} descs + {genres} genre sets + {gend} genders")
+    print(f"  Applied {covers} OL covers + {google_covers} Google Books covers ({total_covers} total) + {descs} descs + {genres} genre sets + {gend} genders + {gr_ids} Goodreads ids")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w") as f:
