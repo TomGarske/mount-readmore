@@ -493,7 +493,6 @@ function renderDetail(id) {
           <a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a>
           <a href="${escapeHtml(amazonUrl)}" target="_blank" rel="noopener">Amazon</a>
           <a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a>
-          <a href="https://en.wikipedia.org/w/index.php?search=${searchQ}" target="_blank" rel="noopener">Wikipedia</a>
         </div>
       </div>
     </div>
