@@ -31,7 +31,10 @@
 
   let currentUser = null;
   let currentProfile = null;
-  let userBooksById = {};   // book_id -> { status, date_read }
+  let userBooksById = {};       // book_id -> { status, date_read }
+  let friendsList = [];         // [{ id, handle, profile_visibility, on_leaderboard }]
+  let leaderboardOverall = [];  // [{ user_id, handle, read_count, pct, rank, total_books }]
+  let leaderboardByAward = [];  // [{ user_id, handle, hugo_read, nebula_read, ... }]
   const subscribers = new Set();
 
   async function loadProfile() {
@@ -52,8 +55,51 @@
     userBooksById = next;
   }
 
+  // Friends + leaderboards are tiny per-user payloads. Load them once at
+  // bootstrap (and on auth/userBooks change) so consumer pages render
+  // synchronously instead of firing on-demand queries each navigation.
+  async function loadFriends() {
+    if (!currentUser) { friendsList = []; return; }
+    const { data: edges, error: eErr } = await withTimeout(
+      client.from('friendships')
+        .select('user_id_a, user_id_b')
+        .or(`user_id_a.eq.${currentUser.id},user_id_b.eq.${currentUser.id}`),
+      8000, 'friendships load'
+    );
+    if (eErr) { console.error('friendships load:', eErr); friendsList = []; return; }
+    const friendIds = (edges || []).map(f =>
+      f.user_id_a === currentUser.id ? f.user_id_b : f.user_id_a
+    );
+    if (friendIds.length === 0) { friendsList = []; return; }
+    const { data: profs, error: pErr } = await withTimeout(
+      client.from('profiles')
+        .select('id, handle, profile_visibility, on_leaderboard')
+        .in('id', friendIds),
+      8000, 'friend profiles load'
+    );
+    if (pErr) { console.error('friend profiles load:', pErr); friendsList = []; return; }
+    friendsList = profs || [];
+  }
+
+  async function loadLeaderboards() {
+    // leaderboard_overall + leaderboard_by_award are SECURITY DEFINER views
+    // friends-scoped by auth.uid() — safe to query without a where clause.
+    if (!currentUser) { leaderboardOverall = []; leaderboardByAward = []; return; }
+    const [overall, byAward] = await Promise.all([
+      withTimeout(client.from('leaderboard_overall').select('*').order('rank'),  8000, 'leaderboard_overall'),
+      withTimeout(client.from('leaderboard_by_award').select('*').order('rank'), 8000, 'leaderboard_by_award'),
+    ]);
+    if (overall.error) console.error('leaderboard_overall:', overall.error);
+    if (byAward.error) console.error('leaderboard_by_award:', byAward.error);
+    leaderboardOverall = overall.data || [];
+    leaderboardByAward = byAward.data || [];
+  }
+
   function notify() {
-    const snapshot = { user: currentUser, profile: currentProfile, userBooks: userBooksById };
+    const snapshot = {
+      user: currentUser, profile: currentProfile, userBooks: userBooksById,
+      friends: friendsList, leaderboardOverall, leaderboardByAward,
+    };
     subscribers.forEach(cb => {
       try { cb(snapshot); } catch (e) { console.error(e); }
     });
@@ -62,18 +108,13 @@
   async function bootstrap() {
     const { data: { session } } = await client.auth.getSession();
     currentUser = session?.user || null;
-    await Promise.all([loadProfile(), loadUserBooks()]);
+    // Load everything user-scoped in parallel. Pages waiting on MR_AUTH.ready
+    // get friends + leaderboard data without firing extra queries.
+    await Promise.all([loadProfile(), loadUserBooks(), loadFriends(), loadLeaderboards()]);
     notify();
-    client.auth.onAuthStateChange(async (event, session) => {
-      const prevUserId = currentUser?.id || null;
+    client.auth.onAuthStateChange(async (_event, session) => {
       currentUser = session?.user || null;
-      // Identity change → blow away any cached friend list so we don't show
-      // the previous user's friends after a sign-in/out flip.
-      if (prevUserId !== (currentUser?.id || null)) {
-        friendsCache = null;
-        friendsInflight = null;
-      }
-      await Promise.all([loadProfile(), loadUserBooks()]);
+      await Promise.all([loadProfile(), loadUserBooks(), loadFriends(), loadLeaderboards()]);
       notify();
     });
   }
@@ -151,47 +192,17 @@
     }
   }
 
-  // Friend-list cache. Cleared on signOut + on auth state change. The actual
-  // friend list doesn't change inside a single SPA session unless the user
-  // adds/removes a friend — so calling listFriends() repeatedly from Compare,
-  // Settings, etc. shouldn't trigger a fresh query every time.
-  let friendsCache = null;
-  let friendsInflight = null;
-
-  async function listFriends({ force = false } = {}) {
-    if (!currentUser) return [];
-    if (!force && friendsCache) return friendsCache;
-    if (!force && friendsInflight) return friendsInflight;
-    friendsInflight = (async () => {
-      const { data, error } = await withTimeout(
-        client.from('friendships')
-          .select('user_id_a, user_id_b, created_at')
-          .or(`user_id_a.eq.${currentUser.id},user_id_b.eq.${currentUser.id}`),
-        8000, 'friendships load'
-      );
-      if (error) { console.error('friendships load:', error); return []; }
-      const friendIds = (data || []).map(f =>
-        f.user_id_a === currentUser.id ? f.user_id_b : f.user_id_a
-      );
-      if (friendIds.length === 0) { friendsCache = []; return friendsCache; }
-      const { data: profs, error: pErr } = await withTimeout(
-        client.from('profiles')
-          .select('id, handle, profile_visibility, on_leaderboard')
-          .in('id', friendIds),
-        8000, 'friend profiles load'
-      );
-      if (pErr) { console.error('friend profiles load:', pErr); friendsCache = []; return friendsCache; }
-      friendsCache = profs || [];
-      return friendsCache;
-    })();
-    try {
-      return await friendsInflight;
-    } finally {
-      friendsInflight = null;
-    }
+  // Legacy callsites still call MR_AUTH.listFriends() — return the preloaded
+  // list synchronously. The bootstrap already populated friendsList; if a
+  // page wants to force a refresh it can call refreshFriends() instead.
+  async function listFriends() {
+    return friendsList;
   }
-
-  function invalidateFriendsCache() { friendsCache = null; }
+  async function refreshFriends() {
+    await Promise.all([loadFriends(), loadLeaderboards()]);
+    notify();
+  }
+  function invalidateFriendsCache() { /* no-op — kept for backwards compat */ }
 
   async function addFriendByHandle(handle) {
     if (!currentUser) throw new Error('Not signed in');
@@ -210,7 +221,7 @@
     const { error } = await client.from('friendships')
       .insert({ user_id_a: a, user_id_b: b });
     if (error && error.code !== '23505') throw error;  // ignore "already friends"
-    friendsCache = null;  // freshly added — next listFriends() refetches
+    await refreshFriends();
     return target;
   }
 
@@ -221,8 +232,8 @@
       : [friendId, currentUser.id];
     const { error } = await client.from('friendships')
       .delete().eq('user_id_a', a).eq('user_id_b', b);
-    if (!error) friendsCache = null;  // refresh on next read
     if (error) throw error;
+    await refreshFriends();
   }
 
   async function setBookStatus(bookId, status) {
@@ -256,6 +267,10 @@
       if (error) throw error;
       userBooksById[bookId] = data;
     }
+    // Refresh the leaderboard so own row's read_count reflects the new
+    // count immediately (Home + Leaderboard + Compare all read from this).
+    // Fire-and-forget — the user's status change is already persisted.
+    loadLeaderboards().then(notify).catch(e => console.error('leaderboard refresh:', e));
     notify();
   }
 
@@ -280,9 +295,9 @@
     return data;
   }
 
-  // `ready` resolves after the initial bootstrap (getSession + loadProfile +
-  // loadUserBooks). Pages that read MR_AUTH.profile / userBooks should await
-  // it first to avoid the race where user is set but profile is still null.
+  // `ready` resolves after the initial bootstrap (getSession + profile +
+  // userBooks + friends + leaderboards). Pages that read MR_AUTH.* should
+  // await it first to avoid the race where user is set but the rest isn't.
   const readyPromise = bootstrap();
 
   window.MR_AUTH = {
@@ -291,12 +306,16 @@
     get user() { return currentUser; },
     get profile() { return currentProfile; },
     get userBooks() { return userBooksById; },
+    get friends() { return friendsList; },
+    get leaderboardOverall() { return leaderboardOverall; },
+    get leaderboardByAward() { return leaderboardByAward; },
     statusFor(bookId) { return userBooksById[bookId]?.status || null; },
     onChange(cb) { subscribers.add(cb); return () => subscribers.delete(cb); },
     signOut: async () => { await client.auth.signOut(); },
     showSignInModal,
     setBookStatus,
     listFriends,
+    refreshFriends,
     invalidateFriendsCache,
     addFriendByHandle,
     removeFriend,

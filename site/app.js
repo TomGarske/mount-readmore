@@ -1775,17 +1775,14 @@ function renderNebula2026() {
 // Per-handle results are cached in `__compareSideCache` so re-rendering the
 // compare page (back and forth, picker → comparison) doesn't refetch.
 
+// Cache for "other side" user_books fetches (Westdac's reads when Tom views
+// /compare?u=me&u=westdac). Tom's own side reads MR_AUTH.userBooks directly.
+// Friend list + leaderboard counts are preloaded by MR_AUTH bootstrap — no
+// caches needed for those at the app layer.
 const __compareSideCache = new Map();    // handle (lowercased) → side object
-const __compareFriendCountsCache = {     // friends list digest → counts map
-  signature: null,                       // joined friend IDs to detect staleness
-  counts: null,
-};
 
 function __invalidateCompareCaches() {
   __compareSideCache.clear();
-  __compareFriendCountsCache.signature = null;
-  __compareFriendCountsCache.counts = null;
-  __mrLeaderboardCache = null;
 }
 
 async function loadCompareSide(id, colorIdx = 0) {
@@ -1888,9 +1885,9 @@ async function renderCompare(params) {
       $('#compare-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
       return;
     }
-    // Signed in: show friends list as the picker
-    root.innerHTML = `<div class="detail"><h1>Compare reads</h1><p style="color: var(--muted);">Loading friends…</p></div>`;
-    const friends = await window.MR_AUTH.listFriends();
+    // Friends + per-friend read counts are preloaded by MR_AUTH.bootstrap.
+    // Read synchronously, no spinner, no Supabase round-trip on this nav.
+    const friends = window.MR_AUTH.friends;
     const myHandle = window.MR_AUTH.profile?.handle || 'you';
 
     if (friends.length === 0) {
@@ -1905,25 +1902,9 @@ async function renderCompare(params) {
       return;
     }
 
-    // Per-friend read counts. We *used* to fire one HEAD count() request per
-    // friend, but those returned 503 against the consolidated RLS policy
-    // (cross-user count + the public-profile EXISTS subquery is too slow on
-    // free-tier PostgREST). The leaderboard_overall view already aggregates
-    // server-side and is friends-scoped via auth.uid() — one query gives us
-    // every friend's count for free.
-    const client = window.MR_AUTH.client;
-    const signature = friends.map(f => f.id).sort().join(',');
-    let counts;
-    if (__compareFriendCountsCache.signature === signature && __compareFriendCountsCache.counts) {
-      counts = __compareFriendCountsCache.counts;
-    } else {
-      const { overall } = await fetchLeaderboards();
-      counts = {};
-      for (const row of overall || []) {
-        counts[row.user_id] = row.read_count;
-      }
-      __compareFriendCountsCache.signature = signature;
-      __compareFriendCountsCache.counts = counts;
+    const counts = {};
+    for (const row of window.MR_AUTH.leaderboardOverall || []) {
+      counts[row.user_id] = row.read_count;
     }
 
     const meSlug = encodeURIComponent(myHandle);
@@ -2261,48 +2242,19 @@ async function renderCompare(params) {
   </div>`;
 }
 
-// Readmore leaderboard — public, reads from public.leaderboard_overall
-// and public.leaderboard_by_award views in Supabase. Only profiles with
-// on_leaderboard = true appear. Each row links to a head-to-head comparison.
-let __mrLeaderboardCache = null;
-async function fetchLeaderboards() {
-  if (__mrLeaderboardCache) return __mrLeaderboardCache;
-  if (!window.MR_AUTH?.client) return { overall: [], byAward: [], error: 'auth-not-ready' };
-  const client = window.MR_AUTH.client;
-  // Race against a timeout so a stuck SDK doesn't park the page at "Loading…".
-  const withTimeout = (p, ms, label) => Promise.race([
-    p,
-    new Promise(res => setTimeout(() => res({ data: null, error: { message: `${label} timed out after ${ms}ms` } }), ms)),
-  ]);
-  const [overall, byAward] = await Promise.all([
-    withTimeout(client.from('leaderboard_overall').select('*').order('rank'), 8000, 'leaderboard_overall'),
-    withTimeout(client.from('leaderboard_by_award').select('*').order('rank'), 8000, 'leaderboard_by_award'),
-  ]);
-  if (overall.error || byAward.error) {
-    return { overall: [], byAward: [], error: overall.error || byAward.error };
-  }
-  __mrLeaderboardCache = { overall: overall.data || [], byAward: byAward.data || [], error: null };
-  return __mrLeaderboardCache;
-}
-
+// Readmore leaderboard — reads from MR_AUTH.leaderboardOverall /
+// .leaderboardByAward, which the bootstrap loads from the SQL views.
+// Only profiles with on_leaderboard = true appear (filter inside the view).
 let __mrLeaderboardScope = 'overall';   // 'overall' | 'hugo' | 'nebula'
 
 async function renderLeaderboard() {
   const root = $('#view-leaderboard');
   if (!root) return;
-  root.innerHTML = `<div class="detail"><h1>Leaderboard</h1><p style="color: var(--muted);">Loading…</p></div>`;
-  // Wait for the auth bootstrap so the leaderboard SQL view sees a valid
-  // auth.uid() (friends-only scoping depends on it).
+  // Wait for the auth bootstrap so the leaderboard data is populated.
   await window.MR_AUTH?.ready;
 
-  const { overall, byAward, error } = await fetchLeaderboards();
-  if (error) {
-    root.innerHTML = `<div class="detail">
-      <h1>Leaderboard</h1>
-      <p style="color: var(--sf);">Couldn't load the leaderboard: ${escapeHtml(String(error.message || error))}</p>
-    </div>`;
-    return;
-  }
+  const overall = window.MR_AUTH?.leaderboardOverall || [];
+  const byAward = window.MR_AUTH?.leaderboardByAward || [];
 
   const meHandle = window.MR_AUTH?.profile?.handle || null;
   const myUserId = window.MR_AUTH?.user?.id || null;
