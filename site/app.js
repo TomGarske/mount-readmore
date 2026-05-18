@@ -565,27 +565,6 @@ function buildCalloutGrid(items, options = {}) {
   }).join('')}</div>`;
 }
 
-// Vertical bar chart with animated grow-from-bottom. data = [{key, label, value, color, sub}]
-function buildBarChart(data, options = {}) {
-  const maxV = Math.max(1, ...data.map(d => d.value));
-  const maxHeight = options.height || 180;
-  return `<div class="vbar-chart" style="--vbar-height: ${maxHeight}px;">
-    ${data.map((d, i) => {
-      const h = (d.value / maxV) * 100;
-      const onclick = d.href ? ` onclick="location.hash='${d.href}'"` : '';
-      const cursor = d.href ? 'cursor:pointer;' : '';
-      return `<div class="vbar-col"${onclick} style="${cursor}" title="${escapeHtml(d.tooltip || d.label + ': ' + d.value)}">
-        <div class="vbar-value">${d.valueLabel || d.value}</div>
-        <div class="vbar-track">
-          <div class="vbar" style="--bar-h: ${h}%; background: ${d.color}; animation-delay: ${i * 0.08}s;"></div>
-        </div>
-        <div class="vbar-label">${escapeHtml(d.label)}</div>
-        ${d.sub ? `<div class="vbar-sub">${d.sub}</div>` : ''}
-      </div>`;
-    }).join('')}
-  </div>`;
-}
-
 // Featured banner for the Home page — a full-card promo per award. Combines
 // the historical description (since/by whom/voting model) with the live 2026
 // ballot promo. Each banner is self-contained: name + audience pill + history
@@ -681,7 +660,6 @@ function renderStats() {
   const winnersColton = winners.filter(b => readStatus(b, 'colton') === 'read');
   const winnersSchupp = winners.filter(b => readStatus(b, 'schupp') === 'read');
   const winnersMe = winners.filter(b => readStatus(b, 'me') === 'read');
-  const winnersBoth = winners.filter(b => readStatus(b, 'tom') === 'read' && readStatus(b, 'nika') === 'read');
   const winnersEither = winners.filter(b => ACTIVE_READERS.some(r => readStatus(b, r.id) === 'read'));
   const winnersByReader = { me: winnersMe, tom: winnersTom, nika: winnersNika, westdac: winnersWestdac, colton: winnersColton, schupp: winnersSchupp };
 
@@ -981,25 +959,6 @@ function renderStats() {
   };
   let { top: topAuthors, maxAppearances } = computeTopAuthors(state.authorWindow);
 
-  // ===== Decade heatmap =====
-  const decadeBuckets = {};
-  for (const b of winners) {
-    if (!b.year) continue;
-    const decade = Math.floor(b.year / 10) * 10;
-    if (!decadeBuckets[decade]) decadeBuckets[decade] = emptyBucket();
-    decadeBuckets[decade].total++;
-    for (const id of READER_KEYS) {
-      if (readStatus(b, id) === 'read') decadeBuckets[decade][id]++;
-    }
-  }
-  const decades = Object.entries(decadeBuckets)
-    .map(([d, s]) => ({ decade: parseInt(d, 10), ...s }))
-    .sort((a, b) => a.decade - b.decade);
-
-  // ===== Mount Readmore climb =====
-  const tomPct = winnersTom.length / winnersTotal;
-  const nikaPct = winnersNika.length / winnersTotal;
-
   const card = (h, v, sub, pct) => `<div class="stat-card">
     <h3>${h}</h3>
     <div class="stat-value">${v}</div>
@@ -1119,41 +1078,6 @@ function renderStats() {
 
   const root = $('#view-stats');
 
-  // Mount Readmore climb SVG — left slope: x = 300*(1-p), y = 280 - 230*p
-  const climbPos = (p) => {
-    const x = 300 * (1 - Math.max(0.02, p));
-    const y = 280 - 230 * Math.max(0.02, p);
-    return { x, y };
-  };
-  const tomClimb = climbPos(tomPct);
-  const nikaClimb = climbPos(nikaPct);
-  // Nika on right slope mirror
-  const nikaClimbR = { x: 600 - nikaClimb.x, y: nikaClimb.y };
-
-  const mountainSvg = `<svg viewBox="0 0 600 320" class="mountain-svg">
-    <defs>
-      <linearGradient id="mtn" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0%" stop-color="#3a4a5e"/>
-        <stop offset="100%" stop-color="#1d222c"/>
-      </linearGradient>
-      <linearGradient id="snow" x1="0" x2="0" y1="0" y2="1">
-        <stop offset="0%" stop-color="#e6e8ee"/>
-        <stop offset="100%" stop-color="#7d8aa3"/>
-      </linearGradient>
-    </defs>
-    <polygon points="0,300 300,30 600,300" fill="url(#mtn)" stroke="#2a3140"/>
-    <polygon points="270,60 300,30 330,60 320,75 300,55 280,75" fill="url(#snow)" opacity="0.85"/>
-    <line x1="0" y1="280" x2="600" y2="280" stroke="#2a3140" stroke-dasharray="2 4"/>
-    <text x="300" y="22" text-anchor="middle" fill="#e6e8ee" font-size="12" font-weight="600">PEAK · ${winnersTotal} winners</text>
-    <line x1="${tomClimb.x}" y1="${tomClimb.y}" x2="${tomClimb.x - 80}" y2="${tomClimb.y}" stroke="var(--accent)" stroke-width="1" opacity="0.5"/>
-    <circle cx="${tomClimb.x}" cy="${tomClimb.y}" r="9" fill="var(--accent)" stroke="#0f1115" stroke-width="2"/>
-    <text x="${tomClimb.x - 86}" y="${tomClimb.y + 4}" text-anchor="end" fill="var(--accent)" font-size="12" font-weight="600">Tom · ${winnersTom.length}/${winnersTotal} (${(tomPct * 100).toFixed(1)}%)</text>
-    <line x1="${nikaClimbR.x}" y1="${nikaClimbR.y}" x2="${nikaClimbR.x + 80}" y2="${nikaClimbR.y}" stroke="var(--accent-2)" stroke-width="1" opacity="0.5"/>
-    <circle cx="${nikaClimbR.x}" cy="${nikaClimbR.y}" r="9" fill="var(--accent-2)" stroke="#0f1115" stroke-width="2"/>
-    <text x="${nikaClimbR.x + 86}" y="${nikaClimbR.y + 4}" text-anchor="start" fill="var(--accent-2)" font-size="12" font-weight="600">Nika · ${winnersNika.length}/${winnersTotal} (${(nikaPct * 100).toFixed(1)}%)</text>
-    <text x="300" y="310" text-anchor="middle" fill="var(--muted)" font-size="10">BASE CAMP</text>
-  </svg>`;
-
   // Top authors leaderboard — extracted so the slider can recompute without
   // re-rendering the whole Stats view.
   const renderAuthorRows = (top, maxApp) => top.map((a, idx) => {
@@ -1185,28 +1109,6 @@ function renderStats() {
     </div>`;
   }).join('');
   const authorRows = renderAuthorRows(topAuthors, maxAppearances);
-
-  // Decade heatmap — color intensity follows the active reader in solo mode, first active reader otherwise
-  const heatmapColorRgb = Object.fromEntries(READER_KEYS.map(id => [id, READER_CONFIG[id].colorRgb]));
-  const heatmapReader = SOLO || (ACTIVE_READERS[0] ? ACTIVE_READERS[0].id : 'tom');
-  const decadeCells = decades.map(d => {
-    const activeCount = d[heatmapReader];
-    const pct = d.total > 0 ? activeCount / d.total : 0;
-    const colorRgb = heatmapColorRgb[heatmapReader];
-    let titleText, innerText;
-    if (SOLO) {
-      titleText = `${d.decade}s: ${activeCount}/${d.total} winners read`;
-      innerText = `<span style="color: ${READER_CONFIG[SOLO].colorVar}">${activeCount} / ${d.total}</span>`;
-    } else {
-      const parts = ACTIVE_READERS.map(r => `${r.label} ${d[r.id]}/${d.total}`).join(', ');
-      titleText = `${d.decade}s: ${parts}`;
-      innerText = ACTIVE_READERS.map(r => `<span style="color: ${r.colorVar}">${r.initial} ${d[r.id]}</span>`).join(' · ');
-    }
-    return `<div class="decade-cell" style="background: rgba(${colorRgb}, ${0.1 + pct * 0.8});" title="${titleText}">
-      <div class="decade-label">${d.decade % 100}s · ${d.total} ${SUBSET}</div>
-      <div class="decade-frac">${innerText}</div>
-    </div>`;
-  }).join('');
 
   root.innerHTML = `<div class="detail">
     <div class="featured-banners featured-banners-full">
