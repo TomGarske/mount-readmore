@@ -2218,17 +2218,23 @@ async function renderFriends() {
     const isMe = r.user_id === myUserId;
     const canCompare = isAuthed && !isMe;
     const compareHref = canCompare ? `#/compare?u=${myHandleSlug}&u=${encodeURIComponent(r.handle)}` : '#';
-    const tag = canCompare
+    const compareTag = canCompare
       ? `<a class="lb-compare" href="${compareHref}">Compare →</a>`
       : isMe
         ? `<span class="lb-me">you</span>`
         : `<span class="lb-compare lb-compare-disabled" data-tooltip="Sign in to compare">Compare</span>`;
+    // Remove button for friend rows (not me, not @tom auto-friend baseline).
+    // @tom is intentionally auto-friended with everyone, so keep him for now.
+    const canRemove = isAuthed && !isMe;
+    const removeTag = canRemove
+      ? `<button type="button" class="lb-remove" data-friend-id="${escapeHtml(r.user_id)}" data-friend-handle="${escapeHtml(r.handle)}" aria-label="Remove @${escapeHtml(r.handle)} as friend" title="Remove friend">×</button>`
+      : '';
     return `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
       <div class="lb-rank">#${r.rank}</div>
-      <div class="lb-handle">@${escapeHtml(r.handle)}</div>
+      <div class="lb-handle"><a href="#/u/${escapeHtml(r.handle)}">@${escapeHtml(r.handle)}</a></div>
       <div class="lb-stat"><strong>${r.read_count}</strong> <span class="lb-of">/ ${r.total_books}</span></div>
       <div class="lb-pct">${r.pct ?? 0}%</div>
-      <div class="lb-action">${tag}</div>
+      <div class="lb-action">${compareTag}${removeTag}</div>
     </div>`;
   }).join('');
 
@@ -2249,12 +2255,24 @@ async function renderFriends() {
         </div>`
       : `<div class="lb-empty">
           <p><strong>No friends on the leaderboard yet.</strong></p>
-          <p style="color: var(--muted);">Add friends from <a href="#/settings">Settings</a> — they need to be opted into the leaderboard too. @tom should show up automatically once he's on.</p>
+          <p style="color: var(--muted);">Add a friend by their handle below — they need to be opted into the leaderboard too. @tom should show up automatically once he's on.</p>
         </div>`;
+
+  // Add-friend form (signed-in users only). Drop-in equivalent of what
+  // used to live on the Settings page.
+  const addFriendForm = isAuthed
+    ? `<form id="friends-add-form" class="friends-add-form">
+        <input type="text" id="friends-add-handle" placeholder="@handle to add" autocomplete="off">
+        <button type="submit" class="mr-btn-primary">Add friend</button>
+        <span id="friends-add-status" class="settings-inline-status"></span>
+      </form>`
+    : '';
 
   root.innerHTML = `<div class="detail leaderboard-page">
     <h1>Friends</h1>
-    <p style="color: var(--muted);">You and your friends, ranked by how many of the ${totalLabel} you've read. Tap <strong>Compare</strong> on any row to see the head-to-head. Add friends and opt in from <a href="#/settings">Settings</a>.</p>
+    <p style="color: var(--muted);">You and your friends, ranked by how many of the ${totalLabel} you've read. Tap <strong>Compare</strong> on any row to see the head-to-head, or <strong>×</strong> to remove a friend.</p>
+
+    ${addFriendForm}
 
     <div class="status-toggle leaderboard-toggle">
       ${tab('overall', 'Overall')}
@@ -2267,7 +2285,7 @@ async function renderFriends() {
       : `<div class="lb-table">${rowHtml}</div>`}
 
     ${meOnly
-      ? `<p style="margin-top: 22px; color: var(--muted);">It's just you for now. <a href="#/settings">Add friends</a> to fill out the board.</p>`
+      ? `<p style="margin-top: 22px; color: var(--muted);">It's just you for now. Add a friend above to fill out the board.</p>`
       : ''}
 
     ${rows.length > 0 && !isAuthed
@@ -2285,9 +2303,54 @@ async function renderFriends() {
   });
   $('#lb-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
   $('#lb-signin-empty')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
-  // Disabled-Compare hover hint: clicking prompts sign-in.
   root.querySelectorAll('.lb-compare-disabled').forEach(el => {
     el.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
+  });
+
+  // Add-friend form
+  const addForm = $('#friends-add-form');
+  const addStatus = $('#friends-add-status');
+  if (addForm) {
+    addForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = $('#friends-add-handle');
+      const v = (input.value || '').trim();
+      if (!v) return;
+      addStatus.textContent = 'Adding…';
+      addStatus.className = 'settings-inline-status';
+      try {
+        const target = await window.MR_AUTH.addFriendByHandle(v);
+        addStatus.textContent = `✓ Added @${target.handle}`;
+        addStatus.className = 'settings-inline-status success';
+        input.value = '';
+        // MR_AUTH.addFriendByHandle already refreshed friends+leaderboard
+        // and called notify(); the onChange listener re-routes which
+        // re-renders this page. Defensive re-render in case that order
+        // ever changes.
+        setTimeout(() => renderFriends(), 100);
+      } catch (err) {
+        addStatus.textContent = err.message || String(err);
+        addStatus.className = 'settings-inline-status error';
+      }
+    });
+  }
+
+  // Per-row Remove buttons
+  root.querySelectorAll('.lb-remove').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const friendId = btn.dataset.friendId;
+      const handle = btn.dataset.friendHandle;
+      if (!confirm(`Remove @${handle} as a friend?`)) return;
+      btn.disabled = true;
+      try {
+        await window.MR_AUTH.removeFriend(friendId);
+        // onChange listener will re-route. Defensive re-render.
+        setTimeout(() => renderFriends(), 100);
+      } catch (err) {
+        btn.disabled = false;
+        alert('Remove failed: ' + (err.message || err));
+      }
+    });
   });
 }
 
@@ -2319,20 +2382,11 @@ async function renderSettings() {
     </div>`;
     return;
   }
-  const friends = await window.MR_AUTH.listFriends();
-
   const visOpt = (val, label, desc) => `
     <label class="settings-radio">
       <input type="radio" name="profile_visibility" value="${val}" ${profile.profile_visibility === val ? 'checked' : ''}>
       <span><strong>${label}</strong> — ${desc}</span>
     </label>`;
-
-  const friendRow = (f) => `
-    <div class="settings-friend-row" data-friend-id="${escapeHtml(f.id)}">
-      <a class="settings-friend-handle" href="#/u/${escapeHtml(f.handle)}">@${escapeHtml(f.handle)}</a>
-      <span class="settings-friend-meta">${f.on_leaderboard ? 'on leaderboard' : 'off leaderboard'}</span>
-      <button type="button" class="settings-friend-remove" data-friend-id="${escapeHtml(f.id)}">Remove</button>
-    </div>`;
 
   root.innerHTML = `<div class="detail settings-page">
     <h1>Settings</h1>
@@ -2365,18 +2419,6 @@ async function renderSettings() {
           <input type="checkbox" id="settings-leaderboard" ${profile.on_leaderboard ? 'checked' : ''}>
           Show me on the leaderboard (friends only — you and your friends see each other)
         </label>
-      </div>
-    </section>
-
-    <section class="settings-section">
-      <h2>Friends <span class="settings-count">${friends.length}</span></h2>
-      <p style="color: var(--muted); font-size: 13px;">Your friends appear together on your leaderboard. <strong>@tom is auto-friends with everyone.</strong></p>
-      <form id="settings-add-friend" class="settings-add-friend">
-        <input type="text" id="settings-friend-handle" placeholder="@handle" autocomplete="off">
-        <button type="submit" class="mr-btn-primary">Add friend</button>
-      </form>
-      <div class="settings-friend-list">
-        ${friends.length === 0 ? '<p style="color: var(--muted); font-size: 13px;">No friends yet. Tom should be here automatically — if not, add him: @tom.</p>' : friends.map(friendRow).join('')}
       </div>
     </section>
 
@@ -2455,31 +2497,6 @@ async function renderSettings() {
       await window.MR_AUTH.updateProfile({ on_leaderboard: e.target.checked });
       setMsg(e.target.checked ? "You're on the leaderboard." : "Removed from leaderboard.", 'success');
     } catch (err) { setMsg('Save failed: ' + err.message, 'error'); }
-  });
-
-  $('#settings-add-friend').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const handle = $('#settings-friend-handle').value;
-    try {
-      const target = await window.MR_AUTH.addFriendByHandle(handle);
-      setMsg(`Added @${target.handle} as a friend.`, 'success');
-      $('#settings-friend-handle').value = '';
-      renderSettings();
-    } catch (err) {
-      setMsg(err.message || String(err), 'error');
-    }
-  });
-
-  $$('.settings-friend-remove').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const friendId = btn.dataset.friendId;
-      if (!confirm('Remove this friend?')) return;
-      try {
-        await window.MR_AUTH.removeFriend(friendId);
-        setMsg('Friend removed.', 'success');
-        renderSettings();
-      } catch (err) { setMsg(err.message || String(err), 'error'); }
-    });
   });
 
   $('#settings-signout').addEventListener('click', async () => {

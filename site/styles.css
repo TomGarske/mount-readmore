@@ -1011,13 +1011,18 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
   cursor: pointer;
 }
-.settings-add-friend {
+/* Add-friend form on the Friends tab (was Settings). Used to live as
+   .settings-add-friend; renamed when friend management moved. */
+.friends-add-form {
   display: flex;
-  gap: 8px;
-  margin: 10px 0 14px;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 18px;
+  flex-wrap: wrap;
 }
-.settings-add-friend input {
+.friends-add-form input {
   flex: 1;
+  min-width: 220px;
   padding: 9px 11px;
   border: 1px solid var(--border);
   border-radius: 8px;
@@ -1025,34 +1030,24 @@ a:hover { text-decoration: underline; }
   color: var(--text);
   font-size: 14px;
 }
-.settings-friend-list { display: flex; flex-direction: column; gap: 6px; }
-.settings-friend-row {
-  display: grid;
-  grid-template-columns: 1fr auto 90px;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-}
-.settings-friend-handle {
-  font-weight: 600;
-  color: var(--text);
-  text-decoration: none;
-}
-.settings-friend-handle:hover { color: var(--accent); }
-.settings-friend-meta { font-size: 12px; color: var(--muted); }
-.settings-friend-remove {
+
+/* Per-row Remove (×) button inside the Friends leaderboard. */
+.lb-remove {
   background: transparent;
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 5px 10px;
-  font-size: 12px;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  font-size: 16px;
+  line-height: 1;
   cursor: pointer;
+  margin-left: 8px;
+  padding: 0;
+  transition: color 0.15s, border-color 0.15s;
 }
-.settings-friend-remove:hover { color: var(--sf); border-color: var(--sf); }
+.lb-remove:hover { color: var(--sf); border-color: var(--sf); }
+.lb-remove:disabled { opacity: 0.4; cursor: default; }
 .settings-msg { margin-top: 12px; font-size: 13px; min-height: 18px; color: var(--muted); }
 .settings-msg.success { color: var(--read); }
 .settings-msg.error   { color: var(--sf); }
@@ -2189,8 +2184,9 @@ fieldset label input { margin-right: 8px; }
 }
 .hugo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(118px, 140px));
   gap: 10px;
+  justify-content: start;
 }
 .hugo-card {
   display: flex;
