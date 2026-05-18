@@ -95,10 +95,12 @@ let state = {
   authorWindow: 30,
   // Home page: which gender slice is currently selected (null = all)
   genderFilter: null,
-  // Books page: optional author-gender filter slice
-  authorGender: null,
-  // Books page: missing-data debug filter — 'desc' | 'cover' | 'either' | null
-  missingFilter: null,
+  // Books page: author-gender multi-filter. Set of {'female','male','unknown'}.
+  // Full set (size 3) = no filter; smaller set = restrict to those gender(s).
+  authorGender: new Set(['female', 'male', 'unknown']),
+  // Books page: missing-data debug filter. Set of {'desc','cover'}.
+  // Empty = no filter; any checked = books missing at least one selected.
+  missingFilter: new Set(),
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
@@ -162,16 +164,20 @@ function matchesFilters(book) {
   if (!hasMatchingAward) return false;
   if (state.yearMin != null && (book.year == null || book.year < state.yearMin)) return false;
   if (state.yearMax != null && (book.year == null || book.year > state.yearMax)) return false;
-  if (state.authorGender) {
+  // Author gender filter: full set (3 of 3) = no filter, otherwise restrict.
+  if (state.authorGender && state.authorGender.size < 3) {
     const g = book.primary_author_gender || 'unknown';
-    if (g !== state.authorGender) return false;
+    if (!state.authorGender.has(g)) return false;
   }
-  if (state.missingFilter) {
+  // Missing-data filter: any checked → book must be missing at least one of
+  // the checked criteria. Empty set = no filter.
+  if (state.missingFilter && state.missingFilter.size > 0) {
     const missingDesc = !book.description || !book.description.trim();
     const missingCover = !book.cover_url || !book.cover_url.trim();
-    if (state.missingFilter === 'desc' && !missingDesc) return false;
-    if (state.missingFilter === 'cover' && !missingCover) return false;
-    if (state.missingFilter === 'either' && !(missingDesc || missingCover)) return false;
+    const wantsDesc = state.missingFilter.has('desc');
+    const wantsCover = state.missingFilter.has('cover');
+    const matches = (wantsDesc && missingDesc) || (wantsCover && missingCover);
+    if (!matches) return false;
   }
   return true;
 }
@@ -344,16 +350,14 @@ function renderList() {
   const filtered = DATA.books.filter(matchesFilters);
   const sorted = sortBooks(filtered);
   const activeFilters = [];
-  if (state.authorGender) {
-    const label = state.authorGender === 'female' ? 'Female-authored'
-      : state.authorGender === 'male' ? 'Male-authored'
-      : 'Unknown / pen name';
+  if (state.authorGender && state.authorGender.size > 0 && state.authorGender.size < 3) {
+    const names = { female: 'Female-authored', male: 'Male-authored', unknown: 'Unknown / pen name' };
+    const label = [...state.authorGender].map(g => names[g]).join(' + ');
     activeFilters.push({ label, clear: 'gender' });
   }
-  if (state.missingFilter) {
-    const label = state.missingFilter === 'desc' ? 'Missing description'
-      : state.missingFilter === 'cover' ? 'Missing cover'
-      : 'Missing description or cover';
+  if (state.missingFilter && state.missingFilter.size > 0) {
+    const names = { desc: 'Missing description', cover: 'Missing cover' };
+    const label = [...state.missingFilter].map(k => names[k]).join(' or ');
     activeFilters.push({ label, clear: 'missing' });
   }
   $('#result-count').innerHTML = `${sorted.length} of ${DATA.books.length} books` +
@@ -363,12 +367,12 @@ function renderList() {
   $$('.active-filter-chip').forEach(chip => chip.addEventListener('click', () => {
     const w = chip.dataset.clear;
     if (w === 'gender') {
-      state.authorGender = null;
-      $$('input[name="author-gender"]').forEach(el => el.checked = false);
+      state.authorGender = new Set(['female', 'male', 'unknown']);
+      $$('input[name="author-gender"]').forEach(el => el.checked = true);
     }
     if (w === 'missing') {
-      state.missingFilter = null;
-      $$('input[name="missing"]').forEach(el => { el.checked = el.value === ''; });
+      state.missingFilter = new Set();
+      $$('input[name="missing"]').forEach(el => el.checked = false);
     }
     renderList();
   }));
@@ -2918,8 +2922,8 @@ function resetFilterState() {
   state.categories = new Set(['Novel', 'Novella', 'Novelette']);
   state.yearMin = null;
   state.yearMax = null;
-  state.authorGender = null;
-  state.missingFilter = null;
+  state.authorGender = new Set(['female', 'male', 'unknown']);
+  state.missingFilter = new Set();
 }
 
 function applyFilterParams(params) {
@@ -2936,12 +2940,23 @@ function applyFilterParams(params) {
     const parsed = readTom.split(',').map(s => s.trim()).filter(s => ALL_READ_STATES.includes(s));
     if (parsed.length) state.readTom = new Set(parsed);
   }
-  // Author gender filter from "By gender" donut/cards on Home
+  // Author gender filter from "By gender" donut/cards on Home. Comma-separated
+  // values, e.g. ?gender=female or ?gender=female,male.
   const gender = params.get('gender');
-  state.authorGender = ['female', 'male', 'unknown'].includes(gender) ? gender : null;
-  // Missing-data debug filter (?missing=desc|cover|either)
+  if (gender) {
+    const valid = gender.split(',').map(s => s.trim()).filter(s => ['female', 'male', 'unknown'].includes(s));
+    if (valid.length > 0) state.authorGender = new Set(valid);
+  }
+  // Missing-data debug filter — comma-separated. Legacy "either" maps to both.
   const missing = params.get('missing');
-  state.missingFilter = ['desc', 'cover', 'either'].includes(missing) ? missing : null;
+  if (missing) {
+    const set = new Set();
+    for (const v of missing.split(',').map(s => s.trim())) {
+      if (v === 'desc' || v === 'cover') set.add(v);
+      else if (v === 'either') { set.add('desc'); set.add('cover'); }
+    }
+    if (set.size > 0) state.missingFilter = set;
+  }
   syncFiltersToDom();
 }
 
@@ -2956,8 +2971,8 @@ function syncFiltersToDom() {
   $$('input[name="award"]').forEach(el => { el.checked = state.awards.has(el.value); });
   $$('input[name="status"]').forEach(el => { el.checked = state.statuses.has(el.value); });
   $$('input[name="category"]').forEach(el => { el.checked = state.categories.has(el.value); });
-  $$('input[name="author-gender"]').forEach(el => { el.checked = state.authorGender === el.value; });
-  $$('input[name="missing"]').forEach(el => { el.checked = (state.missingFilter || '') === el.value; });
+  $$('input[name="author-gender"]').forEach(el => { el.checked = state.authorGender.has(el.value); });
+  $$('input[name="missing"]').forEach(el => { el.checked = state.missingFilter.has(el.value); });
   $('#sort').value = state.sort;
 }
 
@@ -3106,21 +3121,14 @@ function wireFilters() {
   $('#year-min').addEventListener('input', e => { state.yearMin = e.target.value ? parseInt(e.target.value, 10) : null; renderList(); });
   $('#year-max').addEventListener('input', e => { state.yearMax = e.target.value ? parseInt(e.target.value, 10) : null; renderList(); });
   $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderList(); });
-  // Author-gender filter — checkboxes are exclusive (a book has one primary
-  // gender). Unchecking the active one clears the filter.
   $$('input[name="author-gender"]').forEach(el => el.addEventListener('change', e => {
-    if (e.target.checked) {
-      state.authorGender = e.target.value;
-      $$('input[name="author-gender"]').forEach(other => {
-        if (other !== e.target) other.checked = false;
-      });
-    } else {
-      state.authorGender = null;
-    }
+    if (e.target.checked) state.authorGender.add(e.target.value);
+    else state.authorGender.delete(e.target.value);
     renderList();
   }));
   $$('input[name="missing"]').forEach(el => el.addEventListener('change', e => {
-    state.missingFilter = e.target.value || null;
+    if (e.target.checked) state.missingFilter.add(e.target.value);
+    else state.missingFilter.delete(e.target.value);
     renderList();
   }));
   $('#reset').addEventListener('click', () => {
@@ -3139,8 +3147,8 @@ function wireFilters() {
       progressAward: state.progressAward,
       authorWindow: state.authorWindow,
       genderFilter: null,
-      authorGender: null,
-      missingFilter: null,
+      authorGender: new Set(['female', 'male', 'unknown']),
+      missingFilter: new Set(),
     };
     $('#search').value = '';
     $('#year-min').value = '';
@@ -3151,8 +3159,8 @@ function wireFilters() {
     $$('input[name="award"]').forEach(el => el.checked = true);
     $$('input[name="status"]').forEach(el => el.checked = true);
     $$('input[name="category"]').forEach(el => el.checked = true);
-    $$('input[name="author-gender"]').forEach(el => el.checked = false);
-    $$('input[name="missing"]').forEach(el => { el.checked = el.value === ''; });
+    $$('input[name="author-gender"]').forEach(el => el.checked = true);
+    $$('input[name="missing"]').forEach(el => el.checked = false);
     $('#sort').value = 'year-desc';
     renderList();
   });

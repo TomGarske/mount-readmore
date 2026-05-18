@@ -97,17 +97,15 @@
 
       <fieldset>
         <legend>Author gender</legend>
-        <label><input type="checkbox" name="author-gender" value="female"> Female-authored</label>
-        <label><input type="checkbox" name="author-gender" value="male"> Male-authored</label>
-        <label><input type="checkbox" name="author-gender" value="unknown"> Unknown / pen name</label>
+        <label><input type="checkbox" name="author-gender" value="female" checked> Female-authored</label>
+        <label><input type="checkbox" name="author-gender" value="male" checked> Male-authored</label>
+        <label><input type="checkbox" name="author-gender" value="unknown" checked> Unknown / pen name</label>
       </fieldset>
 
       <fieldset class="debug-filter">
         <legend>Debug: missing data</legend>
-        <label><input type="radio" name="missing" value="" checked> All books</label>
-        <label><input type="radio" name="missing" value="desc"> Missing description</label>
-        <label><input type="radio" name="missing" value="cover"> Missing cover</label>
-        <label><input type="radio" name="missing" value="either"> Missing either</label>
+        <label><input type="checkbox" name="missing" value="desc"> Missing description</label>
+        <label><input type="checkbox" name="missing" value="cover"> Missing cover</label>
       </fieldset>
 
       <button id="reset" type="button">Reset filters</button>
