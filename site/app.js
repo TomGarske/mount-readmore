@@ -1195,7 +1195,7 @@ function renderStats() {
         ceremonyLoc: 'LAcon V · Anaheim',
         finalistsTagline: '2026 Best Novel + Novella finalists',
         finalists: HUGO_2026_FINALISTS,
-        href: '#hugo2026-section',
+        href: '#/hugo2026',
       })}
       ${featuredBanner({
         theme: 'nebula',
@@ -1207,14 +1207,11 @@ function renderStats() {
         ceremonyLoc: 'SFWA Conference · Chicago',
         finalistsTagline: '2026 peer-voted finalists',
         finalists: NEBULA_2026_FINALISTS,
-        href: '#nebula2026-section',
+        href: '#/nebula2026',
       })}
     </div>
 
     <p class="awards-tracks-note">Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>
-
-    <div class="awards-2026-embed hugo2026" id="hugo2026-section">${hugo2026Body()}</div>
-    <div class="awards-2026-embed hugo2026 nebula2026" id="nebula2026-section">${nebula2026Body()}</div>
 
     <section class="completionist-intro">
       <p>Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
