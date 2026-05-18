@@ -286,6 +286,51 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Era radar helpers — shared by Home (Influence by era), Compare, and Profile.
+// Buckets books by decade and exposes (a) the decade axes for the radar and
+// (b) per-reader read-share values.
+function bucketBooksByDecade(books) {
+  const out = {};
+  for (const b of books) {
+    if (!b.year) continue;
+    const d = Math.floor(b.year / 10) * 10;
+    (out[d] = out[d] || []).push(b);
+  }
+  return out;
+}
+function eraRadarAxes(byDecade) {
+  // Drop decades with fewer than 3 books so the chart doesn't get pinched by
+  // outlier years. Sorted ascending so the spokes read left-to-right.
+  return Object.keys(byDecade)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .filter(d => byDecade[d].length >= 3);
+}
+function eraAxisLabel(d) {
+  const two = d % 100;
+  return `${two < 10 ? '0' + two : two}s`;
+}
+function eraReaderValues(decades, byDecade, isReadFn) {
+  return decades.map(d => {
+    const books = byDecade[d] || [];
+    if (books.length === 0) return 0;
+    return books.filter(isReadFn).length / books.length;
+  });
+}
+function mostReadDecade(books, isReadFn) {
+  const counts = {};
+  for (const b of books) {
+    if (!b.year || !isReadFn(b)) continue;
+    const d = Math.floor(b.year / 10) * 10;
+    counts[d] = (counts[d] || 0) + 1;
+  }
+  let bestD = null, bestC = 0;
+  for (const [d, c] of Object.entries(counts)) {
+    if (c > bestC) { bestC = c; bestD = parseInt(d, 10); }
+  }
+  return bestD === null ? null : { decade: bestD, count: bestC };
+}
+
 // Cover-load handler — wired as an inline onload/onerror on every cover <img>.
 // OpenLibrary returns a 60×40 "image not available" pixel when a cover ID has
 // no actual scan, and a 404 is also a possibility. In either case we swap the
@@ -1229,39 +1274,6 @@ function renderStats() {
   const authorRows = renderAuthorRows(topAuthors, maxAppearances);
 
   root.innerHTML = `<div class="detail">
-    <section class="home-cta">
-      <p><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
-    </section>
-
-    <div class="featured-banners featured-banners-full">
-      ${featuredBanner({
-        theme: 'hugo',
-        name: 'Hugo Awards',
-        audience: 'Fans',
-        since: '1953',
-        descriptionHtml: `The oldest annual literary award in science fiction and fantasy, presented by members of the <strong>World Science Fiction Convention (Worldcon)</strong>. Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. Site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.`,
-        ceremonyDate: 'Sunday, Aug 30, 2026',
-        ceremonyLoc: 'LAcon V · Anaheim',
-        finalistsTagline: '2026 Best Novel + Novella finalists',
-        finalists: HUGO_2026_FINALISTS,
-        href: '#/hugo2026',
-      })}
-      ${featuredBanner({
-        theme: 'nebula',
-        name: 'Nebula Awards',
-        audience: 'Writers',
-        since: '1965',
-        descriptionHtml: `Peer-voted award presented annually by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.`,
-        ceremonyDate: 'Saturday, Jun 6, 2026',
-        ceremonyLoc: 'SFWA Conference · Chicago',
-        finalistsTagline: '2026 peer-voted finalists',
-        finalists: NEBULA_2026_FINALISTS,
-        href: '#/nebula2026',
-      })}
-    </div>
-
-    <p class="awards-tracks-note">Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>
-
     <h1>Home</h1>
     <div class="toggle-row">
       <div class="status-toggle" data-status="${STATUS}">
@@ -1359,6 +1371,32 @@ function renderStats() {
       <div class="era-bars">${eraBarsHtml}</div>
     </div>
 
+    ${HAS_READER ? (() => {
+      // Influence by era — spider chart over DATA.books (winners + nominees,
+      // not the SUBSET). Each axis = a decade with at least 3 books; value =
+      // share of that decade the reader has finished.
+      const byDecade = bucketBooksByDecade(DATA.books);
+      const decades = eraRadarAxes(byDecade);
+      if (decades.length < 3) return '';
+      const axes = decades.map(eraAxisLabel);
+      const values = {};
+      for (const r of ACTIVE_READERS) {
+        values[r.id] = eraReaderValues(decades, byDecade, (b) => readStatus(b, r.id) === 'read');
+      }
+      const mrd = ACTIVE_READERS
+        .map(r => {
+          const m = mostReadDecade(DATA.books, (b) => readStatus(b, r.id) === 'read');
+          return m ? `<span style="color:${r.colorVar}"><strong>${r.label}</strong> · most-read ${eraAxisLabel(m.decade)} (${m.count})</span>` : '';
+        })
+        .filter(Boolean)
+        .join(' &nbsp;·&nbsp; ');
+      return `<div class="progress-section radar-hero">
+        <h2>Influence by era</h2>
+        <p style="color: var(--muted); font-size: 13px;">Each axis = a decade. Distance from center = % of that decade's winners + finalists this reader has read.</p>
+        ${buildRadar(axes, values)}
+        ${mrd ? `<p class="era-radar-stats">${mrd}</p>` : ''}
+      </div>`;
+    })() : ''}
 
     ${comparisonHtml}
 
@@ -2074,6 +2112,32 @@ async function renderCompare(params) {
   const taste = unionCount > 0 ? Math.round((both.length / unionCount) * 100) : 0;
   const avgYearA = stats.a.yearCount > 0 ? Math.round(stats.a.yearSum / stats.a.yearCount) : null;
   const avgYearB = stats.b.yearCount > 0 ? Math.round(stats.b.yearSum / stats.b.yearCount) : null;
+  // Most-read decade — argmax over the decade tallies above.
+  const argmaxDecade = (byDecade) => {
+    let bestD = null, bestC = 0;
+    for (const [d, c] of Object.entries(byDecade)) {
+      if (c > bestC) { bestC = c; bestD = parseInt(d, 10); }
+    }
+    return bestD === null ? null : { decade: bestD, count: bestC };
+  };
+  const mrdA = argmaxDecade(stats.a.byDecade);
+  const mrdB = argmaxDecade(stats.b.byDecade);
+
+  // Era fingerprint radar — share of each decade's winners + finalists that
+  // each side has read. Same shape as Home's "Influence by era" but with two
+  // polygons (one per reader).
+  const decadeBuckets = bucketBooksByDecade(DATA.books);
+  const eraDecades = eraRadarAxes(decadeBuckets);
+  const eraAxes = eraDecades.map(eraAxisLabel);
+  const eraValsA = eraReaderValues(eraDecades, decadeBuckets, (b) => aSide.statusMap[b.id]?.status === 'read');
+  const eraValsB = eraReaderValues(eraDecades, decadeBuckets, (b) => bSide.statusMap[b.id]?.status === 'read');
+  const eraRadarConfig = {
+    [aKey]: { label: '@' + aSide.label, colorVar: aSide.colorVar, colorRgb: aSide.colorRgb },
+    [bKey]: { label: '@' + bSide.label, colorVar: bSide.colorVar, colorRgb: bSide.colorRgb },
+  };
+  const eraRadarHtml = eraDecades.length >= 3
+    ? buildRadar(eraAxes, { [aKey]: eraValsA, [bKey]: eraValsB }, eraRadarConfig)
+    : '';
 
   // Build per-side radars — top 8 most-populated subgenres, dropping axes
   // where neither side has any reads (keeps the chart legible).
@@ -2252,6 +2316,15 @@ async function renderCompare(params) {
         <div class="compare-stat-card-sub">Of the books each has read</div>
       </div>
       <div class="compare-stat-card">
+        <div class="compare-stat-card-label">Most-read decade</div>
+        <div class="compare-stat-card-value compare-avg-year">
+          <span style="color:${aSide.colorVar}">${mrdA ? eraAxisLabel(mrdA.decade) : '—'}</span>
+          <span style="color:var(--muted)">vs</span>
+          <span style="color:${bSide.colorVar}">${mrdB ? eraAxisLabel(mrdB.decade) : '—'}</span>
+        </div>
+        <div class="compare-stat-card-sub">${mrdA ? `${aSide.label} ${mrdA.count}` : ''}${mrdA && mrdB ? ' · ' : ''}${mrdB ? `${bSide.label} ${mrdB.count}` : ''}</div>
+      </div>
+      <div class="compare-stat-card">
         <div class="compare-stat-card-label">Gap to close</div>
         <div class="compare-stat-card-value">${neither.length}</div>
         <div class="compare-stat-card-sub">Books neither of you has read</div>
@@ -2298,6 +2371,16 @@ async function renderCompare(params) {
         ${decadeRows}
       </div>
     </section>
+
+    ${eraRadarHtml ? `<section class="compare-radar-section">
+      <h2>Era fingerprint</h2>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Each axis = a decade. Distance from center = share of that decade's winners + finalists each reader has read.</p>
+      ${eraRadarHtml}
+      <div class="era-radar-stats">
+        <span style="color:${aSide.colorVar}"><strong>@${escapeHtml(aSide.label)}</strong> · avg ${avgYearA ?? '—'}${mrdA ? ` · most-read ${eraAxisLabel(mrdA.decade)} (${mrdA.count})` : ''}</span>
+        <span style="color:${bSide.colorVar}"><strong>@${escapeHtml(bSide.label)}</strong> · avg ${avgYearB ?? '—'}${mrdB ? ` · most-read ${eraAxisLabel(mrdB.decade)} (${mrdB.count})` : ''}</span>
+      </div>
+    </section>` : ''}
 
     ${radarHtml ? `<section class="compare-radar-section">
       <h2>Subgenre fingerprint</h2>
@@ -2536,6 +2619,43 @@ function discoverPeekBook(offset) {
   return null;
 }
 
+// Marketing intro for the Discover tab: the SFF Readmore mission statement plus
+// the two award featured-banners. Lives here (not on Home) because Home is now
+// the personal progress dashboard. Anon visitors see this on Discover before
+// the sign-in CTA.
+function discoverIntroHtml() {
+  return `<section class="home-cta">
+      <p><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
+    </section>
+    <div class="featured-banners featured-banners-full">
+      ${featuredBanner({
+        theme: 'hugo',
+        name: 'Hugo Awards',
+        audience: 'Fans',
+        since: '1953',
+        descriptionHtml: `The oldest annual literary award in science fiction and fantasy, presented by members of the <strong>World Science Fiction Convention (Worldcon)</strong>. Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. Site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.`,
+        ceremonyDate: 'Sunday, Aug 30, 2026',
+        ceremonyLoc: 'LAcon V · Anaheim',
+        finalistsTagline: '2026 Best Novel + Novella finalists',
+        finalists: HUGO_2026_FINALISTS,
+        href: '#/hugo2026',
+      })}
+      ${featuredBanner({
+        theme: 'nebula',
+        name: 'Nebula Awards',
+        audience: 'Writers',
+        since: '1965',
+        descriptionHtml: `Peer-voted award presented annually by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.`,
+        ceremonyDate: 'Saturday, Jun 6, 2026',
+        ceremonyLoc: 'SFWA Conference · Chicago',
+        finalistsTagline: '2026 peer-voted finalists',
+        finalists: NEBULA_2026_FINALISTS,
+        href: '#/nebula2026',
+      })}
+    </div>
+    <p class="awards-tracks-note">Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>`;
+}
+
 async function renderDiscover() {
   const root = $('#view-discover');
   if (!root) return;
@@ -2554,6 +2674,7 @@ async function renderDiscover() {
   if (!auth?.user) {
     root.innerHTML = `<div class="detail discover-page">
       <h1>Discover</h1>
+      ${discoverIntroHtml()}
       <p style="color: var(--muted); max-width: 540px;">Swipe through every Hugo and Nebula finalist and decide whether you've read it, want to read it, or want to skip it. Sign in to start labeling.</p>
       <p style="margin-top: 18px;"><button type="button" class="user-status-signin" id="discover-signin">Sign in</button></p>
     </div>`;
@@ -2683,6 +2804,7 @@ function drawDiscover() {
 
   root.innerHTML = `<div class="detail discover-page">
     <h1>Discover</h1>
+    ${discoverIntroHtml()}
     ${statsRow}
     <div class="discover-stage">
       <button type="button" class="discover-side-btn discover-skip" title="Skip — show again later" aria-label="Skip">⤼ Skip</button>
@@ -3166,16 +3288,85 @@ async function renderProfile(handle) {
 
   // Recent reads (intersect with DATA.books for cover/title lookup)
   const byId = Object.fromEntries(DATA.books.map(b => [b.id, b]));
-  const readBooks = reads
+  const readBooksFull = reads
     .map(r => ({ ...byId[r.book_id], date_read: r.date_read }))
-    .filter(b => b.id)
+    .filter(b => b.id);
+  const readBooks = readBooksFull
+    .slice()
     .sort((a, b) => (b.date_read || '').localeCompare(a.date_read || '') || (b.year || 0) - (a.year || 0))
-    .slice(0, 12);
+    .slice(0, 18);
   const tile = (bk) => `<a class="swimlane-card" href="#/book/${escapeHtml(bk.id)}">
     <div class="swimlane-cover">${bk.cover_url ? `<img src="${escapeHtml(bk.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">` : '<span class="swimlane-placeholder">📖</span>'}</div>
     <div class="swimlane-title">${escapeHtml(bk.title)}</div>
     <div class="swimlane-meta">${escapeHtml(bk.authors?.[0] || '')} · ${bk.year || ''}</div>
   </a>`;
+
+  // Read-id set so the per-section rollups can ask "did they read this?" cheaply.
+  const readIds = new Set(reads.map(r => r.book_id));
+  const isProfileRead = (b) => readIds.has(b.id);
+
+  // By award — Hugo / Nebula winners + finalists read
+  const awardKeys = ['hugo', 'nebula'];
+  const awardLabels = { hugo: 'Hugo', nebula: 'Nebula' };
+  const awardRows = awardKeys.map(a => {
+    const total = DATA.books.filter(b => (b.awards || {})[a]).length;
+    const read = readBooksFull.filter(b => (b.awards || {})[a]).length;
+    const pct = total > 0 ? Math.round((read / total) * 100) : 0;
+    const color = a === 'hugo' ? 'var(--sf)' : 'var(--fantasy)';
+    return `<div class="profile-stat-row">
+      <div class="profile-stat-label" style="color:${color}"><strong>${awardLabels[a]}</strong></div>
+      <div class="profile-stat-bar"><div class="profile-stat-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="profile-stat-num"><strong>${read}</strong> <span class="muted">/ ${total}</span> · ${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // By category — Novel / Novella / Novelette
+  const catKeys = ['Novel', 'Novella', 'Novelette'];
+  const catRows = catKeys.map(c => {
+    const total = DATA.books.filter(b => b.category === c).length;
+    const read = readBooksFull.filter(b => b.category === c).length;
+    const pct = total > 0 ? Math.round((read / total) * 100) : 0;
+    return `<div class="profile-stat-row">
+      <div class="profile-stat-label"><strong>${c}</strong></div>
+      <div class="profile-stat-bar"><div class="profile-stat-fill" style="width:${pct}%;background:var(--accent)"></div></div>
+      <div class="profile-stat-num"><strong>${read}</strong> <span class="muted">/ ${total}</span> · ${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // By author gender
+  const genderKeys = [
+    { k: 'female', label: 'Female-authored', color: 'var(--accent-2)' },
+    { k: 'male', label: 'Male-authored', color: 'var(--accent)' },
+    { k: 'unknown', label: 'Unknown / pen name', color: 'var(--accent-3)' },
+  ];
+  const genderRows = genderKeys.map(({ k, label, color }) => {
+    const total = DATA.books.filter(b => (b.primary_author_gender || 'unknown') === k).length;
+    const read = readBooksFull.filter(b => (b.primary_author_gender || 'unknown') === k).length;
+    const pct = total > 0 ? Math.round((read / total) * 100) : 0;
+    return `<div class="profile-stat-row">
+      <div class="profile-stat-label" style="color:${color}"><strong>${label}</strong></div>
+      <div class="profile-stat-bar"><div class="profile-stat-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="profile-stat-num"><strong>${read}</strong> <span class="muted">/ ${total}</span> · ${pct}%</div>
+    </div>`;
+  }).join('');
+
+  // Avg pub year + most-read decade
+  const yearSum = readBooksFull.reduce((s, b) => s + (b.year || 0), 0);
+  const yearCount = readBooksFull.filter(b => b.year).length;
+  const avgYear = yearCount > 0 ? Math.round(yearSum / yearCount) : null;
+  const mrd = mostReadDecade(DATA.books, isProfileRead);
+
+  // Era fingerprint radar
+  const profByDecade = bucketBooksByDecade(DATA.books);
+  const profDecades = eraRadarAxes(profByDecade);
+  const profEraValues = eraReaderValues(profDecades, profByDecade, isProfileRead);
+  const profKey = 'profile_' + (profile.handle || 'p');
+  const profEraConfig = {
+    [profKey]: { label: '@' + profile.handle, colorVar: 'var(--accent)', colorRgb: '29, 78, 216' },
+  };
+  const profEraRadarHtml = (profDecades.length >= 3 && reads.length > 0)
+    ? buildRadar(profDecades.map(eraAxisLabel), { [profKey]: profEraValues }, profEraConfig)
+    : '';
 
   const myHandle = window.MR_AUTH?.profile?.handle;
   const compareBtn = (meId && !isMe)
@@ -3190,22 +3381,63 @@ async function renderProfile(handle) {
     ? `<button type="button" class="mr-btn-ghost" id="profile-signin">Sign in to compare / add friend</button>`
     : '';
 
+  const readPct = totalBooks > 0 ? Math.round((reads.length / totalBooks) * 100) : 0;
+  const cardsHtml = `<section class="profile-headline-grid">
+    <div class="compare-stat-card">
+      <div class="compare-stat-card-label">Read</div>
+      <div class="compare-stat-card-value" style="color:var(--accent);">${reads.length}<span class="muted" style="font-size:0.55em;font-weight:500;"> / ${totalBooks}</span></div>
+      <div class="compare-stat-card-sub">${readPct}% of the canonical list</div>
+    </div>
+    <div class="compare-stat-card">
+      <div class="compare-stat-card-label">Nightstand</div>
+      <div class="compare-stat-card-value" style="color:var(--accent-3);">${nightstand.length + started.length}</div>
+      <div class="compare-stat-card-sub">Books they have, not finished</div>
+    </div>
+    <div class="compare-stat-card">
+      <div class="compare-stat-card-label">Avg pub year</div>
+      <div class="compare-stat-card-value">${avgYear ?? '—'}</div>
+      <div class="compare-stat-card-sub">Across the books they've read</div>
+    </div>
+    <div class="compare-stat-card">
+      <div class="compare-stat-card-label">Most-read decade</div>
+      <div class="compare-stat-card-value">${mrd ? eraAxisLabel(mrd.decade) : '—'}</div>
+      <div class="compare-stat-card-sub">${mrd ? `${mrd.count} books` : 'No reads yet'}</div>
+    </div>
+  </section>`;
+
   root.innerHTML = `<div class="detail profile-page">
     <a href="#/" class="back">← back</a>
     <div class="profile-header">
       <h1>@${escapeHtml(profile.handle)}${isMe ? ' <span class="profile-me">you</span>' : ''}${profile.is_admin ? ' <span class="admin-pill admin-pill-admin">admin</span>' : ''}</h1>
-      <div class="profile-stats">
-        <span><strong>${reads.length}</strong> read <span class="muted">of ${totalBooks}</span></span>
-        <span><strong>${nightstand.length}</strong> on nightstand</span>
-        <span><strong>${started.length}</strong> started</span>
-        <span class="muted">${profile.profile_visibility} profile</span>
-      </div>
       <div class="profile-actions">${compareBtn} ${friendBtn} ${signInBtn}</div>
     </div>
 
+    ${cardsHtml}
+
     ${readBooks.length === 0
       ? `<p style="color: var(--muted); margin-top: 24px;">No reads yet.</p>`
-      : `<section class="settings-section"><h2>Recently read</h2><div class="swimlane-strip">${readBooks.map(tile).join('')}</div></section>`}
+      : `<section class="profile-section"><h2>Recently read</h2><div class="swimlane-strip">${readBooks.map(tile).join('')}</div></section>`}
+
+    <section class="profile-section">
+      <h2>By award</h2>
+      <div class="profile-stat-list">${awardRows}</div>
+    </section>
+
+    <section class="profile-section">
+      <h2>By category</h2>
+      <div class="profile-stat-list">${catRows}</div>
+    </section>
+
+    <section class="profile-section">
+      <h2>By author gender</h2>
+      <div class="profile-stat-list">${genderRows}</div>
+    </section>
+
+    ${profEraRadarHtml ? `<section class="profile-section radar-hero">
+      <h2>Influence by era</h2>
+      <p style="color: var(--muted); font-size: 13px;">Each axis = a decade. Distance from center = share of that decade's winners + finalists @${escapeHtml(profile.handle)} has read.</p>
+      ${profEraRadarHtml}
+    </section>` : ''}
   </div>`;
 
   $('#profile-add-friend')?.addEventListener('click', async () => {

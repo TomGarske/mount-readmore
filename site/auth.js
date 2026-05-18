@@ -125,37 +125,58 @@
       dlg = document.createElement('dialog');
       dlg.id = 'mr-signin-dialog';
       dlg.className = 'mr-signin-dialog';
+      // Two-step modal: phase 'email' collects the address and triggers
+      // signInWithOtp (which emails BOTH a magic link AND a one-time code).
+      // Phase 'code' takes the OTP and calls verifyOtp — the fallback when
+      // the magic-link redirect can't deep-link back into the app (Safari
+      // private mode, in-app browsers, embedded webviews, etc.).
       dlg.innerHTML = `
-        <form id="mr-signin-form" class="mr-signin-form">
+        <form id="mr-signin-form" class="mr-signin-form" data-phase="email">
           <h2>Sign in to Readmore</h2>
-          <p>We'll email you a magic link — no password needed.</p>
-          <label class="mr-signin-label">
-            <span>Email</span>
-            <input type="email" id="mr-signin-email" required placeholder="you@example.com" autocomplete="email">
-          </label>
-          <div class="mr-signin-actions">
-            <button type="submit" id="mr-signin-submit" class="mr-btn-primary">Send link</button>
-            <button type="button" id="mr-signin-cancel" class="mr-btn-ghost">Cancel</button>
+          <p id="mr-signin-blurb">We'll email you a magic link and a one-time code — no password needed.</p>
+
+          <div class="mr-signin-phase mr-signin-phase-email">
+            <label class="mr-signin-label">
+              <span>Email</span>
+              <input type="email" id="mr-signin-email" required placeholder="you@example.com" autocomplete="email">
+            </label>
+            <div class="mr-signin-actions">
+              <button type="submit" id="mr-signin-submit" class="mr-btn-primary">Send code</button>
+              <button type="button" id="mr-signin-cancel" class="mr-btn-ghost">Cancel</button>
+            </div>
           </div>
+
+          <div class="mr-signin-phase mr-signin-phase-code" hidden>
+            <p class="mr-signin-blurb-code">Code sent to <strong id="mr-signin-email-display"></strong>. Paste the code from the email below — or just click the magic link in the email.</p>
+            <label class="mr-signin-label">
+              <span>Code from email</span>
+              <input type="text" id="mr-signin-code" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" pattern="[0-9 ]{4,10}">
+            </label>
+            <div class="mr-signin-actions">
+              <button type="button" id="mr-signin-verify" class="mr-btn-primary">Sign in</button>
+              <button type="button" id="mr-signin-back" class="mr-btn-ghost">← Use a different email</button>
+            </div>
+            <p class="mr-signin-resend">Didn't get a code? <button type="button" id="mr-signin-resend">Resend</button></p>
+          </div>
+
           <div class="mr-signin-status" id="mr-signin-status"></div>
         </form>
       `;
       document.body.appendChild(dlg);
-      dlg.querySelector('#mr-signin-cancel').addEventListener('click', () => dlg.close());
-      dlg.querySelector('#mr-signin-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = dlg.querySelector('#mr-signin-email').value.trim();
+
+      const phaseEl = (p) => dlg.querySelector('.mr-signin-phase-' + p);
+      const showPhase = (p) => {
+        dlg.querySelector('#mr-signin-form').dataset.phase = p;
+        phaseEl('email').hidden = p !== 'email';
+        phaseEl('code').hidden = p !== 'code';
+      };
+
+      const REDIRECT_URL = 'https://readmore.tomgarske.com/';
+
+      const sendCode = async (email) => {
         const status = dlg.querySelector('#mr-signin-status');
-        const submit = dlg.querySelector('#mr-signin-submit');
-        if (!email) return;
-        submit.disabled = true;
         status.textContent = 'Sending…';
         status.className = 'mr-signin-status';
-        // Pin the magic-link redirect to the canonical production URL so the
-        // email always lands on readmore.tomgarske.com — not whatever local
-        // dev/preview host the user happened to be on when they hit Send.
-        // Supabase's "Redirect URLs" allowlist must include this exact value.
-        const REDIRECT_URL = 'https://readmore.tomgarske.com/';
         const { error } = await client.auth.signInWithOtp({
           email,
           options: { emailRedirectTo: REDIRECT_URL }
@@ -163,18 +184,80 @@
         if (error) {
           status.textContent = 'Error: ' + error.message;
           status.className = 'mr-signin-status error';
-          submit.disabled = false;
-        } else {
-          status.textContent = '✓ Check your inbox for the magic link.';
-          status.className = 'mr-signin-status success';
+          return false;
         }
+        status.textContent = '✓ Check your email for the code (or click the magic link).';
+        status.className = 'mr-signin-status success';
+        return true;
+      };
+
+      dlg.querySelector('#mr-signin-cancel').addEventListener('click', () => dlg.close());
+      dlg.querySelector('#mr-signin-back').addEventListener('click', () => {
+        showPhase('email');
+        dlg.querySelector('#mr-signin-status').textContent = '';
+        setTimeout(() => dlg.querySelector('#mr-signin-email')?.focus(), 0);
+      });
+
+      // Phase-email submit → send the code, advance to phase-code.
+      dlg.querySelector('#mr-signin-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (dlg.querySelector('#mr-signin-form').dataset.phase !== 'email') return;
+        const email = dlg.querySelector('#mr-signin-email').value.trim();
+        const submit = dlg.querySelector('#mr-signin-submit');
+        if (!email) return;
+        submit.disabled = true;
+        const ok = await sendCode(email);
+        submit.disabled = false;
+        if (!ok) return;
+        dlg.querySelector('#mr-signin-email-display').textContent = email;
+        dlg.dataset.email = email;
+        showPhase('code');
+        setTimeout(() => dlg.querySelector('#mr-signin-code')?.focus(), 0);
+      });
+
+      dlg.querySelector('#mr-signin-resend').addEventListener('click', async () => {
+        const email = dlg.dataset.email;
+        if (!email) return;
+        await sendCode(email);
+      });
+
+      const submitCode = async () => {
+        const email = dlg.dataset.email;
+        const codeInput = dlg.querySelector('#mr-signin-code');
+        const token = (codeInput.value || '').replace(/\s+/g, '').trim();
+        const status = dlg.querySelector('#mr-signin-status');
+        const verifyBtn = dlg.querySelector('#mr-signin-verify');
+        if (!email || !token) return;
+        verifyBtn.disabled = true;
+        status.textContent = 'Verifying…';
+        status.className = 'mr-signin-status';
+        const { error } = await client.auth.verifyOtp({ email, token, type: 'email' });
+        verifyBtn.disabled = false;
+        if (error) {
+          status.textContent = 'Invalid code: ' + error.message;
+          status.className = 'mr-signin-status error';
+          return;
+        }
+        status.textContent = '✓ Signed in.';
+        status.className = 'mr-signin-status success';
+        // onAuthStateChange fires; close after a tick so the user sees success.
+        setTimeout(() => dlg.close(), 600);
+      };
+
+      dlg.querySelector('#mr-signin-verify').addEventListener('click', submitCode);
+      dlg.querySelector('#mr-signin-code').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); submitCode(); }
       });
     }
+    // Reset to phase-email on each open so a fresh sign-in attempt starts clean.
+    dlg.querySelector('.mr-signin-phase-email').hidden = false;
+    dlg.querySelector('.mr-signin-phase-code').hidden = true;
+    dlg.querySelector('#mr-signin-form').dataset.phase = 'email';
     dlg.querySelector('#mr-signin-email').value = prefillEmail || '';
+    dlg.querySelector('#mr-signin-code').value = '';
     dlg.querySelector('#mr-signin-status').textContent = '';
     dlg.querySelector('#mr-signin-submit').disabled = false;
     dlg.showModal();
-    // Focus the email field after the dialog has opened.
     setTimeout(() => dlg.querySelector('#mr-signin-email')?.focus(), 0);
   }
 
