@@ -2418,6 +2418,12 @@ async function renderSettings() {
       <button type="button" class="mr-btn-ghost" id="settings-signout">Sign out</button>
     </section>
 
+    <section class="settings-section settings-danger">
+      <h2>Danger zone</h2>
+      <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px;">Delete your Readmore account: your profile, your reads, your friendships, and your auth record. Cannot be undone.</p>
+      <button type="button" class="mr-btn-danger" id="settings-delete-account">Delete my account</button>
+    </section>
+
     <div id="settings-msg" class="settings-msg"></div>
   </div>`;
 
@@ -2484,6 +2490,34 @@ async function renderSettings() {
   $('#settings-signout').addEventListener('click', async () => {
     await window.MR_AUTH.signOut();
     location.hash = '#/';
+  });
+
+  $('#settings-delete-account').addEventListener('click', async () => {
+    const myHandle = profile.handle;
+    // Two-step confirm so this can't be a misclick. The expected string is
+    // the user's handle verbatim — common pattern (GitHub, etc).
+    const typed = prompt(
+      `This permanently deletes your account, all your reads, and your friendships.\n\n` +
+      `To confirm, type your handle: @${myHandle}`
+    );
+    if (typed == null) return;
+    if (typed.replace(/^@/, '').trim() !== myHandle) {
+      setMsg('Handle did not match — account not deleted.', 'error');
+      return;
+    }
+    setMsg('Deleting…', '');
+    try {
+      const { error } = await window.MR_AUTH.client.rpc('delete_my_account');
+      if (error) throw error;
+      // Auth row is gone; the in-flight session is now invalid. Force a
+      // sign-out client-side to wipe local tokens, then bounce home.
+      await window.MR_AUTH.signOut();
+      location.hash = '#/';
+      // Optional reload to clear MR_AUTH state entirely.
+      setTimeout(() => location.reload(), 200);
+    } catch (err) {
+      setMsg('Delete failed: ' + (err.message || err), 'error');
+    }
   });
 }
 
@@ -3039,14 +3073,12 @@ function renderAuthPill() {
   }
   const handleLabel = handle || user.email || 'me';
   const isAdmin = !!window.MR_AUTH.profile?.is_admin;
+  // Sign out + Delete account both live in Settings now — the topbar pill
+  // is just identity + admin shortcut.
   slot.innerHTML = `
     <a class="auth-handle" id="auth-handle" href="#/settings" title="Settings">@${escapeHtml(handleLabel)}</a>
     ${isAdmin ? '<a class="auth-admin" href="#/admin" title="Admin">⚙</a>' : ''}
-    <button type="button" class="auth-signout" id="auth-signout" title="Sign out">Sign out</button>
   `;
-  $('#auth-signout').addEventListener('click', async () => {
-    await window.MR_AUTH.signOut();
-  });
 }
 
 function renderUserStatusControls(bookId) {

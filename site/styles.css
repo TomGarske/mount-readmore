@@ -203,6 +203,19 @@ a:hover { text-decoration: underline; }
   font-size: 14px;
   cursor: pointer;
 }
+.mr-btn-danger {
+  background: transparent;
+  color: var(--sf);
+  border: 1px solid var(--sf);
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.mr-btn-danger:hover { background: var(--sf); color: #fff; }
+.settings-danger { border-top: 1px solid var(--border); padding-top: 18px; margin-top: 12px; }
 .mr-signin-status { margin-top: 14px; font-size: 13px; color: var(--muted); min-height: 18px; }
 .mr-signin-status.success { color: var(--read); }
 .mr-signin-status.error { color: var(--sf); }
