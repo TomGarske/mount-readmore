@@ -1,7 +1,3 @@
-# CF Pages reads this. Keep the SPA shell + JS short-cached so deploys
-# show up on the next nav without users having to hard-reload. The book
-# data + images + CSS get longer TTLs (they change less frequently).
-
 /index.html
   Cache-Control: no-cache
 
