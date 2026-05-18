@@ -428,6 +428,71 @@ a:hover { text-decoration: underline; }
 /* Hugo/Nebula 2026 content embedded inline on the Home page. Offset the
    scroll target below the sticky topbar so the section h1 isn't hidden. */
 .awards-2026-embed { scroll-margin-top: 80px; margin-top: 24px; }
+
+/* Full-card variant: each award gets a complete self-contained card with
+   history, ceremony, finalists. Still 2-column at desktop, stacked on mobile. */
+.featured-banners-full { gap: 18px; }
+.featured-full {
+  padding: 22px 24px 20px;
+  gap: 12px;
+}
+.featured-since {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.featured-description {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+  margin: 4px 0 6px;
+  position: relative;
+  z-index: 2;
+}
+.featured-description a { color: var(--accent); }
+.featured-ceremony {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--muted);
+  border-top: 1px dashed var(--border);
+  padding-top: 10px;
+  margin-top: 4px;
+}
+.featured-ceremony-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: var(--bg-3);
+  color: var(--muted);
+}
+.featured-hugo .featured-ceremony-label { color: var(--sf); background: rgba(198, 68, 79, 0.10); }
+.featured-nebula .featured-ceremony-label { color: var(--fantasy); background: rgba(44, 93, 150, 0.10); }
+.featured-full .featured-date,
+.featured-full .featured-loc { font-weight: 600; color: var(--text); }
+.featured-finalists-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+.awards-tracks-note {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 24px;
+  padding: 0 16px;
+}
+.awards-tracks-note strong { color: var(--text); }
 .featured-banner {
   position: relative;
   display: flex;

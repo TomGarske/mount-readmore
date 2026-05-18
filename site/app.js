@@ -561,11 +561,16 @@ function buildBarChart(data, options = {}) {
   </div>`;
 }
 
-// Featured banner for the Home page — promotes the live 2026 ballot with a
-// strip of finalist covers and a link to the full /hugo2026 or /nebula2026 page.
+// Featured banner for the Home page — a full-card promo per award. Combines
+// the historical description (since/by whom/voting model) with the live 2026
+// ballot promo. Each banner is self-contained: name + audience pill + history
+// paragraph + ceremony info + finalist cover strip + scroll CTA.
+//
 // Outer container is a <div>, not <a>, so we can include book-link anchors for
-// each cover without violating HTML's no-nested-anchor rule.
-function featuredBanner(theme, title, dateLabel, locLabel, tagline, finalists, href) {
+// each cover without violating HTML's no-nested-anchor rule. A full-card
+// overlay <a> makes the whole banner clickable.
+function featuredBanner(opts) {
+  const { theme, name, audience, since, descriptionHtml, ceremonyDate, ceremonyLoc, finalistsTagline, finalists, href } = opts;
   const pool = [...(finalists.Novel || []), ...(finalists.Novella || [])];
   const covers = pool.map(f => {
     const match = findBook(f.title, f.author, 'Novel')
@@ -582,16 +587,20 @@ function featuredBanner(theme, title, dateLabel, locLabel, tagline, finalists, h
       </div>
     </div>`;
   }).join('');
-  return `<div class="featured-banner featured-${theme}">
-    <a class="featured-banner-link" href="${href}" aria-label="${escapeHtml(title)} — view all finalists"></a>
+  return `<div class="featured-banner featured-full featured-${theme}">
+    <a class="featured-banner-link" href="${href}" aria-label="${escapeHtml(name)} — view all finalists"></a>
     <div class="featured-head">
-      <span class="featured-tag featured-tag-${theme}">${escapeHtml(title)}</span>
-      <span class="featured-date">${escapeHtml(dateLabel)}</span>
+      <span class="featured-tag featured-tag-${theme}">${escapeHtml(name)}</span>
+      <span class="awards-tag awards-tag-${audience.toLowerCase()}">${escapeHtml(audience)}</span>
+      <span class="featured-since">since ${escapeHtml(since)}</span>
     </div>
-    <a class="featured-headline-link" href="${href}">
-      <div class="featured-headline">${escapeHtml(tagline)}</div>
-      <div class="featured-sub">${escapeHtml(locLabel)}</div>
-    </a>
+    <div class="featured-description">${descriptionHtml}</div>
+    <div class="featured-ceremony">
+      <span class="featured-ceremony-label">2026 ceremony</span>
+      <span class="featured-date">${escapeHtml(ceremonyDate)}</span>
+      <span class="featured-loc">${escapeHtml(ceremonyLoc)}</span>
+    </div>
+    <div class="featured-finalists-label">${escapeHtml(finalistsTagline)}</div>
     <div class="featured-cover-strip">${covers}</div>
     <a class="featured-cta" href="${href}">View all finalists <span class="featured-arrow">→</span></a>
   </div>`;
@@ -1175,17 +1184,34 @@ function renderStats() {
   }).join('');
 
   root.innerHTML = `<div class="detail">
-    <section class="awards-intro">
-      <h2 class="awards-intro-title">The awards</h2>
-      <p><strong style="color: var(--sf)">Hugo Awards</strong> <span class="awards-tag awards-tag-fans">Fans</span> — the oldest annual literary award in science fiction and fantasy, presented since <strong>1953</strong> by members of the World Science Fiction Convention (Worldcon). Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. The current Hugo Awards site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.</p>
-      <p><strong style="color: var(--fantasy)">Nebula Awards</strong> <span class="awards-tag awards-tag-writers">Writers</span> — peer-voted award presented annually since <strong>1965</strong> by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.</p>
-      <p>Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>
-    </section>
-
-    <div class="featured-banners">
-      ${featuredBanner('hugo', '2026 Hugo Awards', 'Aug 30, 2026', 'LAcon V · Anaheim', 'Best Novel + Novella finalists', HUGO_2026_FINALISTS, '#hugo2026-section')}
-      ${featuredBanner('nebula', '2026 Nebula Awards', 'Jun 6, 2026', 'SFWA Conference · Chicago', 'Peer-voted finalists from the writers', NEBULA_2026_FINALISTS, '#nebula2026-section')}
+    <div class="featured-banners featured-banners-full">
+      ${featuredBanner({
+        theme: 'hugo',
+        name: 'Hugo Awards',
+        audience: 'Fans',
+        since: '1953',
+        descriptionHtml: `The oldest annual literary award in science fiction and fantasy, presented by members of the <strong>World Science Fiction Convention (Worldcon)</strong>. Voted by the convention's attending and supporting members. Categories cover novels, novellas, novelettes, short stories, plus dramatic presentations, editors, artists, magazines, and fan work. Named after Hugo Gernsback, the editor of <em>Amazing Stories</em>. Site: <a href="https://www.thehugoawards.org/" target="_blank" rel="noopener">thehugoawards.org</a>.`,
+        ceremonyDate: 'Sunday, Aug 30, 2026',
+        ceremonyLoc: 'LAcon V · Anaheim',
+        finalistsTagline: '2026 Best Novel + Novella finalists',
+        finalists: HUGO_2026_FINALISTS,
+        href: '#hugo2026-section',
+      })}
+      ${featuredBanner({
+        theme: 'nebula',
+        name: 'Nebula Awards',
+        audience: 'Writers',
+        since: '1965',
+        descriptionHtml: `Peer-voted award presented annually by the <a href="https://www.sfwa.org/" target="_blank" rel="noopener">Science Fiction and Fantasy Writers Association</a> (SFWA). Only SFWA members vote — so this is "what working writers think is best," in contrast to the Hugo's "what fans think." Categories mirror the Hugos (novel through short story plus a few others). Winners often, but not always, overlap with the Hugos.`,
+        ceremonyDate: 'Saturday, Jun 6, 2026',
+        ceremonyLoc: 'SFWA Conference · Chicago',
+        finalistsTagline: '2026 peer-voted finalists',
+        finalists: NEBULA_2026_FINALISTS,
+        href: '#nebula2026-section',
+      })}
     </div>
+
+    <p class="awards-tracks-note">Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>
 
     <div class="awards-2026-embed hugo2026" id="hugo2026-section">${hugo2026Body()}</div>
     <div class="awards-2026-embed hugo2026 nebula2026" id="nebula2026-section">${nebula2026Body()}</div>
