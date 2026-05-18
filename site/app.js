@@ -332,15 +332,13 @@ function bookCard(book) {
   const coverHtml = book.cover_url
     ? `<img src="${escapeHtml(book.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
     : `<span class="cover-placeholder">📖</span>`;
+  const author = escapeHtml(book.author_raw || (book.authors || []).join(', '));
+  const authorLine = book.year ? `${author} <span class="meta-dot">·</span> ${book.year}` : author;
   return `<div class="card" data-id="${escapeHtml(book.id)}">
     <div class="card-cover">${coverHtml}</div>
     <div class="card-body">
       <div class="title">${escapeHtml(book.title)}</div>
-      <div class="author">${escapeHtml(book.author_raw || (book.authors || []).join(', '))}</div>
-      <div class="meta">
-        <span>${book.year || ''}</span>
-        <span class="badge cat">${escapeHtml(book.category)}</span>
-      </div>
+      <div class="author">${authorLine}</div>
       <div class="badges">${awardBadges}${readBadges}</div>
     </div>
   </div>`;
@@ -1158,7 +1156,7 @@ function renderStats() {
     <p class="awards-tracks-note">Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>
 
     <section class="completionist-intro">
-      <p>Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
+      <p>Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering.</p>
     </section>
 
     <h1>Home</h1>
@@ -2209,8 +2207,20 @@ let __mrLeaderboardScope = 'overall';   // 'overall' | 'hugo' | 'nebula'
 async function renderFriends() {
   const root = $('#view-friends');
   if (!root) return;
-  // Wait for the auth bootstrap so the leaderboard data is populated.
-  await window.MR_AUTH?.ready;
+  // Always show a placeholder immediately so clicking the nav link gives
+  // visual feedback even if the await or render hits a slow path.
+  root.innerHTML = `<div class="detail"><h1>Friends</h1><p style="color: var(--muted);">Loading…</p></div>`;
+  try {
+    // Wait for the auth bootstrap so the leaderboard data is populated.
+    // Race against a 10s ceiling so a stuck bootstrap doesn't park the page.
+    await Promise.race([
+      window.MR_AUTH?.ready,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('Auth bootstrap timed out')), 10000)),
+    ]);
+  } catch (err) {
+    root.innerHTML = `<div class="detail"><h1>Friends</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p><p style="color: var(--muted); font-size: 13px;">Try refreshing the page.</p></div>`;
+    return;
+  }
 
   const overall = window.MR_AUTH?.leaderboardOverall || [];
   const byAward = window.MR_AUTH?.leaderboardByAward || [];
@@ -2375,10 +2385,17 @@ async function renderSettings() {
   const root = $('#view-settings');
   if (!root) return;
   root.innerHTML = `<div class="detail"><h1>Settings</h1><p style="color: var(--muted);">Loading…</p></div>`;
-  // Wait for the initial auth bootstrap so user + profile are both populated
-  // before we render. Otherwise we can crash reading profile.handle when the
-  // page is navigated to mid-bootstrap.
-  await window.MR_AUTH?.ready;
+  // Wait for the initial auth bootstrap so user + profile are both populated.
+  // Bound it so a stuck bootstrap doesn't leave the page on Loading forever.
+  try {
+    await Promise.race([
+      window.MR_AUTH?.ready,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('Auth bootstrap timed out')), 10000)),
+    ]);
+  } catch (err) {
+    root.innerHTML = `<div class="detail"><h1>Settings</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p><p style="color: var(--muted); font-size: 13px;">Try refreshing the page.</p></div>`;
+    return;
+  }
   if (!window.MR_AUTH?.user) {
     root.innerHTML = `<div class="detail">
       <h1>Settings</h1>
@@ -2859,6 +2876,19 @@ function pushFiltersToUrl() {
 }
 
 function route() {
+  try {
+    return _route();
+  } catch (err) {
+    console.error('route() threw:', err);
+    // Last-resort fallback: surface the error instead of leaving the user
+    // staring at whatever stale view was up. Friends/Settings/etc. each
+    // have their own try-catches but a synchronous throw inside any of
+    // them would otherwise bubble up to here invisibly.
+    const main = document.getElementById('main');
+    if (main) main.innerHTML = `<div class="detail"><h1>Something went wrong</h1><p style="color: var(--sf);">${escapeHtml(err.message || String(err))}</p><p style="color: var(--muted); font-size: 13px;">Try refreshing the page. If this keeps happening, hit cmd+shift+R to bypass cache.</p></div>`;
+  }
+}
+function _route() {
   const h = location.hash || '#/';
   // Bare in-page anchors like "#hugo2026-section" — not a SPA route, just a
   // native scroll target. Skip the re-render so the browser keeps the scroll
@@ -2925,9 +2955,13 @@ function route() {
     return;
   }
   if (path === '#/friends') {
-    renderFriends();
     showView('friends');
     window.scrollTo(0, 0);
+    renderFriends().catch(err => {
+      console.error('renderFriends threw:', err);
+      const root = document.getElementById('view-friends');
+      if (root) root.innerHTML = `<div class="detail"><h1>Friends</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
+    });
     return;
   }
   if (path === '#/signin') {
@@ -2947,9 +2981,13 @@ function route() {
     return;
   }
   if (path === '#/settings') {
-    renderSettings();
     showView('settings');
     window.scrollTo(0, 0);
+    renderSettings().catch(err => {
+      console.error('renderSettings threw:', err);
+      const root = document.getElementById('view-settings');
+      if (root) root.innerHTML = `<div class="detail"><h1>Settings</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
+    });
     return;
   }
   if (path === '#/admin') {
