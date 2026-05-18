@@ -429,9 +429,12 @@ a:hover { text-decoration: underline; }
    scroll target below the sticky topbar so the section h1 isn't hidden. */
 .awards-2026-embed { scroll-margin-top: 80px; margin-top: 24px; }
 
-/* Full-card variant: each award gets a complete self-contained card with
-   history, ceremony, finalists. Still 2-column at desktop, stacked on mobile. */
-.featured-banners-full { gap: 18px; }
+/* Full-card variant: each award is a complete self-contained card with
+   history, ceremony, finalists — single column so each spans full width. */
+.featured-banners-full {
+  grid-template-columns: 1fr;
+  gap: 18px;
+}
 .featured-full {
   padding: 22px 24px 20px;
   gap: 12px;
