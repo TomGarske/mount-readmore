@@ -2511,10 +2511,6 @@ async function renderFriends() {
       : isMe
         ? `<span class="lb-me">you</span>`
         : `<span class="lb-compare lb-compare-disabled" data-tooltip="Sign in to compare">Compare</span>`;
-    const canRemove = isAuthed && !isMe;
-    const removeTag = canRemove
-      ? `<button type="button" class="lb-remove" data-friend-id="${escapeHtml(r.user_id)}" data-friend-handle="${escapeHtml(r.handle)}" aria-label="Remove @${escapeHtml(r.handle)} as friend" title="Remove friend">×</button>`
-      : '';
     const hugoCount = hugoByUser[r.user_id] ?? 0;
     const nebulaCount = nebulaByUser[r.user_id] ?? 0;
     return `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
@@ -2524,7 +2520,7 @@ async function renderFriends() {
       <div class="lb-stat-sub" style="color: var(--sf);"><strong>${hugoCount}</strong> Hugo</div>
       <div class="lb-stat-sub" style="color: var(--fantasy);"><strong>${nebulaCount}</strong> Nebula</div>
       <div class="lb-pct">${r.pct ?? 0}%</div>
-      <div class="lb-action">${compareTag}${removeTag}</div>
+      <div class="lb-action">${compareTag}</div>
     </div>`;
   }).join('');
 
@@ -2558,7 +2554,7 @@ async function renderFriends() {
 
   root.innerHTML = `<div class="detail leaderboard-page">
     <h1>Friends</h1>
-    <p style="color: var(--muted);">You and your friends, ranked by how many of the ${totalLabel} you've read. Tap <strong>Compare</strong> on any row to see the head-to-head, or <strong>×</strong> to remove a friend.</p>
+    <p style="color: var(--muted);">You and your friends, ranked by how many of the ${totalLabel} you've read. Tap <strong>Compare</strong> on any row to see the head-to-head.</p>
 
     ${addFriendForm}
 
@@ -2611,23 +2607,6 @@ async function renderFriends() {
     });
   }
 
-  // Per-row Remove buttons
-  root.querySelectorAll('.lb-remove').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const friendId = btn.dataset.friendId;
-      const handle = btn.dataset.friendHandle;
-      if (!confirm(`Remove @${handle} as a friend?`)) return;
-      btn.disabled = true;
-      try {
-        await window.MR_AUTH.removeFriend(friendId);
-        // onChange listener will re-route. Defensive re-render.
-        setTimeout(() => renderFriends(), 100);
-      } catch (err) {
-        btn.disabled = false;
-        alert('Remove failed: ' + (err.message || err));
-      }
-    });
-  });
 }
 
 // ===== Discover (Tinder-style) ========================================
