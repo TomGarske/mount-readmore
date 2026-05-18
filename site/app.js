@@ -91,6 +91,14 @@ let state = {
   progressStatus: 'winner',
   // Progress-page award scope: 'both' | 'hugo' | 'nebula'
   progressAward: 'both',
+  // Home page: time-window for most-awarded authors (years back)
+  authorWindow: 30,
+  // Home page: which gender slice is currently selected (null = all)
+  genderFilter: null,
+  // Books page: optional author-gender filter slice
+  authorGender: null,
+  // Books page: missing-data debug filter — 'desc' | 'cover' | 'either' | null
+  missingFilter: null,
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
@@ -154,6 +162,17 @@ function matchesFilters(book) {
   if (!hasMatchingAward) return false;
   if (state.yearMin != null && (book.year == null || book.year < state.yearMin)) return false;
   if (state.yearMax != null && (book.year == null || book.year > state.yearMax)) return false;
+  if (state.authorGender) {
+    const g = book.primary_author_gender || 'unknown';
+    if (g !== state.authorGender) return false;
+  }
+  if (state.missingFilter) {
+    const missingDesc = !book.description || !book.description.trim();
+    const missingCover = !book.cover_url || !book.cover_url.trim();
+    if (state.missingFilter === 'desc' && !missingDesc) return false;
+    if (state.missingFilter === 'cover' && !missingCover) return false;
+    if (state.missingFilter === 'either' && !(missingDesc || missingCover)) return false;
+  }
   return true;
 }
 
@@ -324,7 +343,35 @@ function bookCard(book) {
 function renderList() {
   const filtered = DATA.books.filter(matchesFilters);
   const sorted = sortBooks(filtered);
-  $('#result-count').textContent = `${sorted.length} of ${DATA.books.length} books`;
+  const activeFilters = [];
+  if (state.authorGender) {
+    const label = state.authorGender === 'female' ? 'Female-authored'
+      : state.authorGender === 'male' ? 'Male-authored'
+      : 'Unknown / pen name';
+    activeFilters.push({ label, clear: 'gender' });
+  }
+  if (state.missingFilter) {
+    const label = state.missingFilter === 'desc' ? 'Missing description'
+      : state.missingFilter === 'cover' ? 'Missing cover'
+      : 'Missing description or cover';
+    activeFilters.push({ label, clear: 'missing' });
+  }
+  $('#result-count').innerHTML = `${sorted.length} of ${DATA.books.length} books` +
+    (activeFilters.length
+      ? ' · ' + activeFilters.map(f => `<span class="active-filter-chip" data-clear="${f.clear}">${f.label} <span class="afc-x">×</span></span>`).join(' ')
+      : '');
+  $$('.active-filter-chip').forEach(chip => chip.addEventListener('click', () => {
+    const w = chip.dataset.clear;
+    if (w === 'gender') {
+      state.authorGender = null;
+      $$('input[name="author-gender"]').forEach(el => el.checked = false);
+    }
+    if (w === 'missing') {
+      state.missingFilter = null;
+      $$('input[name="missing"]').forEach(el => { el.checked = el.value === ''; });
+    }
+    renderList();
+  }));
   $('#grid').innerHTML = sorted.map(bookCard).join('');
   $$('.card', $('#grid')).forEach(card => {
     card.addEventListener('click', () => {
@@ -386,6 +433,36 @@ function renderDetail(id) {
     ? `<div class="book-subjects"><h3>Tags from Open Library</h3><div>${book.subjects.slice(0, 12).map(s => `<span class="subject-tag">${escapeHtml(s)}</span>`).join(' ')}</div></div>`
     : '';
 
+  // More-by-this-author swimlane — books that share at least one author with
+  // the current book, excluding the current one. Sorted by year desc so the
+  // most recent reads sit on the left.
+  const authorSet = new Set((book.authors || []).map(a => a.toLowerCase()));
+  const moreByAuthor = authorSet.size === 0 ? [] : DATA.books
+    .filter(b => b.id !== book.id && (b.authors || []).some(a => authorSet.has(a.toLowerCase())))
+    .sort((a, b) => (b.year || 0) - (a.year || 0));
+  const moreByAuthorLabel = book.authors && book.authors.length > 0
+    ? `More by ${escapeHtml(book.authors[0])}${book.authors.length > 1 ? ' & co-authors' : ''}`
+    : 'More by this author';
+  const moreByAuthorHtml = moreByAuthor.length === 0 ? '' : `
+    <div class="book-section">
+      <h2>${moreByAuthorLabel} <span class="more-by-count">${moreByAuthor.length}</span></h2>
+      <div class="swimlane-strip">${moreByAuthor.map(b => {
+        const cover = b.cover_url
+          ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
+          : `<span class="swimlane-placeholder">📖</span>`;
+        const isWinner = Object.values(b.awards || {}).includes('winner');
+        const awardLabels = Object.entries(b.awards || {}).map(([a, s]) =>
+          `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+        ).join('');
+        return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
+          <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
+          <div class="swimlane-title">${escapeHtml(b.title)}</div>
+          <div class="swimlane-meta">${b.year || ''} · ${escapeHtml(b.category)}</div>
+          ${awardLabels ? `<div class="swimlane-pills">${awardLabels}</div>` : ''}
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+
   root.innerHTML = `<div class="detail">
     <a href="#/books" class="back">← back to books</a>
     <h1>${escapeHtml(book.title)}</h1>
@@ -419,8 +496,105 @@ function renderDetail(id) {
     </div>
     ${descHtml ? `<div class="book-section"><h2>Description</h2>${descHtml}</div>` : ''}
     ${subjectsHtml ? `<div class="book-section">${subjectsHtml}</div>` : ''}
+    ${moreByAuthorHtml}
   </div>`;
   wireUserStatusControls();
+  $$('.swimlane-card', root).forEach(el => {
+    el.addEventListener('click', () => { location.hash = `#/book/${el.dataset.id}`; });
+  });
+}
+
+// SVG donut chart. `slices` is [{ key, label, value, color }]. Animates in
+// via stroke-dashoffset on each segment. Returns the chart + legend HTML.
+function buildDonut(slices, options = {}) {
+  const total = slices.reduce((s, x) => s + x.value, 0);
+  if (total === 0) return '<p style="color: var(--muted); font-size: 13px;">No data.</p>';
+  const size = options.size || 220;
+  const cx = size / 2, cy = size / 2;
+  const R = size * 0.36;             // ring radius
+  const STROKE = options.stroke || 36;
+  const C = 2 * Math.PI * R;
+  let offset = 0;
+  const segments = slices.map((s, i) => {
+    const frac = s.value / total;
+    const dash = frac * C;
+    const gap = C - dash;
+    const seg = `<circle class="donut-seg" data-key="${escapeHtml(s.key)}" cx="${cx}" cy="${cy}" r="${R}"
+      fill="none" stroke="${s.color}" stroke-width="${STROKE}"
+      stroke-dasharray="${dash.toFixed(2)} ${gap.toFixed(2)}"
+      stroke-dashoffset="${(-offset).toFixed(2)}"
+      style="animation-delay: ${i * 0.18}s;"
+      transform="rotate(-90 ${cx} ${cy})"></circle>`;
+    offset += dash;
+    return seg;
+  }).join('');
+  const centerLabel = options.centerLabel || `${total}`;
+  const centerSub = options.centerSub || '';
+  return `<div class="donut-wrap">
+    <svg class="donut" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">
+      <circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--bg-3)" stroke-width="${STROKE}" opacity="0.4"/>
+      ${segments}
+      <text x="${cx}" y="${cy - 4}" text-anchor="middle" class="donut-center-num" fill="var(--text)" font-size="${size * 0.16}" font-weight="700">${centerLabel}</text>
+      <text x="${cx}" y="${cy + size * 0.10}" text-anchor="middle" fill="var(--muted)" font-size="${size * 0.06}">${centerSub}</text>
+    </svg>
+  </div>`;
+}
+
+// Vertical bar chart with animated grow-from-bottom. data = [{key, label, value, color, sub}]
+function buildBarChart(data, options = {}) {
+  const maxV = Math.max(1, ...data.map(d => d.value));
+  const maxHeight = options.height || 180;
+  return `<div class="vbar-chart" style="--vbar-height: ${maxHeight}px;">
+    ${data.map((d, i) => {
+      const h = (d.value / maxV) * 100;
+      const onclick = d.href ? ` onclick="location.hash='${d.href}'"` : '';
+      const cursor = d.href ? 'cursor:pointer;' : '';
+      return `<div class="vbar-col"${onclick} style="${cursor}" title="${escapeHtml(d.tooltip || d.label + ': ' + d.value)}">
+        <div class="vbar-value">${d.valueLabel || d.value}</div>
+        <div class="vbar-track">
+          <div class="vbar" style="--bar-h: ${h}%; background: ${d.color}; animation-delay: ${i * 0.08}s;"></div>
+        </div>
+        <div class="vbar-label">${escapeHtml(d.label)}</div>
+        ${d.sub ? `<div class="vbar-sub">${d.sub}</div>` : ''}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// Featured banner for the Home page — promotes the live 2026 ballot with a
+// strip of finalist covers and a link to the full /hugo2026 or /nebula2026 page.
+// Outer container is a <div>, not <a>, so we can include book-link anchors for
+// each cover without violating HTML's no-nested-anchor rule.
+function featuredBanner(theme, title, dateLabel, locLabel, tagline, finalists, href) {
+  const pool = [...(finalists.Novel || []), ...(finalists.Novella || [])];
+  const covers = pool.map(f => {
+    const match = findBook(f.title, f.author, 'Novel')
+      || findBook(f.title, f.author, 'Novella');
+    if (match && match.cover_url) {
+      return `<a class="featured-cover" href="#/book/${escapeHtml(match.id)}" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">
+        <img src="${escapeHtml(match.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">
+      </a>`;
+    }
+    return `<div class="featured-cover featured-cover-stub" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">
+      <div class="featured-cover-fallback">
+        <div class="fc-title">${escapeHtml(f.title)}</div>
+        <div class="fc-author">${escapeHtml(f.author)}</div>
+      </div>
+    </div>`;
+  }).join('');
+  return `<div class="featured-banner featured-${theme}">
+    <a class="featured-banner-link" href="${href}" aria-label="${escapeHtml(title)} — view all finalists"></a>
+    <div class="featured-head">
+      <span class="featured-tag featured-tag-${theme}">${escapeHtml(title)}</span>
+      <span class="featured-date">${escapeHtml(dateLabel)}</span>
+    </div>
+    <a class="featured-headline-link" href="${href}">
+      <div class="featured-headline">${escapeHtml(tagline)}</div>
+      <div class="featured-sub">${escapeHtml(locLabel)}</div>
+    </a>
+    <div class="featured-cover-strip">${covers}</div>
+    <a class="featured-cta" href="${href}">View all finalists <span class="featured-arrow">→</span></a>
+  </div>`;
 }
 
 function renderStats() {
@@ -744,28 +918,34 @@ function renderStats() {
     }
   }
 
-  // ===== Author leaderboard (last 30 years) =====
-  const leaderboardCutoff = new Date().getFullYear() - 30;
-  const authorAppearances = {};
-  for (const b of DATA.books) {
-    if (!b.year || b.year < leaderboardCutoff) continue;
-    for (const a of (b.authors || [])) {
-      if (!authorAppearances[a]) {
-        authorAppearances[a] = { total: 0, winners: 0 };
-        for (const id of READER_KEYS) authorAppearances[a][`${id}Read`] = 0;
-      }
-      authorAppearances[a].total++;
-      if (Object.values(b.awards || {}).includes('winner')) authorAppearances[a].winners++;
-      for (const id of READER_KEYS) {
-        if (readStatus(b, id) === 'read') authorAppearances[a][`${id}Read`]++;
+  // ===== Author leaderboard (sliding window) =====
+  // Recomputed on slider input — extract as a closure so the input handler
+  // can rebuild the rows without re-rendering the entire Stats page.
+  const computeTopAuthors = (yearsBack) => {
+    const now = new Date().getFullYear();
+    const cutoff = yearsBack >= 100 ? -Infinity : now - yearsBack;
+    const buckets = {};
+    for (const b of DATA.books) {
+      if (!b.year || b.year < cutoff) continue;
+      for (const a of (b.authors || [])) {
+        if (!buckets[a]) {
+          buckets[a] = { total: 0, winners: 0 };
+          for (const id of READER_KEYS) buckets[a][`${id}Read`] = 0;
+        }
+        buckets[a].total++;
+        if (Object.values(b.awards || {}).includes('winner')) buckets[a].winners++;
+        for (const id of READER_KEYS) {
+          if (readStatus(b, id) === 'read') buckets[a][`${id}Read`]++;
+        }
       }
     }
-  }
-  const topAuthors = Object.entries(authorAppearances)
-    .map(([name, s]) => ({ name, ...s }))
-    .sort((a, b) => b.total - a.total || b.winners - a.winners)
-    .slice(0, 12);
-  const maxAppearances = topAuthors[0] ? topAuthors[0].total : 1;
+    const top = Object.entries(buckets)
+      .map(([name, s]) => ({ name, ...s }))
+      .sort((a, b) => b.total - a.total || b.winners - a.winners)
+      .slice(0, 12);
+    return { top, maxAppearances: top[0] ? top[0].total : 1 };
+  };
+  let { top: topAuthors, maxAppearances } = computeTopAuthors(state.authorWindow);
 
   // ===== Decade heatmap =====
   const decadeBuckets = {};
@@ -837,9 +1017,11 @@ function renderStats() {
       : '';
     const countLine = HAS_READER ? `${readCount}/${v.total}` : `${v.total}`;
     return `<div class="era-bar-col">
-      <div class="era-bar empty" style="height: ${Math.max(2, totalH)}%;">
-        <div class="era-bar-tooltip">${tooltip}</div>
-        ${fillDiv}
+      <div class="era-bar-track">
+        <div class="era-bar empty" style="--bar-h: ${Math.max(2, totalH)}%;">
+          <div class="era-bar-tooltip">${tooltip}</div>
+          ${fillDiv}
+        </div>
       </div>
       <div class="era-bar-label">${d % 100}s</div>
       <div class="era-bar-count">${countLine}</div>
@@ -938,21 +1120,20 @@ function renderStats() {
     <text x="300" y="310" text-anchor="middle" fill="var(--muted)" font-size="10">BASE CAMP</text>
   </svg>`;
 
-  // Top authors leaderboard
-  const authorRows = topAuthors.map(a => {
-    const widthPct = (a.total / maxAppearances) * 100;
-    const tomFill = a.total > 0 ? (a.tomRead / a.total) * 100 : 0;
-    const nikaFill = a.total > 0 ? (a.nikaRead / a.total) * 100 : 0;
-    const westdacFill = a.total > 0 ? (a.westdacRead / a.total) * 100 : 0;
+  // Top authors leaderboard — extracted so the slider can recompute without
+  // re-rendering the whole Stats view.
+  const renderAuthorRows = (top, maxApp) => top.map((a, idx) => {
+    const widthPct = (a.total / maxApp) * 100;
     let countCol;
     if (SOLO) {
       const key = SOLO + 'Read';
       countCol = `${a.total} appearances · <span style="color:${READER_CONFIG[SOLO].colorVar}">read ${a[key] || 0}</span>`;
-    } else {
+    } else if (HAS_READER) {
       const parts = ACTIVE_READERS.map(r => `<span style="color:${r.colorVar}">${r.initial} ${a[r.id + 'Read'] || 0}</span>`);
       countCol = `${a.total} · ${parts.join(' · ')}`;
+    } else {
+      countCol = `${a.total} appearances · <span style="color: var(--accent)">${a.winners} wins</span>`;
     }
-    // Stack the reader fills end-to-end inside the appearance bar
     let leftAcc = 0;
     const fillBars = ACTIVE_READERS.map(r => {
       const fillPct = a.total > 0 ? (a[r.id + 'Read'] / a.total) * 100 : 0;
@@ -961,14 +1142,15 @@ function renderStats() {
       leftAcc += fillPct;
       return html;
     }).join('');
-    return `<div class="author-row">
+    return `<div class="author-row" style="animation-delay: ${idx * 0.04}s;">
       <div class="author-name">${escapeHtml(a.name)}</div>
       <div class="author-bar">
-        <div class="author-bar-bg" style="width: ${widthPct}%;">${fillBars}</div>
+        <div class="author-bar-bg" style="--bar-width: ${widthPct}%;">${fillBars}</div>
       </div>
       <div class="author-count">${countCol}</div>
     </div>`;
   }).join('');
+  const authorRows = renderAuthorRows(topAuthors, maxAppearances);
 
   // Decade heatmap — color intensity follows the active reader in solo mode, first active reader otherwise
   const heatmapColorRgb = Object.fromEntries(READER_KEYS.map(id => [id, READER_CONFIG[id].colorRgb]));
@@ -1000,28 +1182,16 @@ function renderStats() {
       <p>Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>
     </section>
 
-    <div class="awards-banner">
-      <a class="award-pill nebula" href="https://nebulas.sfwa.org/" target="_blank" rel="noopener">
-        <span class="award-pill-date">Jun 6, 2026</span>
-        <div class="award-pill-body">
-          <div class="award-pill-title">2026 Nebula Awards</div>
-          <div class="award-pill-sub">SFWA conference · Chicago</div>
-        </div>
-      </a>
-      <a class="award-pill hugo" href="https://www.thehugoawards.org/" target="_blank" rel="noopener">
-        <span class="award-pill-date">Aug 30, 2026</span>
-        <div class="award-pill-body">
-          <div class="award-pill-title">2026 Hugo Awards</div>
-          <div class="award-pill-sub">LAcon V (84th WorldCon) · Anaheim</div>
-        </div>
-      </a>
+    <div class="featured-banners">
+      ${featuredBanner('hugo', '2026 Hugo Awards', 'Aug 30, 2026', 'LAcon V · Anaheim', 'Best Novel + Novella finalists', HUGO_2026_FINALISTS, '#/hugo2026')}
+      ${featuredBanner('nebula', '2026 Nebula Awards', 'Jun 6, 2026', 'SFWA Conference · Chicago', 'Peer-voted finalists from the writers', NEBULA_2026_FINALISTS, '#/nebula2026')}
     </div>
 
     <section class="completionist-intro">
       <p>Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering. Pick a year, pick a genre, pick a reader to follow along with. There's no wrong place to start.</p>
     </section>
 
-    <h1>Progress</h1>
+    <h1>Home</h1>
     <div class="toggle-row">
       <div class="status-toggle" data-status="${STATUS}">
         <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
@@ -1082,11 +1252,21 @@ function renderStats() {
       <div class="recent-reads">${upNextHtml}</div>
     </div>` : ''}
 
-    ${HAS_READER ? `<div class="progress-section">
-      <h2>Most-awarded authors (last 30 years)</h2>
-      <p style="color: var(--muted); font-size: 13px;">Authors with the most appearances on the list since ${leaderboardCutoff} (winners + nominees). Bar width = appearances.</p>
-      <div class="authors-list">${authorRows}</div>
-    </div>` : ''}
+    <div class="progress-section">
+      <div class="authors-head">
+        <div>
+          <h2>Most-awarded authors <span class="authors-window-display" id="authors-window-display">${state.authorWindow >= 100 ? 'all time' : `last ${state.authorWindow} years`}</span></h2>
+          <p style="color: var(--muted); font-size: 13px;">Authors with the most appearances on the list (winners + nominees). Drag the slider to change the time window. Bar width = appearances.</p>
+        </div>
+      </div>
+      <div class="authors-slider-wrap">
+        <span class="authors-slider-mark">5y</span>
+        <input type="range" id="authors-window" class="authors-slider" min="5" max="75" step="5" value="${state.authorWindow}">
+        <span class="authors-slider-mark">75y</span>
+        <button type="button" class="authors-slider-all" id="authors-window-all"${state.authorWindow >= 100 ? ' aria-pressed="true"' : ''}>All time</button>
+      </div>
+      <div class="authors-list" id="authors-list">${authorRows}</div>
+    </div>
 
     <div class="progress-section">
       <h2>Coverage by era (${SUBSET})</h2>
@@ -1099,64 +1279,100 @@ function renderStats() {
 
     <div class="progress-section">
       <h2>By author gender (${SUBSET})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Primary author of each winning work, inferred from first name. Lead-character gender isn't tracked yet — no reliable data source.</p>
-      <div class="gender-grid">
-        ${['female', 'male', 'unknown'].map(g => {
-          const total = genderBuckets[g];
-          const label = g === 'female' ? 'Female-authored' : g === 'male' ? 'Male-authored' : 'Unknown / non-binary / pen name';
-          const readerRows = HAS_READER ? ACTIVE_READERS.map(r => {
-            const read = genderReadByReader[r.id][g];
-            const pct = total > 0 ? Math.round(read / total * 100) : 0;
-            return `<div class="gender-reader-row">
-              <span class="gender-reader-name" style="color:${r.colorVar}">${r.label}</span>
-              <span class="gender-reader-stat">${read} / ${total} (${pct}%)</span>
-              <div class="progress"><div class="progress-bar" style="width: ${pct}%; background: ${r.colorVar};"></div></div>
-            </div>`;
-          }).join('') : '';
-          return `<div class="gender-card gender-${g}">
-            <div class="gender-card-label">${label}</div>
-            <div class="gender-card-stat"><strong>${total}</strong> ${SUBSET}</div>
-            <div class="gender-card-readers">${readerRows}</div>
-          </div>`;
-        }).join('')}
+      <p style="color: var(--muted); font-size: 13px;">Primary author of each work, inferred from first name. Tap a slice or card to filter the Books tab.</p>
+      <div class="gender-chart-wrap">
+        ${buildDonut(
+          [
+            { key: 'female',  label: 'Female-authored',  value: genderBuckets.female,  color: 'var(--accent-2)' },
+            { key: 'male',    label: 'Male-authored',    value: genderBuckets.male,    color: 'var(--accent)'  },
+            { key: 'unknown', label: 'Unknown / pen name', value: genderBuckets.unknown, color: 'var(--accent-3)' },
+          ],
+          {
+            size: 220,
+            centerLabel: String(genderBuckets.female + genderBuckets.male + genderBuckets.unknown),
+            centerSub: SUBSET,
+          }
+        )}
+        <div class="gender-filter-cards">
+          ${[
+            { key: 'female', label: 'Female-authored', cls: 'gender-female', color: 'var(--accent-2)' },
+            { key: 'male', label: 'Male-authored', cls: 'gender-male', color: 'var(--accent)' },
+            { key: 'unknown', label: 'Unknown / pen name', cls: 'gender-unknown', color: 'var(--accent-3)' },
+          ].map(({ key, label, cls, color }) => {
+            const total = genderBuckets[key];
+            const pctOfAll = winnersTotal > 0 ? Math.round(total / winnersTotal * 100) : 0;
+            const readerLine = HAS_READER
+              ? ACTIVE_READERS.map(r => {
+                  const read = genderReadByReader[r.id][key];
+                  const pct = total > 0 ? Math.round(read / total * 100) : 0;
+                  return `<span style="color:${r.colorVar}">${r.label} ${read}/${total} (${pct}%)</span>`;
+                }).join(' · ')
+              : '';
+            const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
+            const href = `#/books?gender=${key}${statusParam}`;
+            return `<a class="gender-filter-card ${cls}" href="${href}" style="--gc-color: ${color};">
+              <span class="gc-dot"></span>
+              <div class="gc-body">
+                <div class="gc-label">${label}</div>
+                <div class="gc-stat"><strong>${total}</strong> ${SUBSET} · ${pctOfAll}%</div>
+                ${readerLine ? `<div class="gc-readers">${readerLine}</div>` : ''}
+              </div>
+              <span class="gc-arrow">→</span>
+            </a>`;
+          }).join('')}
+        </div>
       </div>
     </div>
 
     <div class="progress-section">
       <h2>By award (${SUBSET})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those ${SUBSET} in the Books tab.</p>
-      <div class="stats-grid">
-        ${Object.entries(byAward).map(([a, s]) => {
-          if (s.total === 0) return '';
+      <p style="color: var(--muted); font-size: 13px;">Tap a bar to see those ${SUBSET} in the Books tab.${HAS_READER ? ' Coloured fill = your read share.' : ''}</p>
+      ${buildBarChart(
+        Object.entries(byAward).filter(([, s]) => s.total > 0).map(([a, s]) => {
           const activeCount = PRIMARY_READER ? s[PRIMARY_READER] : 0;
           const pct = HAS_READER ? Math.round(activeCount / s.total * 100) : 0;
-          const sub = !HAS_READER
-            ? ''
-            : (SOLO ? `${pct}% complete`
-                    : ACTIVE_READERS.map(r => `${r.label}: ${Math.round(s[r.id] / s.total * 100)}%`).join(' · '));
           const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
-          const valueText = HAS_READER ? `${activeCount} / ${s.total}` : `${s.total}`;
-          return linkCard(`#/books?award=${a}${statusParam}`, AWARD_LABELS[a], valueText, sub, HAS_READER ? activeCount / s.total * 100 : null);
-        }).join('')}
-      </div>
+          const valueLabel = HAS_READER ? `${activeCount}/${s.total}` : `${s.total}`;
+          const subBits = [];
+          if (HAS_READER) subBits.push(`${pct}% complete`);
+          return {
+            key: a,
+            label: AWARD_LABELS[a],
+            value: s.total,
+            valueLabel,
+            sub: subBits.join(' · '),
+            color: a === 'hugo' ? 'var(--sf)' : 'var(--fantasy)',
+            href: `#/books?award=${a}${statusParam}`,
+            tooltip: `${AWARD_LABELS[a]}: ${s.total} ${SUBSET}${HAS_READER ? ' · you read ' + activeCount : ''}`,
+          };
+        }),
+        { height: 180 }
+      )}
     </div>
 
     <div class="progress-section">
       <h2>By category (${SUBSET})</h2>
-      <p style="color: var(--muted); font-size: 13px;">Tap a card to see those ${SUBSET} in the Books tab.</p>
-      <div class="stats-grid">
-        ${Object.entries(byCategory).map(([c, s]) => {
+      <p style="color: var(--muted); font-size: 13px;">Tap a bar to see those ${SUBSET} in the Books tab.</p>
+      ${buildBarChart(
+        Object.entries(byCategory).filter(([, s]) => s.total > 0).map(([c, s], i) => {
           const activeCount = PRIMARY_READER ? s[PRIMARY_READER] : 0;
           const pct = HAS_READER ? Math.round(activeCount / s.total * 100) : 0;
-          const sub = !HAS_READER
-            ? ''
-            : (SOLO ? `${pct}% complete`
-                    : ACTIVE_READERS.map(r => `${r.label}: ${Math.round(s[r.id] / s.total * 100)}%`).join(' · '));
           const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
-          const valueText = HAS_READER ? `${activeCount} / ${s.total}` : `${s.total}`;
-          return linkCard(`#/books?category=${encodeURIComponent(c)}${statusParam}`, c, valueText, sub, HAS_READER ? activeCount / s.total * 100 : null);
-        }).join('')}
-      </div>
+          const valueLabel = HAS_READER ? `${activeCount}/${s.total}` : `${s.total}`;
+          const palette = ['var(--accent)', 'var(--accent-2)', 'var(--accent-3)', 'var(--accent-4)', 'var(--accent-5)'];
+          return {
+            key: c,
+            label: c,
+            value: s.total,
+            valueLabel,
+            sub: HAS_READER ? `${pct}% complete` : '',
+            color: palette[i % palette.length],
+            href: `#/books?category=${encodeURIComponent(c)}${statusParam}`,
+            tooltip: `${c}: ${s.total} ${SUBSET}${HAS_READER ? ' · you read ' + activeCount : ''}`,
+          };
+        }),
+        { height: 180 }
+      )}
     </div>
 
 
@@ -1183,6 +1399,38 @@ function renderStats() {
       }
     });
   });
+
+  // Donut slice click — navigate to filtered Books view
+  $$('.donut-seg', root).forEach(seg => {
+    seg.addEventListener('click', () => {
+      const key = seg.dataset.key;
+      if (!key) return;
+      const statusParam = STATUS === 'both' ? '' : `&status=${STATUS}`;
+      location.hash = `#/books?gender=${key}${statusParam}`;
+    });
+  });
+
+  // Author-window slider: recompute in place, no full page re-render.
+  const slider = $('#authors-window', root);
+  const sliderAll = $('#authors-window-all', root);
+  const sliderLabel = $('#authors-window-display', root);
+  const authorsListEl = $('#authors-list', root);
+  const updateAuthors = (years) => {
+    state.authorWindow = years;
+    if (sliderLabel) sliderLabel.textContent = years >= 100 ? 'all time' : `last ${years} years`;
+    if (sliderAll) sliderAll.setAttribute('aria-pressed', years >= 100 ? 'true' : 'false');
+    const { top, maxAppearances: m } = computeTopAuthors(years);
+    if (authorsListEl) authorsListEl.innerHTML = renderAuthorRows(top, m);
+  };
+  if (slider) {
+    slider.addEventListener('input', e => updateAuthors(parseInt(e.target.value, 10)));
+  }
+  if (sliderAll) {
+    sliderAll.addEventListener('click', () => {
+      slider.value = 75;
+      updateAuthors(100);  // 100+ means all time
+    });
+  }
 }
 
 // Hand-curated list of 2026 Nebula finalists for Novel + Novella.
@@ -2504,7 +2752,7 @@ async function renderProfile(handle) {
   const { data: profile, error } = await withTimeout(
     client.from('profiles')
       .select('id, handle, profile_visibility, on_leaderboard, created_at, is_admin')
-      .eq('handle', handle).maybeSingle(),
+      .ilike('handle', handle).maybeSingle(),
     8000, 'profile lookup');
   if (error || !profile) {
     root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><h1>Not found</h1><p>No profile @${escapeHtml(handle)}.</p></div>`;
@@ -2606,6 +2854,8 @@ function resetFilterState() {
   state.categories = new Set(['Novel', 'Novella', 'Novelette']);
   state.yearMin = null;
   state.yearMax = null;
+  state.authorGender = null;
+  state.missingFilter = null;
 }
 
 function applyFilterParams(params) {
@@ -2622,6 +2872,12 @@ function applyFilterParams(params) {
     const parsed = readTom.split(',').map(s => s.trim()).filter(s => ALL_READ_STATES.includes(s));
     if (parsed.length) state.readTom = new Set(parsed);
   }
+  // Author gender filter from "By gender" donut/cards on Home
+  const gender = params.get('gender');
+  state.authorGender = ['female', 'male', 'unknown'].includes(gender) ? gender : null;
+  // Missing-data debug filter (?missing=desc|cover|either)
+  const missing = params.get('missing');
+  state.missingFilter = ['desc', 'cover', 'either'].includes(missing) ? missing : null;
   syncFiltersToDom();
 }
 
@@ -2636,6 +2892,8 @@ function syncFiltersToDom() {
   $$('input[name="award"]').forEach(el => { el.checked = state.awards.has(el.value); });
   $$('input[name="status"]').forEach(el => { el.checked = state.statuses.has(el.value); });
   $$('input[name="category"]').forEach(el => { el.checked = state.categories.has(el.value); });
+  $$('input[name="author-gender"]').forEach(el => { el.checked = state.authorGender === el.value; });
+  $$('input[name="missing"]').forEach(el => { el.checked = (state.missingFilter || '') === el.value; });
   $('#sort').value = state.sort;
 }
 
@@ -2774,6 +3032,23 @@ function wireFilters() {
   $('#year-min').addEventListener('input', e => { state.yearMin = e.target.value ? parseInt(e.target.value, 10) : null; renderList(); });
   $('#year-max').addEventListener('input', e => { state.yearMax = e.target.value ? parseInt(e.target.value, 10) : null; renderList(); });
   $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderList(); });
+  // Author-gender filter — checkboxes are exclusive (a book has one primary
+  // gender). Unchecking the active one clears the filter.
+  $$('input[name="author-gender"]').forEach(el => el.addEventListener('change', e => {
+    if (e.target.checked) {
+      state.authorGender = e.target.value;
+      $$('input[name="author-gender"]').forEach(other => {
+        if (other !== e.target) other.checked = false;
+      });
+    } else {
+      state.authorGender = null;
+    }
+    renderList();
+  }));
+  $$('input[name="missing"]').forEach(el => el.addEventListener('change', e => {
+    state.missingFilter = e.target.value || null;
+    renderList();
+  }));
   $('#reset').addEventListener('click', () => {
     state = {
       search: '',
@@ -2787,6 +3062,11 @@ function wireFilters() {
       categories: new Set(['Novel', 'Novella', 'Novelette']),
       yearMin: null, yearMax: null, sort: 'year-desc',
       progressStatus: state.progressStatus,
+      progressAward: state.progressAward,
+      authorWindow: state.authorWindow,
+      genderFilter: null,
+      authorGender: null,
+      missingFilter: null,
     };
     $('#search').value = '';
     $('#year-min').value = '';
@@ -2797,6 +3077,8 @@ function wireFilters() {
     $$('input[name="award"]').forEach(el => el.checked = true);
     $$('input[name="status"]').forEach(el => el.checked = true);
     $$('input[name="category"]').forEach(el => el.checked = true);
+    $$('input[name="author-gender"]').forEach(el => el.checked = false);
+    $$('input[name="missing"]').forEach(el => { el.checked = el.value === ''; });
     $('#sort').value = 'year-desc';
     renderList();
   });

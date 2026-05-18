@@ -110,9 +110,14 @@
         submit.disabled = true;
         status.textContent = 'Sending…';
         status.className = 'mr-signin-status';
+        // Pin the magic-link redirect to the canonical production URL so the
+        // email always lands on readmore.tomgarske.com — not whatever local
+        // dev/preview host the user happened to be on when they hit Send.
+        // Supabase's "Redirect URLs" allowlist must include this exact value.
+        const REDIRECT_URL = 'https://readmore.tomgarske.com/';
         const { error } = await client.auth.signInWithOtp({
           email,
-          options: { emailRedirectTo: window.location.origin + window.location.pathname }
+          options: { emailRedirectTo: REDIRECT_URL }
         });
         if (error) {
           status.textContent = 'Error: ' + error.message;

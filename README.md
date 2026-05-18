@@ -1,6 +1,6 @@
-# Mount Readmore
+# Readmore
 
-Personal tracker for Hugo and Nebula winners and finalists, comparing Tom's and Nika's reading progress. Read status comes from the awards spreadsheet plus Tom's exported Goodreads "read" shelf. Static site: [readmore.tomgarske.com](https://readmore.tomgarske.com).
+Personal tracker for Hugo and Nebula winners and finalists, comparing Tom's and Nika's reading progress. Read status comes from the awards spreadsheet plus Tom's exported Goodreads "read" shelf. Live at [readmore.tomgarske.com](https://readmore.tomgarske.com/).
 
 ## Why
 
@@ -9,13 +9,22 @@ Goodreads' public API is deprecated (no new keys since Dec 2020) and StoryGraph 
 ## Layout
 
 ```
-mount-readmore/
+award-books-tracker/
 ├── data/             # source per-sheet CSVs, additions, merged outputs, cache
 ├── exports/          # raw exports from Goodreads / StoryGraph (gitignored)
 ├── scripts/          # Python pipeline (merge, build xlsx, build site JSON, enrich)
 ├── site/             # static SPA — index.html, app.js, styles.css, data.json
-└── .github/workflows # GH Pages deploy on push to main
+└── .github/workflows # Cloudflare Pages deploy on push to main
 ```
+
+## Hosting & auth
+
+- **Primary URL:** [readmore.tomgarske.com](https://readmore.tomgarske.com/) — served by Cloudflare Pages (project `mount-readmore`, attached via `.github/workflows/cloudflare-pages.yml`). DNS lives in Cloudflare.
+- **Supabase config** (must match the production URL):
+  - Project Settings → URL Configuration → **Site URL**: `https://readmore.tomgarske.com`
+  - Authentication → URL Configuration → **Redirect URLs**: add `https://readmore.tomgarske.com/**` (the trailing `**` allows magic-link callbacks at any path)
+  - Authentication → Email Templates → **Magic Link**: body should reference Readmore; the `{{ .ConfirmationURL }}` token resolves against Site URL
+- **Magic-link redirect:** `site/auth.js` pins `emailRedirectTo` to `https://readmore.tomgarske.com/` so the login email always lands on the canonical domain regardless of where the visitor was when they hit "Send link."
 
 ## Awards tracked
 
