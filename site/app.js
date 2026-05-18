@@ -2382,11 +2382,6 @@ async function renderSettings() {
     </div>`;
     return;
   }
-  const visOpt = (val, label, desc) => `
-    <label class="settings-radio">
-      <input type="radio" name="profile_visibility" value="${val}" ${profile.profile_visibility === val ? 'checked' : ''}>
-      <span><strong>${label}</strong> — ${desc}</span>
-    </label>`;
 
   root.innerHTML = `<div class="detail settings-page">
     <h1>Settings</h1>
@@ -2410,17 +2405,12 @@ async function renderSettings() {
     </section>
 
     <section class="settings-section">
-      <h2>Profile visibility</h2>
-      <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px;">Controls who can open <code>/u/${escapeHtml(profile.handle)}</code> and see your individual reads. Separate from the leaderboard checkbox below.</p>
-      ${visOpt('private', 'Private', "Only you can open your profile page or see your read list. Your friends still see your name and read count on the Friends page if you opt in below.")}
-      ${visOpt('public', 'Public', "Anyone (signed in or not) can open <code>/u/" + escapeHtml(profile.handle) + "</code> and see what you've read.")}
-      <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);">
-        <label class="settings-check">
-          <input type="checkbox" id="settings-leaderboard" ${profile.on_leaderboard ? 'checked' : ''}>
-          <strong>Show me on the Friends leaderboard.</strong>
-        </label>
-        <p style="color: var(--muted); font-size: 12.5px; margin: 6px 0 0 26px;">When on, you appear on the Friends page for everyone you're friends with — they see your handle, read count, and rank. They don't see your individual book list unless your profile visibility is Public.</p>
-      </div>
+      <h2>Leaderboard</h2>
+      <label class="settings-check">
+        <input type="checkbox" id="settings-leaderboard" ${profile.on_leaderboard ? 'checked' : ''}>
+        <strong>Show me on the Friends leaderboard.</strong>
+      </label>
+      <p style="color: var(--muted); font-size: 12.5px; margin: 6px 0 0 26px;">When on, you appear on the Friends page for everyone you're friends with — they see your handle, read count, and rank. Your profile page at <code>/u/${escapeHtml(profile.handle)}</code> is public either way.</p>
     </section>
 
     <section class="settings-section">
@@ -2483,15 +2473,6 @@ async function renderSettings() {
   });
   handleBtn.addEventListener('click', saveHandle);
   refreshHandleBtn();
-
-  $$('input[name="profile_visibility"]').forEach(r => {
-    r.addEventListener('change', async (e) => {
-      try {
-        await window.MR_AUTH.updateProfile({ profile_visibility: e.target.value });
-        setMsg(`Visibility set to ${e.target.value}.`, 'success');
-      } catch (err) { setMsg('Save failed: ' + err.message, 'error'); }
-    });
-  });
 
   $('#settings-leaderboard').addEventListener('change', async (e) => {
     try {
