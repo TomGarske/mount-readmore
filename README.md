@@ -1,6 +1,6 @@
 # Mount Readmore
 
-Personal tracker for Hugo and Nebula winners and finalists, comparing Tom's and Nika's reading progress. Read status comes from the awards spreadsheet plus Tom's exported Goodreads "read" shelf. Static site: [tomgarske.github.io/mount-readmore](https://tomgarske.github.io/mount-readmore).
+Personal tracker for Hugo and Nebula winners and finalists, comparing Tom's and Nika's reading progress. Read status comes from the awards spreadsheet plus Tom's exported Goodreads "read" shelf. Static site: [readmore.tomgarske.com](https://readmore.tomgarske.com).
 
 ## Why
 
