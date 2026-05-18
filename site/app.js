@@ -2232,7 +2232,11 @@ async function renderSettings() {
         </label>
         <label class="settings-field">
           <span>Handle <span class="settings-hint">— letters and numbers, 3+ chars</span></span>
-          <input type="text" id="settings-handle" value="${escapeHtml(profile.handle)}" minlength="3" maxlength="32">
+          <div class="settings-handle-row">
+            <input type="text" id="settings-handle" value="${escapeHtml(profile.handle)}" minlength="3" maxlength="32" autocomplete="off">
+            <button type="button" id="settings-handle-save" class="mr-btn-primary" disabled>Save</button>
+            <span id="settings-handle-status" class="settings-inline-status"></span>
+          </div>
         </label>
       </div>
     </section>
@@ -2273,27 +2277,55 @@ async function renderSettings() {
   const msg = $('#settings-msg');
   const setMsg = (text, cls = '') => { msg.textContent = text; msg.className = 'settings-msg ' + cls; };
 
-  // Save-on-blur for the handle field
+  // Handle save — explicit button, Enter key, and inline status. Was
+  // save-on-blur, but users didn't realize the field auto-saved and thought
+  // their edits were lost.
+  const handleInput = $('#settings-handle');
+  const handleBtn = $('#settings-handle-save');
+  const handleStatus = $('#settings-handle-status');
+  const setHandleStatus = (text, cls = '') => {
+    handleStatus.textContent = text;
+    handleStatus.className = 'settings-inline-status ' + cls;
+  };
+  const refreshHandleBtn = () => {
+    const v = handleInput.value.replace(/^@/, '').trim();
+    handleBtn.disabled = (v === profile.handle) || !v;
+  };
   let handleSaving = false;
-  $('#settings-handle').addEventListener('blur', async (e) => {
-    const newHandle = e.target.value.replace(/^@/, '').trim();
+  const saveHandle = async () => {
+    if (handleSaving) return;
+    const newHandle = handleInput.value.replace(/^@/, '').trim();
     if (!newHandle || newHandle === profile.handle) return;
     if (!/^[a-zA-Z0-9_]{3,32}$/.test(newHandle)) {
-      setMsg('Handle must be 3–32 chars, letters/numbers/underscore only.', 'error');
-      e.target.value = profile.handle;
+      setHandleStatus('Letters / numbers / underscore only, 3–32 chars.', 'error');
       return;
     }
-    if (handleSaving) return;
     handleSaving = true;
+    handleBtn.disabled = true;
+    setHandleStatus('Saving…', '');
     try {
-      await window.MR_AUTH.updateProfile({ handle: newHandle });
-      setMsg(`Handle saved as @${newHandle}.`, 'success');
+      const updated = await window.MR_AUTH.updateProfile({ handle: newHandle });
+      profile.handle = updated.handle;
+      handleInput.value = updated.handle;
+      setHandleStatus('✓ Saved', 'success');
+      setTimeout(() => setHandleStatus(''), 2500);
     } catch (err) {
-      setMsg('Save failed: ' + (err.message || err), 'error');
-      e.target.value = profile.handle;
+      const msg = String(err?.message || err);
+      // Postgres unique_violation comes back as 23505
+      const friendly = /23505|duplicate|already/i.test(msg)
+        ? `@${newHandle} is taken`
+        : 'Save failed: ' + msg;
+      setHandleStatus(friendly, 'error');
     }
     handleSaving = false;
+    refreshHandleBtn();
+  };
+  handleInput.addEventListener('input', () => { refreshHandleBtn(); setHandleStatus(''); });
+  handleInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); saveHandle(); }
   });
+  handleBtn.addEventListener('click', saveHandle);
+  refreshHandleBtn();
 
   $$('input[name="profile_visibility"]').forEach(r => {
     r.addEventListener('change', async (e) => {

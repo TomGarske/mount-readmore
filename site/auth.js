@@ -192,8 +192,10 @@
     if (!currentUser) throw new Error('Not signed in');
     const clean = String(handle || '').replace(/^@/, '').trim().toLowerCase();
     if (!clean) throw new Error('Handle is empty');
+    // Case-insensitive lookup so "Tom" / "tom" / "TOM" all resolve. ilike with
+    // no wildcard chars in the value is just a case-insensitive eq.
     const { data: target, error: lookupErr } = await client.from('profiles')
-      .select('id, handle').eq('handle', clean).maybeSingle();
+      .select('id, handle').ilike('handle', clean).maybeSingle();
     if (lookupErr) throw lookupErr;
     if (!target) throw new Error(`No user with handle @${clean}`);
     if (target.id === currentUser.id) throw new Error("Can't friend yourself");
