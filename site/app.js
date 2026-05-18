@@ -2555,13 +2555,22 @@ async function renderAdmin() {
     if (r.status === 'read') reads[r.user_id] = (reads[r.user_id] || 0) + 1;
   }
 
+  // Friends count per profile — friendships rows are bidirectional, one
+  // row per pair, so each row contributes +1 to BOTH user_id_a and user_id_b.
+  const { data: edges } = await client.from('friendships').select('user_id_a, user_id_b');
+  const friendsCount = {};
+  for (const e of edges || []) {
+    friendsCount[e.user_id_a] = (friendsCount[e.user_id_a] || 0) + 1;
+    friendsCount[e.user_id_b] = (friendsCount[e.user_id_b] || 0) + 1;
+  }
+
   const row = (p) => `
     <div class="admin-row" data-profile-id="${escapeHtml(p.id)}">
       <div class="admin-handle">
         <a href="#/u/${escapeHtml(p.handle)}">@${escapeHtml(p.handle)}</a>
         ${p.is_admin ? '<span class="admin-pill admin-pill-admin">admin</span>' : ''}
       </div>
-      <div class="admin-reads">${reads[p.id] || 0} read · ${totalUb[p.id] || 0} total</div>
+      <div class="admin-reads">${reads[p.id] || 0} read · ${totalUb[p.id] || 0} total · ${friendsCount[p.id] || 0} friends</div>
       <div class="admin-controls">
         <select data-field="profile_visibility" data-profile-id="${escapeHtml(p.id)}">
           <option value="private" ${p.profile_visibility === 'private' ? 'selected' : ''}>private</option>
