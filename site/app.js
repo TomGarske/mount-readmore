@@ -101,9 +101,10 @@ let state = {
   // Books page: missing-data debug filter. Set of {'desc','cover'}.
   // Empty = no filter; any checked = books missing at least one selected.
   missingFilter: new Set(),
-  // Books page: filter by the signed-in user's status. Driven by Home-page
-  // featured-shelf CTAs (?meStatus=read|nightstand|started). null = no filter.
-  meStatus: null,
+  // Books page: filter by the signed-in user's status. Set of
+  // {'read','nightstand','neither'}. Full set (size 3) = no filter.
+  // 'neither' matches books the user hasn't marked at all.
+  meStatus: new Set(['read', 'nightstand', 'neither']),
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
@@ -172,10 +173,17 @@ function matchesFilters(book) {
     const g = book.primary_author_gender || 'unknown';
     if (!state.authorGender.has(g)) return false;
   }
-  // Signed-in user's status (read/nightstand/started). URL-driven only.
-  if (state.meStatus && window.MR_AUTH?.user) {
+  // Signed-in user's status (read | nightstand | neither). Multi-select Set.
+  // 'neither' = no user_books row at all. Full set = no filter.
+  if (state.meStatus && state.meStatus.size > 0 && state.meStatus.size < 3 && window.MR_AUTH?.user) {
     const myStatus = window.MR_AUTH.statusFor(book.id);
-    if (state.meStatus !== myStatus) return false;
+    // Map legacy 'started' rows to 'nightstand' for filtering purposes —
+    // those rows exist in DB from before we dropped the started state but
+    // should now show under the nightstand bucket.
+    const bucket = myStatus === 'read' ? 'read'
+      : (myStatus === 'nightstand' || myStatus === 'started') ? 'nightstand'
+      : 'neither';
+    if (!state.meStatus.has(bucket)) return false;
   }
   // Missing-data filter: any checked → book must be missing at least one of
   // the checked criteria. Empty set = no filter.
@@ -367,9 +375,10 @@ function renderList() {
     const label = [...state.missingFilter].map(k => names[k]).join(' or ');
     activeFilters.push({ label, clear: 'missing' });
   }
-  if (state.meStatus) {
-    const names = { read: 'Read by you', nightstand: 'On your nightstand', started: 'Started by you' };
-    activeFilters.push({ label: names[state.meStatus], clear: 'meStatus' });
+  if (state.meStatus && state.meStatus.size > 0 && state.meStatus.size < 3) {
+    const names = { read: 'Read', nightstand: 'Nightstand', neither: 'Neither' };
+    const label = 'Your status: ' + [...state.meStatus].map(s => names[s]).join(' + ');
+    activeFilters.push({ label, clear: 'meStatus' });
   }
   $('#result-count').innerHTML = `${sorted.length} of ${DATA.books.length} books` +
     (activeFilters.length
@@ -385,7 +394,10 @@ function renderList() {
       state.missingFilter = new Set();
       $$('input[name="missing"]').forEach(el => el.checked = false);
     }
-    if (w === 'meStatus') { state.meStatus = null; }
+    if (w === 'meStatus') {
+      state.meStatus = new Set(['read', 'nightstand', 'neither']);
+      $$('input[name="me-status"]').forEach(el => el.checked = true);
+    }
     renderList();
   }));
   $('#grid').innerHTML = sorted.map(bookCard).join('');
@@ -807,15 +819,10 @@ function renderStats() {
     seenRecent.add(b.id);
     recentEither.push(b);
   }
-  recentEither.sort((a, b) => {
-    // Prefer the signed-in user's date_read; fall back to tom CSV; then year.
-    const aDate = a._meDate || a.tom_date_read || '';
-    const bDate = b._meDate || b.tom_date_read || '';
-    if (aDate && bDate) return bDate.localeCompare(aDate);
-    if (aDate && !bDate) return -1;
-    if (!aDate && bDate) return 1;
-    return (b.year || 0) - (a.year || 0);
-  });
+  // Sort by publication year (newest first) so the swimlane reads as a
+  // chronological recap of "what you've read by year" rather than the
+  // less stable "what you marked read most recently".
+  recentEither.sort((a, b) => (b.year || 0) - (a.year || 0));
 
   // Combined nightstand across active readers, deduped, sorted.
   // 'me' uses MR_AUTH.userBooks status='nightstand'; legacy readers use
@@ -1153,9 +1160,28 @@ function renderStats() {
     </div>`;
   };
 
-  const recentEitherHtml = recentEither.slice(0, 16).map(b =>
-    tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year || ''}`, readerPills(b, 'read'))
-  ).join('');
+  // Recently-read swimlane: horizontal-scroll cards sorted by pub year desc.
+  // Tail card links through to /#/books?meStatus=read for the full filtered
+  // list. Cap displayed cards at 18 so the strip stays scannable.
+  const swimlaneTile = (b) => {
+    const cover = b.cover_url
+      ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
+      : `<span class="swimlane-placeholder">📖</span>`;
+    const isWinner = Object.values(b.awards || {}).includes('winner');
+    return `<a class="swimlane-card" href="#/book/${escapeHtml(b.id)}">
+      <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
+      <div class="swimlane-title">${escapeHtml(b.title)}</div>
+      <div class="swimlane-meta">${escapeHtml(b.authors[0] || '')} · ${b.year || ''}</div>
+    </a>`;
+  };
+  const recentEitherHtml = recentEither.slice(0, 18).map(swimlaneTile).join('')
+    + (recentEither.length > 0
+        ? `<a class="swimlane-card swimlane-view-all" href="#/books?meStatus=read">
+            <div class="swimlane-cover swimlane-view-all-cover"><span>View all <br>→</span></div>
+            <div class="swimlane-title">${recentEither.length} books</div>
+            <div class="swimlane-meta">in /books</div>
+          </a>`
+        : '');
 
   const nightstandHtml = nightstandBooks.map(b =>
     tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).map(([a, s]) => `${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}`).join(' · ')}`, readerPills(b, 'shelf'))
@@ -1203,6 +1229,10 @@ function renderStats() {
   const authorRows = renderAuthorRows(topAuthors, maxAppearances);
 
   root.innerHTML = `<div class="detail">
+    <section class="home-cta">
+      <p><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
+    </section>
+
     <div class="featured-banners featured-banners-full">
       ${featuredBanner({
         theme: 'hugo',
@@ -1231,10 +1261,6 @@ function renderStats() {
     </div>
 
     <p class="awards-tracks-note">Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>
-
-    <section class="completionist-intro">
-      <p>Readmore is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. The goal is simple: <strong>read them all</strong>. Every cover you check off is one more in the books — across decades of science fiction and fantasy, the works the field itself decided were worth remembering.</p>
-    </section>
 
     <h1>Home</h1>
     <div class="toggle-row">
@@ -1282,11 +1308,11 @@ function renderStats() {
       <div class="featured-shelf-head">
         <div>
           <h2>Recently read</h2>
-          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Read books by publication year.</p>
+          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Sorted by publication year, newest first.</p>
         </div>
         <a class="featured-shelf-cta" href="#/books?meStatus=read">View all <span class="featured-arrow">→</span></a>
       </div>
-      <div class="recent-reads">${recentEitherHtml}</div>
+      <div class="swimlane-strip">${recentEitherHtml}</div>
     </section>` : ''}
 
     ${HAS_READER && nightstandBooks.length > 0 ? `<section class="featured-shelf featured-shelf-nightstand">
@@ -2293,8 +2319,6 @@ async function renderCompare(params) {
 // bootstrap loads from the SQL views. Only profiles with on_leaderboard = true
 // appear (filter is inside the view). Each row has a Compare → button that
 // deep-links into the existing /#/compare?u=me&u=them head-to-head view.
-let __mrLeaderboardScope = 'overall';   // 'overall' | 'hugo' | 'nebula'
-
 async function renderFriends() {
   const root = $('#view-friends');
   if (!root) return;
@@ -2318,14 +2342,18 @@ async function renderFriends() {
 
   const meHandle = window.MR_AUTH?.profile?.handle || null;
   const myUserId = window.MR_AUTH?.user?.id || null;
-  const scope = __mrLeaderboardScope;
-  const rows = scope === 'overall'
-    ? overall
-    : byAward.filter(r => r.award === scope);
+  const rows = overall;
 
-  const totalLabel = scope === 'overall'
-    ? `${overall[0]?.total_books ?? 0} canonical books`
-    : `${rows[0]?.total_books ?? 0} ${scope === 'hugo' ? 'Hugo' : 'Nebula'} books`;
+  // Build {user_id → {hugo, nebula}} maps from the per-award view so each
+  // friend row can show the Hugo + Nebula counts inline. Replaces the
+  // old Overall/Hugo/Nebula toggle.
+  const hugoByUser = {};
+  const nebulaByUser = {};
+  for (const r of byAward || []) {
+    if (r.award === 'hugo') hugoByUser[r.user_id] = r.read_count;
+    else if (r.award === 'nebula') nebulaByUser[r.user_id] = r.read_count;
+  }
+  const totalLabel = `${overall[0]?.total_books ?? 0} canonical books`;
 
   const onLeaderboard = window.MR_AUTH?.profile?.on_leaderboard;
   const isAuthed = !!window.MR_AUTH?.user;
@@ -2340,22 +2368,22 @@ async function renderFriends() {
       : isMe
         ? `<span class="lb-me">you</span>`
         : `<span class="lb-compare lb-compare-disabled" data-tooltip="Sign in to compare">Compare</span>`;
-    // Remove button for friend rows (not me, not @tom auto-friend baseline).
-    // @tom is intentionally auto-friended with everyone, so keep him for now.
     const canRemove = isAuthed && !isMe;
     const removeTag = canRemove
       ? `<button type="button" class="lb-remove" data-friend-id="${escapeHtml(r.user_id)}" data-friend-handle="${escapeHtml(r.handle)}" aria-label="Remove @${escapeHtml(r.handle)} as friend" title="Remove friend">×</button>`
       : '';
+    const hugoCount = hugoByUser[r.user_id] ?? 0;
+    const nebulaCount = nebulaByUser[r.user_id] ?? 0;
     return `<div class="lb-row${isMe ? ' lb-row-me' : ''}">
       <div class="lb-rank">#${r.rank}</div>
       <div class="lb-handle"><a href="#/u/${escapeHtml(r.handle)}">@${escapeHtml(r.handle)}</a></div>
       <div class="lb-stat"><strong>${r.read_count}</strong> <span class="lb-of">/ ${r.total_books}</span></div>
+      <div class="lb-stat-sub" style="color: var(--sf);"><strong>${hugoCount}</strong> Hugo</div>
+      <div class="lb-stat-sub" style="color: var(--fantasy);"><strong>${nebulaCount}</strong> Nebula</div>
       <div class="lb-pct">${r.pct ?? 0}%</div>
       <div class="lb-action">${compareTag}${removeTag}</div>
     </div>`;
   }).join('');
-
-  const tab = (id, label) => `<button type="button" class="status-tab${scope === id ? ' active' : ''}" data-lb-scope="${id}">${label}</button>`;
 
   const meOnly = isAuthed && rows.length === 1 && rows[0].user_id === myUserId;
 
@@ -2391,12 +2419,6 @@ async function renderFriends() {
 
     ${addFriendForm}
 
-    <div class="status-toggle leaderboard-toggle">
-      ${tab('overall', 'Overall')}
-      ${tab('hugo', 'Hugo')}
-      ${tab('nebula', 'Nebula')}
-    </div>
-
     ${rows.length === 0
       ? emptyState
       : `<div class="lb-table">${rowHtml}</div>`}
@@ -2412,12 +2434,6 @@ async function renderFriends() {
         : ''}
   </div>`;
 
-  $$('.leaderboard-toggle .status-tab').forEach(btn => {
-    btn.addEventListener('click', () => {
-      __mrLeaderboardScope = btn.dataset.lbScope;
-      renderFriends();
-    });
-  });
   $('#lb-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
   $('#lb-signin-empty')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
   root.querySelectorAll('.lb-compare-disabled').forEach(el => {
@@ -2469,6 +2485,365 @@ async function renderFriends() {
       }
     });
   });
+}
+
+// ===== Discover (Tinder-style) ========================================
+// Module-scope state so the queue, undo history, and skip list survive route
+// changes within a session. Reset to null only on sign-out or when the user
+// explicitly hits "Start over".
+let __discoverState = null;
+
+function buildDiscoverQueue() {
+  const auth = window.MR_AUTH;
+  if (!auth || !auth.user) return [];
+  // Unrated only — anything in user_books (read/nightstand/started) is
+  // already categorized and shouldn't reappear in the swipe queue.
+  return DATA.books
+    .filter(b => auth.statusFor(b.id) === null)
+    .sort((a, b) => {
+      const aWin = Object.values(a.awards || {}).includes('winner') ? 1 : 0;
+      const bWin = Object.values(b.awards || {}).includes('winner') ? 1 : 0;
+      if (aWin !== bWin) return bWin - aWin;
+      const yearDiff = (b.year || 0) - (a.year || 0);
+      if (yearDiff !== 0) return yearDiff;
+      return a.title.localeCompare(b.title);
+    })
+    .map(b => b.id);
+}
+
+function discoverNextBook() {
+  if (!__discoverState) return null;
+  for (const id of __discoverState.queue) {
+    if (__discoverState.skipped.has(id)) continue;
+    return DATA.books.find(b => b.id === id) || null;
+  }
+  // Queue exhausted ignoring skips — fall back to first skipped item so the
+  // user always sees the next thing to label.
+  for (const id of __discoverState.queue) {
+    return DATA.books.find(b => b.id === id) || null;
+  }
+  return null;
+}
+
+function discoverPeekBook(offset) {
+  if (!__discoverState) return null;
+  let seen = 0;
+  for (const id of __discoverState.queue) {
+    if (__discoverState.skipped.has(id)) continue;
+    if (seen === offset) return DATA.books.find(b => b.id === id) || null;
+    seen++;
+  }
+  return null;
+}
+
+async function renderDiscover() {
+  const root = $('#view-discover');
+  if (!root) return;
+  root.innerHTML = `<div class="detail"><h1>Discover</h1><p style="color: var(--muted);">Loading…</p></div>`;
+  try {
+    await Promise.race([
+      window.MR_AUTH?.ready,
+      new Promise((_, rej) => setTimeout(() => rej(new Error('Auth bootstrap timed out')), 10000)),
+    ]);
+  } catch (err) {
+    root.innerHTML = `<div class="detail"><h1>Discover</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
+    return;
+  }
+
+  const auth = window.MR_AUTH;
+  if (!auth?.user) {
+    root.innerHTML = `<div class="detail discover-page">
+      <h1>Discover</h1>
+      <p style="color: var(--muted); max-width: 540px;">Swipe through every Hugo and Nebula finalist and decide whether you've read it, want to read it, or want to skip it. Sign in to start labeling.</p>
+      <p style="margin-top: 18px;"><button type="button" class="user-status-signin" id="discover-signin">Sign in</button></p>
+    </div>`;
+    $('#discover-signin')?.addEventListener('click', () => window.MR_AUTH?.showSignInModal());
+    return;
+  }
+
+  if (!__discoverState) {
+    __discoverState = {
+      queue: buildDiscoverQueue(),
+      history: [],
+      skipped: new Set(),
+      tab: 'cover',
+    };
+  }
+  drawDiscover();
+}
+
+function drawDiscover() {
+  const root = $('#view-discover');
+  if (!root) return;
+  const auth = window.MR_AUTH;
+  if (!auth?.user) { renderDiscover(); return; }
+
+  const total = DATA.books.length;
+  const readCount = DATA.books.filter(b => auth.statusFor(b.id) === 'read').length;
+  const nightstandCount = DATA.books.filter(b => {
+    const s = auth.statusFor(b.id);
+    return s === 'nightstand' || s === 'started';
+  }).length;
+  const labeledCount = DATA.books.filter(b => auth.statusFor(b.id) !== null).length;
+  const remaining = total - labeledCount;
+  const completionPct = total > 0 ? Math.round((readCount / total) * 100) : 0;
+  const labeledPct = total > 0 ? Math.round((labeledCount / total) * 100) : 0;
+
+  const book = discoverNextBook();
+
+  const statsRow = `<div class="discover-stats">
+    <div class="discover-stat">
+      <div class="discover-stat-value">${completionPct}%</div>
+      <div class="discover-stat-label">Read · ${readCount} of ${total}</div>
+    </div>
+    <div class="discover-stat">
+      <div class="discover-stat-value">${nightstandCount}</div>
+      <div class="discover-stat-label">On nightstand</div>
+    </div>
+    <div class="discover-stat">
+      <div class="discover-stat-value">${labeledPct}%</div>
+      <div class="discover-stat-label">Labeled · ${remaining} left</div>
+    </div>
+  </div>`;
+
+  if (!book) {
+    root.innerHTML = `<div class="detail discover-page">
+      <h1>Discover</h1>
+      ${statsRow}
+      <div class="discover-empty">
+        <p style="font-size: 18px;"><strong>You've labeled every book.</strong></p>
+        <p style="color: var(--muted);">Nice work. Hit <a href="#/books">Books</a> to browse, or <a href="#/">Home</a> to see your progress.</p>
+        ${__discoverState && __discoverState.skipped.size > 0
+          ? `<p style="margin-top: 18px;"><button type="button" id="discover-replay" class="user-status-btn">Replay ${__discoverState.skipped.size} skipped</button></p>`
+          : ''}
+      </div>
+    </div>`;
+    $('#discover-replay')?.addEventListener('click', () => {
+      __discoverState.skipped.clear();
+      __discoverState.queue = buildDiscoverQueue();
+      drawDiscover();
+    });
+    return;
+  }
+
+  const peek1 = discoverPeekBook(1);
+  const peek2 = discoverPeekBook(2);
+
+  const tab = __discoverState.tab || 'cover';
+  const author = (book.authors || [])[0] || book.author_raw || '';
+  const authorSet = new Set((book.authors || []).map(a => a.toLowerCase()));
+  const moreByAuthor = authorSet.size === 0 ? [] : DATA.books
+    .filter(b => b.id !== book.id && (b.authors || []).some(a => authorSet.has(a.toLowerCase())))
+    .sort((a, b) => (b.year || 0) - (a.year || 0));
+
+  const coverImg = book.cover_url
+    ? `<img src="${escapeHtml(book.cover_url)}" alt="Cover of ${escapeHtml(book.title)}" draggable="false" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
+    : `<span class="discover-cover-placeholder">📖</span>`;
+
+  let description = book.description || '';
+  description = description.replace(/\(\[[^\]]+\]\[\d+\]\)/g, '').replace(/^\[\d+\]:.*$/gm, '').trim();
+  const descBody = description
+    ? escapeHtml(description).split(/\n\n+/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')
+    : `<p style="color: var(--muted);">No description on file for this one.</p>`;
+
+  const awardPills = Object.entries(book.awards || {}).map(([a, s]) =>
+    `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+  ).join('');
+
+  const authorList = moreByAuthor.length === 0
+    ? `<p style="color: var(--muted);">No other Hugo/Nebula-listed books by ${escapeHtml(author)}.</p>`
+    : `<ul class="discover-author-list">${moreByAuthor.slice(0, 12).map(b => {
+        const myS = auth.statusFor(b.id);
+        const tag = myS === 'read' ? `<span class="discover-mini-tag read">Read</span>`
+          : (myS === 'nightstand' || myS === 'started') ? `<span class="discover-mini-tag night">Nightstand</span>`
+          : '';
+        return `<li><a href="#/book/${escapeHtml(b.id)}">${escapeHtml(b.title)}</a> <span style="color: var(--muted);">· ${b.year || ''} · ${escapeHtml(b.category)}</span> ${tag}</li>`;
+      }).join('')}</ul>`;
+
+  const tabBody = tab === 'cover'
+    ? `<div class="discover-tabbody discover-tabbody-cover">${coverImg}</div>`
+    : tab === 'desc'
+      ? `<div class="discover-tabbody discover-tabbody-desc">
+          ${awardPills ? `<div class="discover-pills">${awardPills}</div>` : ''}
+          ${descBody}
+        </div>`
+      : `<div class="discover-tabbody discover-tabbody-author">
+          <h3>${escapeHtml(author)}</h3>
+          <p style="color: var(--muted); font-size: 13px; margin: -4px 0 14px;">Other Hugo/Nebula appearances</p>
+          ${authorList}
+        </div>`;
+
+  const peekCard = (b, idx) => {
+    if (!b) return '';
+    const img = b.cover_url
+      ? `<img src="${escapeHtml(b.cover_url)}" alt="" draggable="false" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
+      : `<span class="discover-cover-placeholder">📖</span>`;
+    return `<div class="discover-card discover-card-peek" data-peek="${idx}"><div class="discover-cardbody"><div class="discover-tabbody discover-tabbody-cover">${img}</div></div></div>`;
+  };
+
+  root.innerHTML = `<div class="detail discover-page">
+    <h1>Discover</h1>
+    ${statsRow}
+    <div class="discover-stage">
+      <button type="button" class="discover-side-btn discover-skip" title="Skip — show again later" aria-label="Skip">⤼ Skip</button>
+      <div class="discover-cardstack">
+        ${peekCard(peek2, 2)}
+        ${peekCard(peek1, 1)}
+        <div class="discover-card discover-card-top" id="discover-top-card" data-book-id="${escapeHtml(book.id)}">
+          <div class="discover-swipe-hint discover-swipe-hint-left">Read</div>
+          <div class="discover-swipe-hint discover-swipe-hint-right">Neither</div>
+          <div class="discover-swipe-hint discover-swipe-hint-up">Nightstand</div>
+          <div class="discover-tabs">
+            <button type="button" class="discover-tab${tab === 'cover' ? ' active' : ''}" data-tab="cover">Cover</button>
+            <button type="button" class="discover-tab${tab === 'desc' ? ' active' : ''}" data-tab="desc">About</button>
+            <button type="button" class="discover-tab${tab === 'author' ? ' active' : ''}" data-tab="author">Author</button>
+          </div>
+          <div class="discover-cardbody">${tabBody}</div>
+          <div class="discover-cardfoot">
+            <div class="discover-title"><a href="#/book/${escapeHtml(book.id)}">${escapeHtml(book.title)}</a></div>
+            <div class="discover-meta">${escapeHtml(author)} · ${book.year || ''} · ${escapeHtml(book.category)}</div>
+          </div>
+        </div>
+      </div>
+      <button type="button" class="discover-side-btn discover-undo" title="Undo last decision" aria-label="Undo" ${__discoverState.history.length === 0 ? 'disabled' : ''}>↶ Undo</button>
+    </div>
+    <div class="discover-actions">
+      <button type="button" class="discover-action discover-action-read" data-action="read">✓ Read</button>
+      <button type="button" class="discover-action discover-action-night" data-action="nightstand">📖 Nightstand</button>
+      <button type="button" class="discover-action discover-action-neither" data-action="neither">○ Not read</button>
+    </div>
+    <p class="discover-hint">Swipe <strong>left</strong> for Read · <strong>right</strong> for Not read · <strong>up</strong> for Nightstand</p>
+  </div>`;
+
+  wireDiscover();
+}
+
+function wireDiscover() {
+  const root = $('#view-discover');
+  if (!root) return;
+
+  // Tabs
+  root.querySelectorAll('.discover-tab').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      __discoverState.tab = btn.dataset.tab;
+      drawDiscover();
+    });
+  });
+
+  // Action buttons
+  root.querySelectorAll('.discover-action').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      const status = action === 'neither' ? null : action;
+      const card = $('#discover-top-card');
+      const dir = action === 'read' ? 'left' : action === 'nightstand' ? 'up' : 'right';
+      animateAndCommit(card, dir, status);
+    });
+  });
+
+  // Side buttons
+  root.querySelector('.discover-skip')?.addEventListener('click', () => {
+    const card = $('#discover-top-card');
+    const bookId = card?.dataset.bookId;
+    if (!bookId) return;
+    __discoverState.skipped.add(bookId);
+    drawDiscover();
+  });
+  root.querySelector('.discover-undo')?.addEventListener('click', async () => {
+    const last = __discoverState.history.pop();
+    if (!last) return;
+    try {
+      await window.MR_AUTH.setBookStatus(last.bookId, last.prevStatus);
+    } catch (err) {
+      console.error('undo failed:', err);
+    }
+    __discoverState.skipped.delete(last.bookId);
+    __discoverState.queue = buildDiscoverQueue();
+    drawDiscover();
+  });
+
+  // Swipe handling — pointer events on the top card. Ignore drags that
+  // originate on tabs/links so the user can still tap them.
+  const card = $('#discover-top-card');
+  if (!card) return;
+  let startX = 0, startY = 0, dx = 0, dy = 0, dragging = false, pointerId = null;
+  const onDown = (e) => {
+    if (e.target.closest('.discover-tab') || e.target.closest('a')) return;
+    dragging = true;
+    pointerId = e.pointerId;
+    startX = e.clientX;
+    startY = e.clientY;
+    dx = 0; dy = 0;
+    card.setPointerCapture(e.pointerId);
+    card.classList.add('dragging');
+  };
+  const onMove = (e) => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    dx = e.clientX - startX;
+    dy = e.clientY - startY;
+    const rot = dx * 0.05;
+    card.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+    // Hint visibility — show the matching label based on the dominant axis.
+    const absX = Math.abs(dx), absY = Math.abs(dy);
+    const leftHint = card.querySelector('.discover-swipe-hint-left');
+    const rightHint = card.querySelector('.discover-swipe-hint-right');
+    const upHint = card.querySelector('.discover-swipe-hint-up');
+    leftHint.style.opacity = (dx < 0 && absX > absY) ? Math.min(1, absX / 120) : 0;
+    rightHint.style.opacity = (dx > 0 && absX > absY) ? Math.min(1, absX / 120) : 0;
+    upHint.style.opacity = (dy < 0 && absY >= absX) ? Math.min(1, absY / 120) : 0;
+  };
+  const onUp = (e) => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    dragging = false;
+    card.classList.remove('dragging');
+    try { card.releasePointerCapture(pointerId); } catch (_) {}
+    const threshold = 100;
+    const absX = Math.abs(dx), absY = Math.abs(dy);
+    if (absX < threshold && absY < threshold) {
+      card.style.transform = '';
+      card.querySelectorAll('.discover-swipe-hint').forEach(h => h.style.opacity = 0);
+      return;
+    }
+    let dir, status;
+    if (absY >= absX && dy < 0) { dir = 'up'; status = 'nightstand'; }
+    else if (dx < 0) { dir = 'left'; status = 'read'; }
+    else { dir = 'right'; status = null; }
+    animateAndCommit(card, dir, status);
+  };
+  card.addEventListener('pointerdown', onDown);
+  card.addEventListener('pointermove', onMove);
+  card.addEventListener('pointerup', onUp);
+  card.addEventListener('pointercancel', onUp);
+}
+
+async function animateAndCommit(card, dir, status) {
+  if (!card) return;
+  const bookId = card.dataset.bookId;
+  const auth = window.MR_AUTH;
+  if (!auth || !bookId) return;
+  // Fly-off animation
+  const off = dir === 'left' ? 'translate(-110vw, 0) rotate(-30deg)'
+    : dir === 'right' ? 'translate(110vw, 0) rotate(30deg)'
+    : 'translate(0, -110vh) rotate(0deg)';
+  card.style.transition = 'transform 280ms ease-out, opacity 280ms ease-out';
+  card.style.transform = off;
+  card.style.opacity = '0';
+  const prevStatus = auth.statusFor(bookId);
+  // Commit to DB optimistically — UI advances regardless of result; on failure
+  // we revert via the history-replay path.
+  try {
+    await auth.setBookStatus(bookId, status);
+    __discoverState.history.push({ bookId, prevStatus });
+    if (__discoverState.history.length > 50) __discoverState.history.shift();
+  } catch (err) {
+    console.error('setBookStatus failed in Discover:', err);
+    alert('Save failed: ' + (err.message || err));
+  }
+  __discoverState.skipped.delete(bookId);
+  __discoverState.queue = buildDiscoverQueue();
+  // Small delay so the user sees the fly-off before the next card slides in.
+  setTimeout(() => drawDiscover(), 220);
 }
 
 // ===== Settings page ==================================================
@@ -2864,7 +3239,7 @@ function resetFilterState() {
   state.yearMax = null;
   state.authorGender = new Set(['female', 'male', 'unknown']);
   state.missingFilter = new Set();
-  state.meStatus = null;
+  state.meStatus = new Set(['read', 'nightstand', 'neither']);
 }
 
 function applyFilterParams(params) {
@@ -2916,8 +3291,9 @@ function applyFilterParams(params) {
     if (set.size > 0) state.missingFilter = set;
   }
   const meStatus = params.get('meStatus');
-  if (meStatus && ['read', 'nightstand', 'started'].includes(meStatus)) {
-    state.meStatus = meStatus;
+  if (meStatus) {
+    const valid = meStatus.split(',').map(s => s.trim()).filter(s => ['read', 'nightstand', 'neither'].includes(s));
+    if (valid.length > 0) state.meStatus = new Set(valid);
   }
   syncFiltersToDom();
 }
@@ -2935,6 +3311,11 @@ function syncFiltersToDom() {
   $$('input[name="category"]').forEach(el => { el.checked = state.categories.has(el.value); });
   $$('input[name="author-gender"]').forEach(el => { el.checked = state.authorGender.has(el.value); });
   $$('input[name="missing"]').forEach(el => { el.checked = state.missingFilter.has(el.value); });
+  $$('input[name="me-status"]').forEach(el => { el.checked = state.meStatus.has(el.value); });
+  // Hide the "Your status" fieldset when nobody's signed in — the filter
+  // only makes sense for the logged-in user's own user_books data.
+  const meFs = $('#me-status-fieldset');
+  if (meFs) meFs.hidden = !window.MR_AUTH?.user;
   $('#sort').value = state.sort;
 }
 
@@ -2964,8 +3345,8 @@ function pushFiltersToUrl() {
   if (state.missingFilter.size > 0) {
     p.set('missing', [...state.missingFilter].join(','));
   }
-  if (state.meStatus) {
-    p.set('meStatus', state.meStatus);
+  if (state.meStatus && state.meStatus.size > 0 && state.meStatus.size < 3) {
+    p.set('meStatus', [...state.meStatus].join(','));
   }
   const qs = p.toString();
   const target = '#/books' + (qs ? '?' + qs : '');
@@ -3060,6 +3441,16 @@ function _route() {
       console.error('renderFriends threw:', err);
       const root = document.getElementById('view-friends');
       if (root) root.innerHTML = `<div class="detail"><h1>Friends</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
+    });
+    return;
+  }
+  if (path === '#/discover') {
+    showView('discover');
+    window.scrollTo(0, 0);
+    renderDiscover().catch(err => {
+      console.error('renderDiscover threw:', err);
+      const root = document.getElementById('view-discover');
+      if (root) root.innerHTML = `<div class="detail"><h1>Discover</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
     });
     return;
   }
@@ -3163,6 +3554,11 @@ function wireFilters() {
     else state.missingFilter.delete(e.target.value);
     renderList();
   }));
+  $$('input[name="me-status"]').forEach(el => el.addEventListener('change', e => {
+    if (e.target.checked) state.meStatus.add(e.target.value);
+    else state.meStatus.delete(e.target.value);
+    renderList();
+  }));
   $('#reset').addEventListener('click', () => {
     state = {
       search: '',
@@ -3181,7 +3577,7 @@ function wireFilters() {
       genderFilter: null,
       authorGender: new Set(['female', 'male', 'unknown']),
       missingFilter: new Set(),
-      meStatus: null,
+      meStatus: new Set(['read', 'nightstand', 'neither']),
     };
     $('#search').value = '';
     $('#year-min').value = '';
@@ -3194,6 +3590,7 @@ function wireFilters() {
     $$('input[name="category"]').forEach(el => el.checked = true);
     $$('input[name="author-gender"]').forEach(el => el.checked = true);
     $$('input[name="missing"]').forEach(el => el.checked = false);
+    $$('input[name="me-status"]').forEach(el => el.checked = true);
     $('#sort').value = 'year-desc';
     renderList();
   });
@@ -3255,7 +3652,11 @@ function renderUserStatusControls(bookId) {
       <button type="button" class="user-status-signin">Sign in to track your reads</button>
     </div>`;
   }
-  const current = auth.statusFor(bookId);
+  // Three-state status: Read, Nightstand, Neither. Neither = no user_books
+  // row (status removed). Legacy 'started' rows render as Nightstand
+  // active for display, since they live in the same bucket now.
+  const rawStatus = auth.statusFor(bookId);
+  const current = rawStatus === 'started' ? 'nightstand' : rawStatus;
   const btn = (status, label) =>
     `<button type="button" class="user-status-btn ${current === status ? 'active' : ''}" data-status="${status}">${label}</button>`;
   return `<div class="user-status user-status-signed-in" data-book-id="${escapeHtml(bookId)}">
@@ -3263,8 +3664,7 @@ function renderUserStatusControls(bookId) {
     <div class="user-status-buttons">
       ${btn('read', '✓ Read')}
       ${btn('nightstand', '📖 Nightstand')}
-      ${btn('started', '▶ Started')}
-      ${current ? `<button type="button" class="user-status-btn user-status-clear" data-status="clear">Clear</button>` : ''}
+      <button type="button" class="user-status-btn ${!current ? 'active' : ''} user-status-clear" data-status="neither">○ Neither</button>
     </div>
     <div class="user-status-msg" id="user-status-msg-${escapeHtml(bookId)}"></div>
   </div>`;
@@ -3282,11 +3682,14 @@ function wireUserStatusControls() {
     const bookId = container.dataset.bookId;
     container.querySelectorAll('.user-status-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
-        const status = btn.dataset.status === 'clear' ? null : btn.dataset.status;
+        const ds = btn.dataset.status;
+        // "Neither" and the legacy "clear" both map to null (delete the row).
+        const status = (ds === 'neither' || ds === 'clear') ? null : ds;
         const msg = $(`#user-status-msg-${CSS.escape(bookId)}`);
-        // Optimistic — flip active classes immediately
+        // Optimistic — flip active classes immediately. Neither button
+        // keeps its own .active state too so the user sees the choice.
         container.querySelectorAll('.user-status-btn').forEach(b => b.classList.remove('active'));
-        if (status) btn.classList.add('active');
+        btn.classList.add('active');
         if (msg) { msg.textContent = 'Saving…'; msg.className = 'user-status-msg'; }
         try {
           await window.MR_AUTH.setBookStatus(bookId, status);
@@ -3343,6 +3746,7 @@ async function init() {
       // page render sees fresh data for the new (or no) user.
       __invalidateCompareCaches();
       window.MR_AUTH.invalidateFriendsCache?.();
+      __discoverState = null;
       route();
     });
   }
