@@ -2410,15 +2410,16 @@ async function renderSettings() {
     </section>
 
     <section class="settings-section">
-      <h2>Visibility</h2>
-      ${visOpt('private', 'Private', "Only you can see your profile and reads.")}
-      ${visOpt('link', 'Link-only', "People with your share link can see your profile. Bring your own social graph.")}
-      ${visOpt('public', 'Public', "Anyone can view your profile at /u/" + escapeHtml(profile.handle) + ".")}
-      <div style="margin-top: 12px;">
+      <h2>Profile visibility</h2>
+      <p style="color: var(--muted); font-size: 13px; margin: 0 0 12px;">Controls who can open <code>/u/${escapeHtml(profile.handle)}</code> and see your individual reads. Separate from the leaderboard checkbox below.</p>
+      ${visOpt('private', 'Private', "Only you can open your profile page or see your read list. Your friends still see your name and read count on the Friends page if you opt in below.")}
+      ${visOpt('public', 'Public', "Anyone (signed in or not) can open <code>/u/" + escapeHtml(profile.handle) + "</code> and see what you've read.")}
+      <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);">
         <label class="settings-check">
           <input type="checkbox" id="settings-leaderboard" ${profile.on_leaderboard ? 'checked' : ''}>
-          Show me on the leaderboard (friends only — you and your friends see each other)
+          <strong>Show me on the Friends leaderboard.</strong>
         </label>
+        <p style="color: var(--muted); font-size: 12.5px; margin: 6px 0 0 26px;">When on, you appear on the Friends page for everyone you're friends with — they see your handle, read count, and rank. They don't see your individual book list unless your profile visibility is Public.</p>
       </div>
     </section>
 
@@ -2549,7 +2550,6 @@ async function renderAdmin() {
       <div class="admin-controls">
         <select data-field="profile_visibility" data-profile-id="${escapeHtml(p.id)}">
           <option value="private" ${p.profile_visibility === 'private' ? 'selected' : ''}>private</option>
-          <option value="link" ${p.profile_visibility === 'link' ? 'selected' : ''}>link</option>
           <option value="public" ${p.profile_visibility === 'public' ? 'selected' : ''}>public</option>
         </select>
         <label><input type="checkbox" data-field="on_leaderboard" data-profile-id="${escapeHtml(p.id)}" ${p.on_leaderboard ? 'checked' : ''}> on board</label>
@@ -2559,32 +2559,9 @@ async function renderAdmin() {
 
   root.innerHTML = `<div class="detail admin-page">
     <h1>Admin</h1>
-    <p style="color: var(--muted);">All profiles. Inline edits save immediately. To change an account's email, run <code>scripts/migrate_demo_to_real.py</code> (it has the service-role context required by Supabase auth).</p>
+    <p style="color: var(--muted);">All profiles. Inline edits save immediately. To change an account's email, do it from the Supabase dashboard → Authentication → Users.</p>
     <div class="admin-table">${profiles.map(row).join('')}</div>
     <div id="admin-msg" class="settings-msg"></div>
-    <section class="settings-section" style="margin-top: 24px;">
-      <h2>Reassign a sleeping demo to a friend</h2>
-      <p style="color: var(--muted); font-size: 13px;">
-        The four hidden demos (@SappySaffron / @Westdac / @Colt45 / @Isobat) have
-        Tom-synced reading history but fake emails. To give them to Nika / Westdac
-        / Colton / Schupp, run locally:
-      </p>
-      <pre style="background: var(--bg); padding: 14px; border-radius: 8px; overflow:auto; font-size: 12.5px;">cd ~/Projects/Personal/award-books-tracker
-set -a && . ./.env && set +a
-python3 -c "
-from scripts.migrate_demo_to_real import *
-import os
-from supabase import create_client
-sb = create_client(os.environ['SUPABASE_URL'], os.environ['SUPABASE_SERVICE_KEY'])
-# replace handle + email below
-HANDLE = 'SappySaffron'
-EMAIL = 'nika@example.com'
-NEW_HANDLE = 'nika'
-prof = sb.table('profiles').select('id').eq('handle', HANDLE).execute().data[0]
-sb.auth.admin.update_user_by_id(prof['id'], {'email': EMAIL, 'email_confirm': True})
-sb.table('profiles').update({'handle': NEW_HANDLE, 'profile_visibility': 'public', 'on_leaderboard': True}).eq('id', prof['id']).execute()
-"</pre>
-    </section>
   </div>`;
 
   const adminMsg = $('#admin-msg');
