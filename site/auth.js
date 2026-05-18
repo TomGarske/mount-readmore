@@ -255,9 +255,15 @@
     const safe = {};
     for (const k of allowed) if (k in patch) safe[k] = patch[k];
     if (Object.keys(safe).length === 0) return currentProfile;
-    const { data, error } = await client.from('profiles')
-      .update(safe).eq('id', currentUser.id)
-      .select('*').single();
+    // Bound the call so a stuck Supabase request (network hiccup, web-locks
+    // contention from another tab, hung CDN) surfaces as an error in the UI
+    // instead of leaving the Save button on "Saving…" forever.
+    const { data, error } = await withTimeout(
+      client.from('profiles')
+        .update(safe).eq('id', currentUser.id)
+        .select('*').single(),
+      10000, 'profile update'
+    );
     if (error) throw error;
     currentProfile = data;
     notify();
