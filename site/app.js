@@ -23,6 +23,102 @@ const MAGAZINE_CANONICAL = {
   "Fantasy & Science Fiction": "The Magazine of Fantasy & Science Fiction",
 };
 
+// Per-magazine display metadata for the home page Magazines section.
+const MAGAZINE_DATA = [
+  {
+    canonical: "Asimov's Science Fiction",
+    short: "Asimov's",
+    founded: 1977,
+    status: 'active',
+    description: "America's premier science fiction magazine, publishing continuously since 1977. Named in honor of Isaac Asimov, it has been home to some of the most celebrated SF novellas and novelettes ever written — and holds a record 55 Hugo Awards for its stories.",
+    url: "https://asimovs.com/",
+    editorialUrl: "https://asimovs.com/more-stuff/all-archives/#ArchivedEditorials",
+    wikiUrl: "https://en.wikipedia.org/wiki/Asimov%27s_Science_Fiction",
+  },
+  {
+    canonical: "Analog / Astounding",
+    short: "Analog",
+    founded: 1930,
+    status: 'active',
+    description: "The longest-running English-language SF magazine. Founded in 1930 as Astounding Stories, it became Astounding Science Fiction under editor John W. Campbell — shaping the Golden Age of SF. Published today as Analog Science Fiction and Fact.",
+    url: "https://www.analogsf.com/",
+    wikiUrl: "https://en.wikipedia.org/wiki/Analog_Science_Fiction_and_Fact",
+  },
+  {
+    canonical: "The Magazine of Fantasy & Science Fiction",
+    short: "F&SF",
+    founded: 1949,
+    status: 'active',
+    description: "Founded in 1949, F&SF is known for its literary approach to speculative fiction and has published some of the genre's landmark works, including stories by Harlan Ellison, Daniel Keyes, and Ursula K. Le Guin.",
+    url: "https://www.sfsite.com/fsf/",
+    wikiUrl: "https://en.wikipedia.org/wiki/The_Magazine_of_Fantasy_%26_Science_Fiction",
+  },
+  {
+    canonical: "Galaxy Science Fiction",
+    short: "Galaxy",
+    founded: 1950,
+    defunct: 1980,
+    status: 'defunct',
+    description: "Published from 1950 to 1980, Galaxy was one of the leading SF magazines of its era — a rival to Astounding that favored social satire and soft science fiction. It published foundational work by Pohl, Bester, Sturgeon, and more.",
+    wikiUrl: "https://en.wikipedia.org/wiki/Galaxy_Science_Fiction",
+  },
+  {
+    canonical: "Clarkesworld",
+    short: "Clarkesworld",
+    founded: 2006,
+    status: 'active',
+    description: "An online-only magazine founded in 2006, Clarkesworld publishes original SF and fantasy short fiction and makes every story freely available. Multiple Hugo Award winner for Best Semiprozine.",
+    url: "https://clarkesworldmagazine.com/",
+    wikiUrl: "https://en.wikipedia.org/wiki/Clarkesworld_Magazine",
+  },
+  {
+    canonical: "Tor.com",
+    short: "Reactor",
+    founded: 2008,
+    status: 'active',
+    description: "Launched as Tor.com in 2008 and now known as Reactor, this online platform publishes free original SF fiction alongside news and reviews. Its publishing imprint pioneered the Hugo-winning standalone novella format.",
+    url: "https://reactormag.com/",
+    wikiUrl: "https://en.wikipedia.org/wiki/Reactor_(magazine)",
+  },
+  {
+    canonical: "Lightspeed Magazine",
+    short: "Lightspeed",
+    founded: 2010,
+    status: 'active',
+    description: "Founded in 2010 by John Joseph Adams, Lightspeed publishes SF and fantasy short fiction online, with many stories freely available. It regularly features Hugo and Nebula Award nominees.",
+    url: "https://www.lightspeedmagazine.com/",
+    wikiUrl: "https://en.wikipedia.org/wiki/Lightspeed_(magazine)",
+  },
+];
+
+// Shared swimlane card builder used in publication/author swimlanes on the
+// detail page and the magazines section on the home page.
+function makeSwimlaneCard(b) {
+  const cover = b.cover_url
+    ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
+    : `<span class="swimlane-placeholder">📖</span>`;
+  const isWinner = Object.values(b.awards || {}).includes('winner');
+  const awardPills = Object.entries(b.awards || {}).map(([a, s]) =>
+    `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+  ).join('');
+  const readerPillsList = SOLO
+    ? (() => {
+        const rs = readStatus(b, SOLO);
+        return rs === 'read' ? `<span class="rr-pill rr-pill-${SOLO[0]}">read</span>` : '';
+      })()
+    : ACTIVE_READERS.map(r => {
+        const rs = readStatus(b, r.id);
+        return rs === 'read' ? `<span class="rr-pill rr-pill-${r.id[0]}">${r.initial} read</span>` : '';
+      }).join('');
+  const pills = awardPills + readerPillsList;
+  return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
+    <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
+    <div class="swimlane-title">${escapeHtml(b.title)}</div>
+    <div class="swimlane-meta">${b.year || ''} · ${escapeHtml(b.category)}</div>
+    ${pills ? `<div class="swimlane-pills">${pills}</div>` : ''}
+  </div>`;
+}
+
 let DATA = { books: [], meta: {} };
 
 // Canonical reader config. `me` is the signed-in user (Supabase user_books);
@@ -550,21 +646,7 @@ function renderDetail(id) {
   const moreByAuthorHtml = moreByAuthor.length === 0 ? '' : `
     <div class="book-section">
       <h2>${moreByAuthorLabel} <span class="more-by-count">${moreByAuthor.length}</span></h2>
-      <div class="swimlane-strip">${moreByAuthor.map(b => {
-        const cover = b.cover_url
-          ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
-          : `<span class="swimlane-placeholder">📖</span>`;
-        const isWinner = Object.values(b.awards || {}).includes('winner');
-        const awardLabels = Object.entries(b.awards || {}).map(([a, s]) =>
-          `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
-        ).join('');
-        return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
-          <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
-          <div class="swimlane-title">${escapeHtml(b.title)}</div>
-          <div class="swimlane-meta">${b.year || ''} · ${escapeHtml(b.category)}</div>
-          ${awardLabels ? `<div class="swimlane-pills">${awardLabels}</div>` : ''}
-        </div>`;
-      }).join('')}</div>
+      <div class="swimlane-strip">${moreByAuthor.map(b => makeSwimlaneCard(b)).join('')}</div>
     </div>`;
 
   // Same-publication swimlane — only for magazine-published works.
@@ -577,21 +659,7 @@ function renderDetail(id) {
   const fromSamePubHtml = fromSamePub.length === 0 ? '' : `
     <div class="book-section">
       <h2>Also from ${escapeHtml(pubCanonical)} <span class="more-by-count">${fromSamePub.length}</span></h2>
-      <div class="swimlane-strip">${fromSamePub.map(b => {
-        const cover = b.cover_url
-          ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
-          : `<span class="swimlane-placeholder">📖</span>`;
-        const isWinner = Object.values(b.awards || {}).includes('winner');
-        const awardLabels = Object.entries(b.awards || {}).map(([a, s]) =>
-          `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
-        ).join('');
-        return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
-          <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
-          <div class="swimlane-title">${escapeHtml(b.title)}</div>
-          <div class="swimlane-meta">${b.year || ''} · ${escapeHtml(b.category)}</div>
-          ${awardLabels ? `<div class="swimlane-pills">${awardLabels}</div>` : ''}
-        </div>`;
-      }).join('')}</div>
+      <div class="swimlane-strip">${fromSamePub.map(b => makeSwimlaneCard(b)).join('')}</div>
     </div>`;
 
   root.innerHTML = `<div class="detail">
@@ -622,15 +690,18 @@ function renderDetail(id) {
             const readUrl = book.publication_url || `https://bookshop.org/search?keywords=${searchQ}`;
             const host = new URL(readUrl).hostname.replace(/^www\./, '');
             const favicon = `https://www.google.com/s2/favicons?domain=${host}&sz=32`;
+            const magazine = book.publication_label || MAGAZINE_CANONICAL[book.publisher] || null;
             let cta, label;
             if (book.publication_url) {
               cta = 'Read Free';
-              label = book.publication_label
-                ? `Originally published in <strong>${escapeHtml(book.publication_label)}</strong> — read free online`
+              label = magazine
+                ? `Originally published in <strong>${escapeHtml(magazine)}</strong> — read free online`
                 : 'Available to read free online';
             } else {
               cta = 'Find on Bookshop';
-              label = 'Find or purchase this book on Bookshop.org';
+              label = magazine
+                ? `Originally published in <strong>${escapeHtml(magazine)}</strong>`
+                : 'Find or purchase this book on Bookshop.org';
             }
             return `<div class="detail-link-read-label">${label}</div><div class="detail-links-buttons"><a href="${escapeHtml(readUrl)}" target="_blank" rel="noopener" class="detail-link-read">${cta} <img src="${favicon}" alt="${escapeHtml(host)}" class="detail-link-favicon"></a><a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a><a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a></div>`;
           })()}
@@ -711,6 +782,8 @@ function renderAuthors() {
   let authors = [...map.values()].filter(a => a.books.length > 0);
   const sortSel = root.querySelector && root.querySelector('#author-sort');
   const sortVal = sortSel ? sortSel.value : 'wins';
+  const searchSel = root.querySelector && root.querySelector('#author-search');
+  const searchVal = searchSel ? searchSel.value : '';
 
   const sort = (val) => {
     if (val === 'wins') authors.sort((a, b) => (b.wins * 10 + b.noms) - (a.wins * 10 + a.noms));
@@ -719,61 +792,74 @@ function renderAuthors() {
   };
   sort(sortVal);
 
+  const renderGrid = (filterQ) => {
+    const q = (filterQ || '').toLowerCase().trim();
+    const visible = q ? authors.filter(a => a.name.toLowerCase().includes(q)) : authors;
+    const grid = root.querySelector('#authors-grid');
+    if (!grid) return;
+    grid.innerHTML = visible.map(a => {
+      const slug = a.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+      const winBadge = a.wins ? `<span class="author-badge wins">${a.wins}W</span>` : '';
+      const nomBadge = a.noms ? `<span class="author-badge noms">${a.noms}N</span>` : '';
+      const bookCount = `<span class="author-book-count">${a.books.length} book${a.books.length !== 1 ? 's' : ''}</span>`;
+      return `<a class="author-card" href="#/books?search=${encodeURIComponent(a.name)}" data-author="${escapeHtml(a.name)}">
+        <div class="author-card-photo-wrap">
+          <div class="author-card-photo" id="author-photo-${escapeHtml(slug)}" data-name="${escapeHtml(a.name)}">
+            <span class="author-card-initials">${escapeHtml(a.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase())}</span>
+          </div>
+        </div>
+        <div class="author-card-info">
+          <div class="author-card-name">${escapeHtml(a.name)}</div>
+          <div class="author-card-badges">${winBadge}${nomBadge}${bookCount}</div>
+        </div>
+      </a>`;
+    }).join('');
+    root.querySelector('#authors-count').textContent = visible.length;
+    // Re-attach lazy photo observer to newly rendered cards
+    const obs2 = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        obs2.unobserve(entry.target);
+        const el = entry.target;
+        const name = el.dataset.name;
+        if (!name || el.dataset.loaded) continue;
+        el.dataset.loaded = '1';
+        fetchWikiAuthor(name).then(wiki => {
+          if (!wiki || !wiki.thumbnail) return;
+          el.innerHTML = `<img src="${escapeHtml(wiki.thumbnail.source)}" alt="${escapeHtml(name)}" loading="lazy">`;
+          el.classList.add('has-photo');
+        });
+      }
+    }, { rootMargin: '200px' });
+    grid.querySelectorAll('.author-card-photo').forEach(el => obs2.observe(el));
+  };
+
   root.innerHTML = `
     <div class="authors-page">
       <div class="authors-header">
-        <h1>Authors <span class="authors-count">${authors.length}</span></h1>
+        <h1>Authors <span class="authors-count" id="authors-count">${authors.length}</span></h1>
+        <input type="search" id="author-search" class="author-search-input" placeholder="Search authors…" autocomplete="off" value="${escapeHtml(searchVal)}">
         <select id="author-sort" class="author-sort-select">
           <option value="wins">Most wins</option>
           <option value="books">Most books</option>
           <option value="alpha">A – Z</option>
         </select>
       </div>
-      <div class="authors-grid" id="authors-grid">
-        ${authors.map(a => {
-          const slug = a.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
-          const winBadge = a.wins ? `<span class="author-badge wins">${a.wins}W</span>` : '';
-          const nomBadge = a.noms ? `<span class="author-badge noms">${a.noms}N</span>` : '';
-          const bookCount = `<span class="author-book-count">${a.books.length} book${a.books.length !== 1 ? 's' : ''}</span>`;
-          return `<a class="author-card" href="#/books?search=${encodeURIComponent(a.name)}" data-author="${escapeHtml(a.name)}">
-            <div class="author-card-photo-wrap">
-              <div class="author-card-photo" id="author-photo-${escapeHtml(slug)}" data-name="${escapeHtml(a.name)}">
-                <span class="author-card-initials">${escapeHtml(a.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase())}</span>
-              </div>
-            </div>
-            <div class="author-card-info">
-              <div class="author-card-name">${escapeHtml(a.name)}</div>
-              <div class="author-card-badges">${winBadge}${nomBadge}${bookCount}</div>
-            </div>
-          </a>`;
-        }).join('')}
-      </div>
+      <div class="authors-grid" id="authors-grid"></div>
     </div>`;
+
+  renderGrid(searchVal);
 
   // Wire sort dropdown
   root.querySelector('#author-sort').addEventListener('change', e => {
-    renderAuthors();
-    root.querySelector('#author-sort').value = e.target.value;
+    sort(e.target.value);
+    renderGrid(root.querySelector('#author-search').value);
+  });
+  // Wire search input (live filter, no re-render of outer HTML)
+  root.querySelector('#author-search').addEventListener('input', e => {
+    renderGrid(e.target.value);
   });
 
-  // Lazy-load Wikipedia photos via IntersectionObserver
-  const obs = new IntersectionObserver(entries => {
-    for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
-      obs.unobserve(entry.target);
-      const el = entry.target;
-      const name = el.dataset.name;
-      if (!name || el.dataset.loaded) continue;
-      el.dataset.loaded = '1';
-      fetchWikiAuthor(name).then(wiki => {
-        if (!wiki || !wiki.thumbnail) return;
-        el.innerHTML = `<img src="${escapeHtml(wiki.thumbnail.source)}" alt="${escapeHtml(name)}" loading="lazy">`;
-        el.classList.add('has-photo');
-      });
-    }
-  }, { rootMargin: '200px' });
-
-  root.querySelectorAll('.author-card-photo').forEach(el => obs.observe(el));
 }
 
 // Nightstand visual — books rendered as vertical spines stacked side by
@@ -1684,6 +1770,43 @@ function renderStats() {
 
     <div class="progress-section progress-genre-link">
       <p style="color: var(--muted); font-size: 13px;">Looking for genre breakdowns, the subgenre fingerprint, or the genre-vector win-rate table? They're on the <a href="#/genre">Genre</a> tab.</p>
+    </div>
+
+    <div class="progress-section magazines-section">
+      <h2>Magazines</h2>
+      <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet. Each swimlane below shows all nominated and winning stories from that publication in our dataset.</p>
+      ${MAGAZINE_DATA.map(mag => {
+        const magBooks = DATA.books.filter(b => MAGAZINE_CANONICAL[b.publisher] === mag.canonical);
+        if (magBooks.length === 0) return '';
+        magBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
+        const statusText = mag.status === 'defunct'
+          ? `${mag.founded}–${mag.defunct || 'unknown'} · defunct`
+          : `Founded ${mag.founded} · active`;
+        const siteLink = mag.url
+          ? `<a href="${escapeHtml(mag.url)}" target="_blank" rel="noopener" class="mag-ext-link">${escapeHtml(mag.short)} website ↗</a>`
+          : '';
+        const wikiLink = mag.wikiUrl
+          ? `<a href="${escapeHtml(mag.wikiUrl)}" target="_blank" rel="noopener" class="mag-ext-link">Wikipedia ↗</a>`
+          : '';
+        const editorialLink = mag.editorialUrl
+          ? `<a href="${escapeHtml(mag.editorialUrl)}" target="_blank" rel="noopener" class="mag-ext-link">Archive ↗</a>`
+          : '';
+        const winCount = magBooks.filter(b => Object.values(b.awards || {}).includes('winner')).length;
+        return `<div class="magazine-block">
+          <div class="magazine-meta">
+            <div class="magazine-title-row">
+              <h3 class="magazine-name">${escapeHtml(mag.canonical)}</h3>
+              <span class="magazine-status ${mag.status}">${statusText}</span>
+            </div>
+            <p class="magazine-description">${escapeHtml(mag.description)}</p>
+            <div class="magazine-links">
+              ${siteLink}${wikiLink}${editorialLink}
+              <span class="magazine-count">${magBooks.length} book${magBooks.length !== 1 ? 's' : ''} · ${winCount} win${winCount !== 1 ? 's' : ''}</span>
+            </div>
+          </div>
+          <div class="swimlane-strip">${magBooks.map(b => makeSwimlaneCard(b)).join('')}</div>
+        </div>`;
+      }).join('')}
     </div>
   </div>`;
 

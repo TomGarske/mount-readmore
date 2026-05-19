@@ -2329,16 +2329,26 @@ fieldset label input { margin-right: 8px; }
 .authors-page { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
 .authors-header {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-bottom: 24px;
 }
-.authors-header h1 { font-size: 22px; margin: 0; }
+.authors-header h1 { font-size: 22px; margin: 0; margin-right: auto; }
 .authors-count {
   font-size: 14px;
   color: var(--muted);
   font-weight: 400;
   margin-left: 8px;
+}
+.author-search-input {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 13px;
+  width: 180px;
 }
 .author-sort-select {
   padding: 6px 10px;
@@ -2394,6 +2404,64 @@ fieldset label input { margin-right: 8px; }
 .author-badge.wins { background: rgba(184,149,72,0.15); color: #a07830; border: 1px solid rgba(184,149,72,0.4); }
 .author-badge.noms { background: var(--bg-3); color: var(--muted); border: 1px solid var(--border); }
 .author-book-count { font-size: 11px; color: var(--muted); }
+
+/* ── Magazines section (home page) ───────────────────────────────────────── */
+.magazines-section { margin-top: 48px; }
+.magazines-intro {
+  font-size: 14px;
+  color: var(--text-2);
+  max-width: 720px;
+  margin: 0 0 32px;
+  line-height: 1.6;
+}
+.magazine-block {
+  margin-bottom: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+}
+.magazine-block:last-child { border-bottom: none; margin-bottom: 0; }
+.magazine-meta { margin-bottom: 14px; }
+.magazine-title-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.magazine-name { font-size: 17px; font-weight: 700; margin: 0; }
+.magazine-status {
+  font-size: 12px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+.magazine-status.defunct { opacity: 0.7; }
+.magazine-description {
+  font-size: 14px;
+  color: var(--text-2);
+  margin: 0 0 10px;
+  line-height: 1.6;
+  max-width: 680px;
+}
+.magazine-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.mag-ext-link {
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.mag-ext-link:hover { text-decoration: underline; }
+.magazine-count {
+  font-size: 12px;
+  color: var(--muted);
+  margin-left: auto;
+}
 
 .btn-primary {
   display: inline-block;
