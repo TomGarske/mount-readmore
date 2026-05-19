@@ -2198,6 +2198,43 @@ a:hover { text-decoration: underline; }
   align-items: center;
 }
 .recent-read:hover { border-color: var(--accent); }
+
+/* Nightstand plan card: same base as .recent-read but with a checkbox in
+   the leading slot and a slightly muted look when excluded from projection. */
+.nightstand-plan-card {
+  position: relative;
+  gap: 10px;
+}
+.nightstand-plan-card .nightstand-plan-link {
+  display: flex;
+  gap: 12px;
+  flex: 1;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+}
+.nightstand-plan-card.unplanned .nightstand-plan-link { opacity: 0.45; }
+.nightstand-plan-card.unplanned .rr-title { text-decoration: line-through; }
+.nightstand-plan-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 22px;
+  width: 22px;
+  height: 22px;
+  cursor: pointer;
+}
+.nightstand-plan-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.stat-projection {
+  color: var(--accent);
+  font-weight: 600;
+}
 .recent-read-cover {
   width: 40px;
   height: 60px;

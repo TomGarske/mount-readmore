@@ -1917,9 +1917,33 @@ function renderStats() {
   };
   const recentEitherHtml = recentEither.slice(0, 18).map(swimlaneTile).join('');
 
-  const nightstandHtml = nightstandBooks.map(b =>
-    tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).map(([a, s]) => `${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}`).join(' · ')}`, readerPills(b, 'shelf'))
-  ).join('');
+  // Nightstand checklist — same swimlane card style as "Up next" but each
+  // card has a checkbox so the user can include/exclude individual books
+  // from the "if I read these" stats projection below.
+  if (!__nightstandUnplannedLoaded) loadNightPlan();
+  const nightPlanCard = (b) => {
+    const planned = !__nightstandUnplanned.has(b.id);
+    const coverHtml = b.cover_url
+      ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
+      : '📖';
+    const ws = Object.entries(b.awards || {}).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]);
+    const ns = Object.entries(b.awards || {}).filter(([, s]) => s === 'nominee').map(([a]) => AWARD_LABELS[a]);
+    const awardLabel = ws.length ? `${ws.join(' · ')} winner` : (ns.length ? `${ns.join(' · ')} nominee` : '');
+    const meta = `${escapeHtml(b.authors?.[0] || '')} · ${b.year || ''}${awardLabel ? ` · ${awardLabel}` : ''}`;
+    return `<div class="recent-read nightstand-plan-card${planned ? ' planned' : ' unplanned'}" data-id="${escapeHtml(b.id)}">
+      <label class="nightstand-plan-toggle" title="${planned ? 'In projection — uncheck to exclude' : 'Excluded from projection — check to include'}">
+        <input type="checkbox" data-night-plan="${escapeHtml(b.id)}" ${planned ? 'checked' : ''}>
+      </label>
+      <a class="nightstand-plan-link" href="#/books/${escapeHtml(b.id)}">
+        <div class="recent-read-cover">${coverHtml}</div>
+        <div class="recent-read-info">
+          <div class="rr-title">${escapeHtml(b.title)}</div>
+          <div class="rr-meta">${meta}</div>
+        </div>
+      </a>
+    </div>`;
+  };
+  const nightstandHtml = nightstandBooks.map(nightPlanCard).join('');
 
   const upNextHtml = upNext.map(b => {
     const ws = Object.entries(b.awards).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]);
@@ -2032,13 +2056,41 @@ function renderStats() {
             ? Math.round(yearedReads.reduce((s, b) => s + b.year, 0) / yearedReads.length)
             : null;
           const mrd = mostReadDecade(winners, (b) => readStatus(b, r) === 'read');
-          // "Winners on the list" card removed per request — readers know the
-          // total from the toggle pills above.
+          // ── Projection ──: include nightstand books the user has checked
+          // in the planner, so headline cards preview their post-read stats.
+          // Only counts books that are in the current STATUS subset (winners
+          // / nominees / both) and aren't already read.
+          if (!__nightstandUnplannedLoaded) loadNightPlan();
+          const readBookIds = new Set(readBooks.map(b => b.id));
+          const winnerIds = new Set(winners.map(b => b.id));
+          const plannedInScope = (typeof nightstandBooks !== 'undefined' ? nightstandBooks : [])
+            .filter(b => !__nightstandUnplanned.has(b.id))
+            .filter(b => winnerIds.has(b.id) && !readBookIds.has(b.id));
+          const hasProj = plannedInScope.length > 0;
+          const projectedReadCount = readBooks.length + plannedInScope.length;
+          const projectedYeared = [...yearedReads, ...plannedInScope.filter(b => b.year)];
+          const projectedAvgYear = projectedYeared.length > 0
+            ? Math.round(projectedYeared.reduce((s, b) => s + b.year, 0) / projectedYeared.length)
+            : null;
+          const projectedReadIds = new Set([...readBookIds, ...plannedInScope.map(b => b.id)]);
+          const projectedMrd = mostReadDecade(winners, (b) => projectedReadIds.has(b.id));
+          const readSub = `${(readBooks.length / winnersTotal * 100).toFixed(1)}% of ${SUBSET}`
+            + (hasProj ? ` → <span class="stat-projection">${projectedReadCount} (+${plannedInScope.length}) projected, ${(projectedReadCount / winnersTotal * 100).toFixed(1)}%</span>` : '');
+          const avgYearSub = !avgYear ? 'No reads yet'
+            : (hasProj && projectedAvgYear !== avgYear
+                ? `Now ${avgYear} → <span class="stat-projection">${projectedAvgYear} projected</span>`
+                : `Across the books you've read`);
+          const mrdSub = !mrd ? 'No reads yet'
+            : (hasProj && projectedMrd && projectedMrd.decade !== mrd.decade
+                ? `${mrd.count} now → <span class="stat-projection">${eraAxisLabel(projectedMrd.decade)} with ${projectedMrd.count} projected</span>`
+                : (hasProj && projectedMrd && projectedMrd.count !== mrd.count
+                    ? `${mrd.count} now → <span class="stat-projection">${projectedMrd.count} projected</span>`
+                    : `${mrd.count} ${SUBSET}`));
           return `
-            ${card('Read', readBooks.length, `${(readBooks.length / winnersTotal * 100).toFixed(1)}% of ${SUBSET}`, readBooks.length / winnersTotal * 100)}
+            ${card('Read', readBooks.length, readSub, readBooks.length / winnersTotal * 100)}
             ${card('On Nightstand', nightstandTotal, 'nightstand + in progress')}
-            ${card('Avg pub year', avgYear ?? '—', avgYear ? `Across the books you've read` : 'No reads yet')}
-            ${card('Most-read decade', mrd ? eraAxisLabel(mrd.decade) : '—', mrd ? `${mrd.count} ${SUBSET}` : 'No reads yet')}
+            ${card('Avg pub year', avgYear ?? '—', avgYearSub)}
+            ${card('Most-read decade', mrd ? eraAxisLabel(mrd.decade) : '—', mrdSub)}
           `;
         }
         const readerCards = ACTIVE_READERS.map(r => {
@@ -2063,10 +2115,10 @@ function renderStats() {
       <div class="featured-shelf-head">
         <div>
           <h2>On the nightstand <span class="featured-shelf-count">${nightstandBooks.length}</span></h2>
-          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Books you have, but haven't finished yet.</p>
+          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Books you have, but haven't finished yet. <strong>Check</strong> the ones you plan to read — the headline cards above project what your stats will look like once you do.</p>
         </div>
       </div>
-      ${buildNightstandTwoUp(nightstandBooks)}
+      <div class="recent-reads">${nightstandHtml}</div>
     </section>` : ''}
 
     ${HAS_READER && upNext.length > 0 ? `<section class="featured-shelf featured-shelf-upnext">
@@ -2387,7 +2439,24 @@ function renderStats() {
   }
 
   $$('.recent-read, .swimlane-card', root).forEach(el => {
-    el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
+    el.addEventListener('click', (e) => {
+      // Ignore clicks on the plan checkbox / its label — those toggle
+      // projection state, they don't navigate.
+      if (e.target.closest('.nightstand-plan-toggle')) return;
+      // If the click landed on an inner anchor, let that anchor handle it.
+      if (e.target.closest('a')) return;
+      location.hash = `#/books/${el.dataset.id}`;
+    });
+  });
+  // Nightstand plan checkboxes — toggle projection inclusion + re-render.
+  $$('[data-night-plan]', root).forEach(cb => {
+    cb.addEventListener('change', () => {
+      const id = cb.dataset.nightPlan;
+      if (cb.checked) __nightstandUnplanned.delete(id);
+      else __nightstandUnplanned.add(id);
+      saveNightPlan();
+      renderStats();
+    });
   });
   $$('.status-tab', root).forEach(btn => {
     btn.addEventListener('click', () => {
@@ -3186,6 +3255,33 @@ async function renderFriends() {
 // changes within a session. Reset to null only on sign-out or when the user
 // explicitly hits "Start over".
 let __discoverState = null;
+
+// Nightstand planner: set of book IDs the user has UN-checked on the Stats
+// page's nightstand checklist. Default state is "all checked" (planning to
+// read everything on the nightstand), so we store the negative space.
+// Persisted to localStorage keyed by user id.
+const __nightstandUnplanned = new Set();
+let __nightstandUnplannedLoaded = false;
+function _nightPlanKey() {
+  const uid = window.MR_AUTH?.user?.id;
+  return uid ? `mr-nightplan-${uid}` : null;
+}
+function loadNightPlan() {
+  const k = _nightPlanKey();
+  if (!k) return;
+  try {
+    const raw = localStorage.getItem(k) || '[]';
+    const arr = JSON.parse(raw);
+    __nightstandUnplanned.clear();
+    for (const id of arr) __nightstandUnplanned.add(id);
+  } catch { __nightstandUnplanned.clear(); }
+  __nightstandUnplannedLoaded = true;
+}
+function saveNightPlan() {
+  const k = _nightPlanKey();
+  if (!k) return;
+  try { localStorage.setItem(k, JSON.stringify([...__nightstandUnplanned])); } catch {}
+}
 
 function buildDiscoverQueue() {
   const auth = window.MR_AUTH;
@@ -4894,6 +4990,10 @@ async function init() {
       __invalidateCompareCaches();
       window.MR_AUTH.invalidateFriendsCache?.();
       __discoverState = null;
+      // Re-load nightstand planner state for the new identity (or clear
+      // when signing out — no user → no localStorage key).
+      __nightstandUnplanned.clear();
+      __nightstandUnplannedLoaded = false;
       route();
     });
   }
