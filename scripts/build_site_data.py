@@ -100,6 +100,9 @@ def slugify(s: str) -> str:
     return s
 
 
+_SUFFIX_RE = re.compile(r"^(jr|sr|ii|iii|iv|v|md|phd|esq)\.?$", re.IGNORECASE)
+
+
 def parse_authors(raw: str) -> list[str]:
     if not raw:
         return []
@@ -109,14 +112,31 @@ def parse_authors(raw: str) -> list[str]:
     # Rejoin name suffixes that the comma-split accidentally separated.
     # "James Tiptree, Jr." -> ["James Tiptree", "Jr."] should become
     # ["James Tiptree, Jr."] — same for Sr., II, III, IV, MD, PhD, Esq.
-    suffix_re = re.compile(r"^(jr|sr|ii|iii|iv|v|md|phd|esq)\.?$", re.IGNORECASE)
     merged: list[str] = []
     for p in parts:
-        if merged and suffix_re.match(p):
+        if merged and _SUFFIX_RE.match(p):
             merged[-1] = f"{merged[-1]}, {p}"
         else:
             merged.append(p)
     return merged
+
+
+def lastname_for_slug(full_name: str) -> str:
+    """Return the lastname token used for the book id slug.
+
+    Strips trailing name suffixes (Jr., Sr., II, III, IV, V, MD, PhD, Esq)
+    AND a comma that introduced them, so 'James Tiptree, Jr.' -> 'Tiptree'
+    and 'Walter M. Miller, Jr.' -> 'Miller' rather than the literal 'Jr.'.
+    """
+    if not full_name or full_name == "unknown":
+        return "x"
+    # Drop ", Jr." / ", Sr." style suffixes attached by comma.
+    cleaned = re.sub(r",\s*(jr|sr|ii|iii|iv|v|md|phd|esq)\.?\s*$", "", full_name, flags=re.IGNORECASE).strip()
+    # Also drop a bare trailing token suffix ("Walter M. Miller Jr.").
+    parts = cleaned.split()
+    while parts and _SUFFIX_RE.match(parts[-1]):
+        parts.pop()
+    return parts[-1] if parts else "x"
 
 
 def parse_year(raw: str) -> int | None:
@@ -194,7 +214,7 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
 
         authors = parse_authors(author_raw)
         first_author = authors[0] if authors else "unknown"
-        slug_base = f"{slugify(title)}-{slugify(first_author.split()[-1] if first_author != 'unknown' else 'x')}-{year or 'n'}-{category.lower()}"
+        slug_base = f"{slugify(title)}-{slugify(lastname_for_slug(first_author))}-{year or 'n'}-{category.lower()}"
 
         records.append({
             "id": slug_base,
@@ -459,9 +479,11 @@ def main() -> None:
     # Rebuild ids deterministically after merge (drop year suffix variants)
     seen: dict[str, int] = {}
     for r in all_records:
-        # Recompute id without per-year suffix collisions
+        # Recompute id without per-year suffix collisions. lastname_for_slug
+        # strips name suffixes (Jr., Sr., etc.) so "James Tiptree, Jr."
+        # slugs as "tiptree" not "jr".
         first_author = r["authors"][0] if r.get("authors") else "unknown"
-        last_name = first_author.split()[-1] if first_author and first_author != "unknown" else "x"
+        last_name = lastname_for_slug(first_author)
         r["id"] = f"{slugify(r['title'])}-{slugify(last_name)}-{r.get('year') or 'n'}-{r['category'].lower()}"
         base = r["id"]
         n = seen.get(base, 0)
