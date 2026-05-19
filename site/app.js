@@ -584,11 +584,139 @@ function renderDetail(id) {
     ${descHtml ? `<div class="book-section"><h2>Description</h2>${descHtml}</div>` : ''}
     ${subjectsHtml ? `<div class="book-section">${subjectsHtml}</div>` : ''}
     ${moreByAuthorHtml}
+    ${book.authors && book.authors.length > 0 ? `<div id="detail-author-bio" class="book-section author-bio-section"></div>` : ''}
   </div>`;
   wireUserStatusControls();
   $$('.swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
   });
+  // Async: populate About the Author from Wikipedia
+  if (book.authors && book.authors.length > 0) {
+    fetchWikiAuthor(book.authors[0]).then(wiki => {
+      const bioEl = $('#detail-author-bio');
+      if (!wiki || !bioEl || wiki.type === 'disambiguation') return;
+      const photo = wiki.thumbnail
+        ? `<img src="${escapeHtml(wiki.thumbnail.source)}" alt="${escapeHtml(book.authors[0])}" class="author-bio-photo">`
+        : '';
+      const extract = wiki.extract
+        ? escapeHtml(wiki.extract.slice(0, 500)) + (wiki.extract.length > 500 ? '…' : '')
+        : '';
+      const wikiUrl = wiki.content_urls && wiki.content_urls.desktop && wiki.content_urls.desktop.page
+        ? wiki.content_urls.desktop.page : null;
+      const wikiLink = wikiUrl
+        ? `<a href="${escapeHtml(wikiUrl)}" target="_blank" rel="noopener" class="author-bio-wiki-link">Full article on Wikipedia →</a>`
+        : '';
+      bioEl.innerHTML = `
+        <h2>About ${escapeHtml(book.authors[0])}</h2>
+        <div class="author-bio-body">
+          ${photo}
+          <div class="author-bio-text"><p>${extract}</p>${wikiLink}</div>
+        </div>`;
+    });
+  }
+}
+
+// ─── Wikipedia helper ──────────────────────────────────────────────────────
+const _wikiCache = new Map();
+async function fetchWikiAuthor(name) {
+  if (_wikiCache.has(name)) return _wikiCache.get(name);
+  const title = name.replace(/ /g, '_');
+  try {
+    const r = await fetch(
+      `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+      { headers: { 'Api-User-Agent': 'Readmore/1.0 (https://readmore.tomgarske.com)' } }
+    );
+    const data = r.ok ? await r.json() : null;
+    _wikiCache.set(name, data);
+    return data;
+  } catch { _wikiCache.set(name, null); return null; }
+}
+
+// ─── Authors view ──────────────────────────────────────────────────────────
+function renderAuthors() {
+  const root = $('#view-authors');
+  if (!root) return;
+
+  // Build per-author stats from DATA.books
+  const map = new Map();
+  for (const b of DATA.books) {
+    const isWin = Object.values(b.awards || {}).includes('winner');
+    const isNom = !isWin && Object.keys(b.awards || {}).length > 0;
+    for (const name of (b.authors || [])) {
+      if (!map.has(name)) map.set(name, { name, wins: 0, noms: 0, books: [] });
+      const rec = map.get(name);
+      if (isWin) rec.wins++;
+      else if (isNom) rec.noms++;
+      rec.books.push(b);
+    }
+  }
+
+  let authors = [...map.values()].filter(a => a.books.length > 0);
+  const sortSel = root.querySelector && root.querySelector('#author-sort');
+  const sortVal = sortSel ? sortSel.value : 'wins';
+
+  const sort = (val) => {
+    if (val === 'wins') authors.sort((a, b) => (b.wins * 10 + b.noms) - (a.wins * 10 + a.noms));
+    else if (val === 'books') authors.sort((a, b) => b.books.length - a.books.length);
+    else authors.sort((a, b) => a.name.localeCompare(b.name));
+  };
+  sort(sortVal);
+
+  root.innerHTML = `
+    <div class="authors-page">
+      <div class="authors-header">
+        <h1>Authors <span class="authors-count">${authors.length}</span></h1>
+        <select id="author-sort" class="author-sort-select">
+          <option value="wins">Most wins</option>
+          <option value="books">Most books</option>
+          <option value="alpha">A – Z</option>
+        </select>
+      </div>
+      <div class="authors-grid" id="authors-grid">
+        ${authors.map(a => {
+          const slug = a.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+          const winBadge = a.wins ? `<span class="author-badge wins">${a.wins}W</span>` : '';
+          const nomBadge = a.noms ? `<span class="author-badge noms">${a.noms}N</span>` : '';
+          const bookCount = `<span class="author-book-count">${a.books.length} book${a.books.length !== 1 ? 's' : ''}</span>`;
+          return `<a class="author-card" href="#/books?search=${encodeURIComponent(a.name)}" data-author="${escapeHtml(a.name)}">
+            <div class="author-card-photo-wrap">
+              <div class="author-card-photo" id="author-photo-${escapeHtml(slug)}" data-name="${escapeHtml(a.name)}">
+                <span class="author-card-initials">${escapeHtml(a.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase())}</span>
+              </div>
+            </div>
+            <div class="author-card-info">
+              <div class="author-card-name">${escapeHtml(a.name)}</div>
+              <div class="author-card-badges">${winBadge}${nomBadge}${bookCount}</div>
+            </div>
+          </a>`;
+        }).join('')}
+      </div>
+    </div>`;
+
+  // Wire sort dropdown
+  root.querySelector('#author-sort').addEventListener('change', e => {
+    renderAuthors();
+    root.querySelector('#author-sort').value = e.target.value;
+  });
+
+  // Lazy-load Wikipedia photos via IntersectionObserver
+  const obs = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      obs.unobserve(entry.target);
+      const el = entry.target;
+      const name = el.dataset.name;
+      if (!name || el.dataset.loaded) continue;
+      el.dataset.loaded = '1';
+      fetchWikiAuthor(name).then(wiki => {
+        if (!wiki || !wiki.thumbnail) return;
+        el.innerHTML = `<img src="${escapeHtml(wiki.thumbnail.source)}" alt="${escapeHtml(name)}" loading="lazy">`;
+        el.classList.add('has-photo');
+      });
+    }
+  }, { rootMargin: '200px' });
+
+  root.querySelectorAll('.author-card-photo').forEach(el => obs.observe(el));
 }
 
 // Nightstand visual — books rendered as vertical spines stacked side by
@@ -3693,6 +3821,12 @@ function _route() {
   if (path === '#/genre') {
     renderGenre();
     showView('genre');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (path === '#/authors') {
+    renderAuthors();
+    showView('authors');
     window.scrollTo(0, 0);
     return;
   }
