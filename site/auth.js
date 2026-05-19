@@ -329,36 +329,83 @@
     await refreshFriends();
   }
 
+  // Read Supabase session token from localStorage. We use this for direct
+  // REST calls when the JS client's .update()/.upsert() chains hang (seen
+  // sporadically during write paths; reads work fine).
+  function _getAccessToken() {
+    const keys = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    for (const k of keys) {
+      try {
+        const v = JSON.parse(localStorage.getItem(k) || '{}');
+        if (v?.access_token) return v.access_token;
+        if (v?.currentSession?.access_token) return v.currentSession.access_token;
+      } catch {}
+    }
+    return null;
+  }
+
   async function setBookStatus(bookId, status) {
-    // status: 'read' | 'started' | 'nightstand' | null (null = remove)
+    // status: 'read' | 'nightstand' | 'unread' | 'started' | null (null = remove)
     if (!currentUser) throw new Error('Not signed in');
-    // Bound the call: if Supabase hangs (web-locks contention, network
-    // hiccup, hung CDN) we must throw so the optimistic UI in
-    // wireUserStatusControls can revert. Without a timeout the button stays
-    // 'active' and the user sees themselves as Read without a DB row.
+    const uid = currentUser.id;
+    // Update local cache FIRST so the UI (Sort queue, stats, badges)
+    // reflects intent immediately even if the network call is slow/failing.
+    // Background save below; if it fails the cache stays optimistic for this
+    // session and we log the error.
+    const prev = userBooksById[bookId];
     if (status === null) {
-      const { error } = await withTimeout(
-        client.from('user_books')
-          .delete()
-          .eq('user_id', currentUser.id).eq('book_id', bookId),
-        10000, 'clear book status'
-      );
-      if (error) throw error;
       delete userBooksById[bookId];
     } else {
-      const row = { user_id: currentUser.id, book_id: bookId, status };
-      if (status === 'read' && !userBooksById[bookId]?.date_read) {
-        row.date_read = new Date().toISOString().slice(0, 10);
+      const dateRead = status === 'read'
+        ? (prev?.date_read || new Date().toISOString().slice(0, 10))
+        : null;
+      userBooksById[bookId] = {
+        book_id: bookId, status,
+        date_read: dateRead,
+        updated_at: new Date().toISOString(),
+      };
+    }
+    notify();
+    // Direct REST write — bypasses the JS client's hang-prone wrapper.
+    const token = _getAccessToken();
+    const url = cfg.SUPABASE_URL;
+    const key = cfg.SUPABASE_PUBLISHABLE_KEY;
+    try {
+      if (status === null) {
+        const resp = await fetch(`${url}/rest/v1/user_books?user_id=eq.${uid}&book_id=eq.${encodeURIComponent(bookId)}`, {
+          method: 'DELETE',
+          headers: { apikey: key, Authorization: `Bearer ${token}` },
+        });
+        if (!resp.ok) throw new Error(`delete failed: ${resp.status}`);
+      } else {
+        const row = { user_id: uid, book_id: bookId, status };
+        if (status === 'read' && !prev?.date_read) {
+          row.date_read = new Date().toISOString().slice(0, 10);
+        }
+        const resp = await fetch(`${url}/rest/v1/user_books?on_conflict=user_id,book_id`, {
+          method: 'POST',
+          headers: {
+            apikey: key,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=representation,resolution=merge-duplicates',
+          },
+          body: JSON.stringify(row),
+        });
+        if (!resp.ok) {
+          const body = await resp.text();
+          throw new Error(`upsert ${resp.status}: ${body.slice(0,200)}`);
+        }
+        const arr = await resp.json();
+        if (arr?.[0]) userBooksById[bookId] = arr[0];
       }
-      const { data, error } = await withTimeout(
-        client.from('user_books')
-          .upsert(row, { onConflict: 'user_id,book_id' })
-          .select('book_id,status,date_read,updated_at')
-          .single(),
-        10000, 'save book status'
-      );
-      if (error) throw error;
-      userBooksById[bookId] = data;
+    } catch (e) {
+      // Keep the optimistic local cache. The save can be retried on next
+      // action; the user sees their intent honored on this page at least.
+      console.error('setBookStatus REST failed:', e);
+      // Don't revert — UX is better when the user's action sticks visually.
+      // If the server permanently rejects, a refresh will resync the truth.
+      throw e;
     }
     // Refresh the leaderboard so own row's read_count reflects the new
     // count immediately (Home + Leaderboard + Compare all read from this).

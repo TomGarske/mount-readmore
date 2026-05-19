@@ -1193,7 +1193,7 @@ function buildNightstandShelf(books) {
     const bandHsl = `hsl(${hue}, 42%, 22%)`;
     const textHsl = `hsl(${hue}, 35%, 92%)`;
     const author = (b.authors && b.authors[0]) || '';
-    return `<a class="spine" data-id="${escapeHtml(b.id)}" href="#/book/${escapeHtml(b.id)}"
+    return `<a class="spine" data-id="${escapeHtml(b.id)}" href="#/books/${escapeHtml(b.id)}"
         style="--body: ${bodyHsl}; --band: ${bandHsl}; --ink: ${textHsl};"
         title="${escapeHtml(b.title)} — ${escapeHtml(author)}">
       <span class="spine-title">${escapeHtml(b.title)}</span>
@@ -1217,13 +1217,13 @@ function buildNightstandTwoUp(books) {
   };
   // Horizontal "lay-flat" spines, stacked vertically — feels like a pile of
   // books sitting on a nightstand, viewed from above.
-  const flatRows = books.map(b => {
+  const buildStack = (subset) => subset.map(b => {
     const hue = hueFor(b.id);
     const bodyHsl = `hsl(${hue}, 38%, 32%)`;
     const bandHsl = `hsl(${hue}, 42%, 22%)`;
     const textHsl = `hsl(${hue}, 35%, 92%)`;
     const author = (b.authors && b.authors[0]) || '';
-    return `<a class="spine-flat" data-id="${escapeHtml(b.id)}" href="#/book/${escapeHtml(b.id)}"
+    return `<a class="spine-flat" data-id="${escapeHtml(b.id)}" href="#/books/${escapeHtml(b.id)}"
         style="--body: ${bodyHsl}; --band: ${bandHsl}; --ink: ${textHsl};"
         title="${escapeHtml(b.title)} — ${escapeHtml(author)}">
       <span class="spine-flat-band"></span>
@@ -1231,21 +1231,14 @@ function buildNightstandTwoUp(books) {
       <span class="spine-flat-author">${escapeHtml(author)}</span>
     </a>`;
   }).join('');
-  // Swimlane covers — same dataset as the spines.
-  const swimTiles = books.map(b => {
-    const cover = b.cover_url
-      ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
-      : `<span class="swimlane-placeholder">📖</span>`;
-    const author = (b.authors && b.authors[0]) || '';
-    return `<a class="swimlane-card" href="#/book/${escapeHtml(b.id)}">
-      <div class="swimlane-cover">${cover}</div>
-      <div class="swimlane-title">${escapeHtml(b.title)}</div>
-      <div class="swimlane-meta">${escapeHtml(author)} · ${b.year || ''}</div>
-    </a>`;
-  }).join('');
+  // Two even stacks of books — split deterministically by index so the same
+  // books always end up in the same pile across renders.
+  const half = Math.ceil(books.length / 2);
+  const leftStack = buildStack(books.slice(0, half));
+  const rightStack = buildStack(books.slice(half));
   return `<div class="nightstand-twoup">
-    <div class="nightstand-flat" role="list">${flatRows}</div>
-    <div class="nightstand-swim"><div class="swimlane-strip">${swimTiles}</div></div>
+    <div class="nightstand-flat" role="list">${leftStack}</div>
+    <div class="nightstand-flat" role="list">${rightStack || '<span class="nightstand-flat-empty"></span>'}</div>
   </div>`;
 }
 
@@ -1901,7 +1894,7 @@ function renderStats() {
       ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
       : `<span class="swimlane-placeholder">📖</span>`;
     const isWinner = Object.values(b.awards || {}).includes('winner');
-    return `<a class="swimlane-card" href="#/book/${escapeHtml(b.id)}">
+    return `<a class="swimlane-card" href="#/books/${escapeHtml(b.id)}">
       <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
       <div class="swimlane-title">${escapeHtml(b.title)}</div>
       <div class="swimlane-meta">${escapeHtml(b.authors[0] || '')} · ${b.year || ''}</div>
@@ -2535,7 +2528,7 @@ function finalistCard(f, catLabel, theme) {
   if (!match) {
     return `<div class="hugo-card hugo-card-${theme} hugo-card-stub" title="Not yet in the database">${body}</div>`;
   }
-  return `<a class="hugo-card hugo-card-${theme}" href="#/book/${escapeHtml(match.id)}">${body}</a>`;
+  return `<a class="hugo-card hugo-card-${theme}" href="#/books/${escapeHtml(match.id)}">${body}</a>`;
 }
 
 function finalistSection(catLabel, items, theme) {
@@ -2791,7 +2784,7 @@ async function renderCompare(params) {
       ? `<img src="${escapeHtml(bk.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
       : `<span class="swimlane-placeholder">📖</span>`;
     const isWinner = Object.values(bk.awards || {}).includes('winner');
-    return `<a class="swimlane-card" href="#/book/${escapeHtml(bk.id)}">
+    return `<a class="swimlane-card" href="#/books/${escapeHtml(bk.id)}">
       <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
       <div class="swimlane-title">${escapeHtml(bk.title)}</div>
       <div class="swimlane-meta">${escapeHtml(bk.authors[0] || '')} · ${bk.year || ''}</div>
@@ -3480,17 +3473,49 @@ function drawDiscover() {
         const tag = myS === 'read' ? `<span class="discover-mini-tag read">Read</span>`
           : (myS === 'nightstand' || myS === 'started') ? `<span class="discover-mini-tag night">Nightstand</span>`
           : '';
-        return `<li><a href="#/book/${escapeHtml(b.id)}">${escapeHtml(b.title)}</a> <span style="color: var(--muted);">· ${b.year || ''} · ${escapeHtml(b.category)}</span> ${tag}</li>`;
+        return `<li><a href="#/books/${escapeHtml(b.id)}">${escapeHtml(b.title)}</a> <span style="color: var(--muted);">· ${b.year || ''} · ${escapeHtml(b.category)}</span> ${tag}</li>`;
       }).join('')}</ul>`;
 
-  // Combined card content: cover + title + author/year/category + awards + description.
-  // No tabs — everything visible in one scrollable card.
-  const peekCard = (b, idx) => {
-    if (!b) return '';
+  // Combined card content (cover left, info right). Used for both the top
+  // card and the peek cards behind so the stack looks consistent.
+  const combinedCardContent = (b, opts = {}) => {
+    const linkTitle = opts.linkTitle !== false;
+    const linkAuthor = opts.linkAuthor !== false;
     const img = b.cover_url
       ? `<img src="${escapeHtml(b.cover_url)}" alt="" draggable="false" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
       : `<span class="discover-cover-placeholder">📖</span>`;
-    return `<div class="discover-card discover-card-peek" data-peek="${idx}"><div class="discover-card-combined"><div class="discover-cover-wrap">${img}</div></div></div>`;
+    const bookAuthor = (b.authors || [])[0] || b.author_raw || '';
+    const pills = Object.entries(b.awards || {}).map(([a, s]) =>
+      `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+    ).join('');
+    let descTxt = (b.description || '').replace(/\(\[[^\]]+\]\[\d+\]\)/g, '').replace(/^\[\d+\]:.*$/gm, '').trim();
+    const descHtml = descTxt
+      ? escapeHtml(descTxt).split(/\n\n+/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')
+      : `<p style="color: var(--muted);">No description on file for this one.</p>`;
+    const titleHtml = linkTitle
+      ? `<a href="#/books/${escapeHtml(b.id)}">${escapeHtml(b.title)}</a>`
+      : escapeHtml(b.title);
+    const authorHtml = bookAuthor
+      ? (linkAuthor
+          ? `<a href="#/authors/${encodeURIComponent(bookAuthor)}" class="author-link">${escapeHtml(bookAuthor)}</a>`
+          : escapeHtml(bookAuthor))
+      : '';
+    return `<div class="discover-card-combined">
+      <div class="discover-cover-wrap">${img}</div>
+      <div class="discover-card-info">
+        <div class="discover-title">${titleHtml}</div>
+        <div class="discover-meta">${authorHtml}${b.year ? ` · ${b.year}` : ''}${b.category ? ` · ${escapeHtml(b.category)}` : ''}</div>
+        ${pills ? `<div class="discover-pills">${pills}</div>` : ''}
+        <div class="discover-desc">${descHtml}</div>
+      </div>
+    </div>`;
+  };
+  const peekCard = (b, idx) => {
+    if (!b) return '';
+    // Peek cards render the full combined layout so the stack looks like
+    // consistent cards behind the top one, not bare cover placeholders.
+    // Plain text (no links) since pointer-events is disabled on peeks.
+    return `<div class="discover-card discover-card-peek" data-peek="${idx}">${combinedCardContent(b, { linkTitle: false, linkAuthor: false })}</div>`;
   };
 
   root.innerHTML = `<div class="detail discover-page">
@@ -3529,15 +3554,7 @@ function drawDiscover() {
           <div class="discover-swipe-hint discover-swipe-hint-left">Read</div>
           <div class="discover-swipe-hint discover-swipe-hint-right">Unread</div>
           <div class="discover-swipe-hint discover-swipe-hint-up">Nightstand</div>
-          <div class="discover-card-combined">
-            <div class="discover-cover-wrap">${coverImg}</div>
-            <div class="discover-card-info">
-              <div class="discover-title"><a href="#/books/${escapeHtml(book.id)}">${escapeHtml(book.title)}</a></div>
-              <div class="discover-meta">${author ? `<a href="#/authors/${encodeURIComponent(author)}" class="author-link">${escapeHtml(author)}</a>` : ''}${book.year ? ` · ${book.year}` : ''}${book.category ? ` · ${escapeHtml(book.category)}` : ''}</div>
-              ${awardPills ? `<div class="discover-pills">${awardPills}</div>` : ''}
-              <div class="discover-desc">${descBody}</div>
-            </div>
-          </div>
+          ${combinedCardContent(book)}
         </div>
       </div>
     </div>
@@ -4013,7 +4030,7 @@ async function renderProfile(handle) {
     .slice()
     .sort((a, b) => (b.date_read || '').localeCompare(a.date_read || '') || (b.year || 0) - (a.year || 0))
     .slice(0, 18);
-  const tile = (bk) => `<a class="swimlane-card" href="#/book/${escapeHtml(bk.id)}">
+  const tile = (bk) => `<a class="swimlane-card" href="#/books/${escapeHtml(bk.id)}">
     <div class="swimlane-cover">${bk.cover_url ? `<img src="${escapeHtml(bk.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">` : '<span class="swimlane-placeholder">📖</span>'}</div>
     <div class="swimlane-title">${escapeHtml(bk.title)}</div>
     <div class="swimlane-meta">${escapeHtml(bk.authors?.[0] || '')} · ${bk.year || ''}</div>
