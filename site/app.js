@@ -2024,8 +2024,9 @@ function renderStats() {
             ? Math.round(yearedReads.reduce((s, b) => s + b.year, 0) / yearedReads.length)
             : null;
           const mrd = mostReadDecade(winners, (b) => readStatus(b, r) === 'read');
+          // "Winners on the list" card removed per request — readers know the
+          // total from the toggle pills above.
           return `
-            ${card(totalLabel, winnersTotal, totalSub)}
             ${card('Read', readBooks.length, `${(readBooks.length / winnersTotal * 100).toFixed(1)}% of ${SUBSET}`, readBooks.length / winnersTotal * 100)}
             ${card('On Nightstand', nightstandTotal, 'nightstand + in progress')}
             ${card('Avg pub year', avgYear ?? '—', avgYear ? `Across the books you've read` : 'No reads yet')}
