@@ -797,19 +797,56 @@ function renderDetail(id) {
 }
 
 // ─── Wikipedia helper ──────────────────────────────────────────────────────
-const _wikiCache = new Map();
-async function fetchWikiAuthor(name) {
-  if (_wikiCache.has(name)) return _wikiCache.get(name);
-  const title = name.replace(/ /g, '_');
+// Explicit display-name → Wikipedia title overrides for authors whose
+// display name doesn't resolve directly (pen names, parenthetical
+// clarifications, non-English name ordering, etc.). Keys are the exact
+// display name as it appears in DATA.books[].authors.
+const AUTHOR_WIKI_ALIASES = {
+  'Ursula Vernon (as T. Kingfisher)': 'T._Kingfisher',
+  'Robert A. Heinlein (as Anson MacDonald)': 'Robert_A._Heinlein',
+  'John W. Campbell (as Don A. Stuart)': 'John_W._Campbell',
+  'Cixin Liu (Chinese)': 'Liu_Cixin',
+  'Ken Liu (translator)': 'Ken_Liu_(American_writer)',
+};
+
+// Try a Wikipedia summary URL and return parsed JSON or null.
+async function _fetchWikiTitle(title) {
   try {
     const r = await fetch(
       `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
       { headers: { 'Api-User-Agent': 'Readmore/1.0 (https://readmore.tomgarske.com)' } }
     );
-    const data = r.ok ? await r.json() : null;
-    _wikiCache.set(name, data);
+    if (!r.ok) return null;
+    const data = await r.json();
+    // Disambiguation pages don't have author photos and confuse downstream
+    // code. Reject them so the fallback path runs.
+    if (data?.type === 'disambiguation') return null;
     return data;
-  } catch { _wikiCache.set(name, null); return null; }
+  } catch { return null; }
+}
+
+const _wikiCache = new Map();
+async function fetchWikiAuthor(name) {
+  if (_wikiCache.has(name)) return _wikiCache.get(name);
+  // 1. Explicit alias mapping (highest priority)
+  const aliased = AUTHOR_WIKI_ALIASES[name];
+  if (aliased) {
+    const data = await _fetchWikiTitle(aliased);
+    if (data && data.thumbnail) { _wikiCache.set(name, data); return data; }
+  }
+  // 2. Try the display name directly
+  let data = await _fetchWikiTitle(name.replace(/ /g, '_'));
+  if (data && data.thumbnail) { _wikiCache.set(name, data); return data; }
+  // 3. Fallback: strip parenthetical clarifications (e.g. "Cixin Liu (Chinese)"
+  //    → "Cixin Liu") and retry.
+  const stripped = name.replace(/\s*\([^)]+\)\s*$/g, '').trim();
+  if (stripped && stripped !== name) {
+    const data2 = await _fetchWikiTitle(stripped.replace(/ /g, '_'));
+    if (data2 && data2.thumbnail) { _wikiCache.set(name, data2); return data2; }
+  }
+  // Cache the last (likely null/no-thumbnail) result anyway to avoid retrying
+  _wikiCache.set(name, data);
+  return data;
 }
 
 // ─── Authors view ──────────────────────────────────────────────────────────
