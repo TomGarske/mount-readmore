@@ -397,6 +397,18 @@ a:hover { text-decoration: underline; }
 .genre-twoup .genre-twoup-chart.radar-hero {
   max-width: 100%;
   margin: 0;
+  padding: 6px 8px 6px;
+}
+.genre-twoup .genre-twoup-chart.radar-hero .radar-svg {
+  max-width: 100%;
+}
+.genre-twoup .genre-twoup-chart.radar-hero h2 {
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+.genre-twoup .genre-twoup-chart.radar-hero .radar-wrap {
+  gap: 2px;
+  margin-top: 2px;
 }
 .genre-twoup-bars { min-width: 0; }
 .genre-twoup-bars .genre-bars { margin-top: 0; }
@@ -2634,65 +2646,153 @@ fieldset label input { margin-right: 8px; }
   .author-detail-bio { max-width: 100%; }
 }
 
-/* ── Magazines section (home page) ───────────────────────────────────────── */
-/* Magazines tab — standalone page */
-.magazines-page { padding-bottom: 48px; }
-.magazines-page h1 { font-size: 24px; margin-bottom: 8px; }
+/* ── Magazines tab ───────────────────────────────────────────────────────── */
+.magazines-page { padding-bottom: 64px; }
+.magazines-page h1 { font-size: 26px; margin-bottom: 6px; }
 .magazines-section { margin-top: 48px; }
 .magazines-intro {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-2);
-  max-width: 720px;
-  margin: 0 0 32px;
-  line-height: 1.6;
+  max-width: 640px;
+  margin: 0 0 36px;
+  line-height: 1.65;
 }
-.magazine-block {
-  margin-bottom: 40px;
-  padding-bottom: 40px;
-  border-bottom: 1px solid var(--border);
-}
-.magazine-block:last-child { border-bottom: none; margin-bottom: 0; }
-.magazine-meta { margin-bottom: 14px; }
-.magazine-title-row {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.magazine-name { font-size: 17px; font-weight: 700; margin: 0; }
-.magazine-status {
-  font-size: 12px;
-  color: var(--muted);
+/* Card grid — single column, each card gets the full width */
+.mag-grid { display: flex; flex-direction: column; gap: 32px; }
+
+/* Individual magazine card */
+.mag-card {
   border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 2px 8px;
-  white-space: nowrap;
+  border-radius: calc(var(--radius) + 4px);
+  overflow: hidden;
+  border-left: 4px solid var(--mag-accent, var(--border));
+  background: var(--bg-2);
 }
-.magazine-status.defunct { opacity: 0.7; }
-.magazine-description {
-  font-size: 14px;
-  color: var(--text-2);
-  margin: 0 0 10px;
-  line-height: 1.6;
-  max-width: 680px;
+.mag-card-header {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
 }
-.magazine-links {
+/* Cover image column */
+.mag-card-cover {
+  flex-shrink: 0;
+  width: 130px;
+  margin: 0;
+  position: relative;
+  background: #111;
+  overflow: hidden;
+}
+.mag-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+  opacity: 0.92;
+}
+.mag-card-cover figcaption {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  font-size: 10px;
+  color: rgba(255,255,255,0.75);
+  background: linear-gradient(transparent, rgba(0,0,0,0.65));
+  padding: 12px 6px 4px;
+  text-align: center;
+  line-height: 1.3;
+}
+/* Text body column */
+.mag-card-body {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 22px 18px;
+}
+.mag-card-eyebrow {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
+  margin-bottom: 6px;
 }
-.mag-ext-link {
-  font-size: 13px;
-  color: var(--accent);
+.mag-status-pill {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--mag-accent, var(--border));
+  color: var(--mag-accent, var(--muted));
+  background: color-mix(in srgb, var(--mag-accent, transparent) 10%, transparent);
+}
+.mag-status-pill.mag-status-defunct { opacity: 0.65; }
+.mag-era { font-size: 12px; color: var(--muted); }
+.mag-card-name {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0 0 8px;
+  line-height: 1.2;
+  color: var(--text);
+}
+.mag-card-description {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-2);
+  margin: 0 0 14px;
+}
+/* Stats row */
+.mag-card-stats {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 14px;
+}
+.mag-stat { display: flex; flex-direction: column; align-items: flex-start; }
+.mag-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--mag-accent, var(--text));
+  line-height: 1;
+}
+.mag-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-weight: 600;
+}
+/* External links */
+.mag-card-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.mag-pill-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mag-accent, var(--accent));
+  border: 1px solid color-mix(in srgb, var(--mag-accent, var(--border)) 40%, var(--border));
+  border-radius: 999px;
+  padding: 3px 10px;
+  text-decoration: none;
+  transition: background 0.12s;
+  background: color-mix(in srgb, var(--mag-accent, transparent) 6%, transparent);
+}
+.mag-pill-link:hover {
+  background: color-mix(in srgb, var(--mag-accent, var(--accent)) 14%, transparent);
   text-decoration: none;
 }
-.mag-ext-link:hover { text-decoration: underline; }
-.magazine-count {
-  font-size: 12px;
+/* Swimlane section */
+.mag-card-swimlane {
+  border-top: 1px solid var(--border);
+  padding: 14px 16px 16px;
+  background: var(--bg);
+}
+.mag-swimlane-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--muted);
-  margin-left: auto;
+  margin-bottom: 10px;
+}
+@media (max-width: 600px) {
+  .mag-card-header { flex-direction: column; }
+  .mag-card-cover { width: 100%; height: 180px; }
+  .mag-card-cover img { object-position: center 25%; }
 }
 
 .btn-primary {

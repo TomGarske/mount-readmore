@@ -30,6 +30,9 @@ const MAGAZINE_DATA = [
     short: "Asimov's",
     founded: 1977,
     status: 'active',
+    accent: '#c6444f',
+    coverUrl: "https://upload.wikimedia.org/wikipedia/en/3/3d/IASFM.jpg",
+    coverCaption: "First issue, Spring 1977",
     description: "America's premier science fiction magazine, publishing continuously since 1977. Named in honor of Isaac Asimov, it has been home to some of the most celebrated SF novellas and novelettes ever written — and holds a record 55 Hugo Awards for its stories.",
     url: "https://asimovs.com/",
     editorialUrl: "https://asimovs.com/more-stuff/all-archives/#ArchivedEditorials",
@@ -40,6 +43,9 @@ const MAGAZINE_DATA = [
     short: "Analog",
     founded: 1930,
     status: 'active',
+    accent: '#2c5d96',
+    coverUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a6/ASTJAN1930.jpg",
+    coverCaption: "First issue, January 1930",
     description: "The longest-running English-language SF magazine. Founded in 1930 as Astounding Stories, it became Astounding Science Fiction under editor John W. Campbell — shaping the Golden Age of SF. Published today as Analog Science Fiction and Fact.",
     url: "https://www.analogsf.com/",
     wikiUrl: "https://en.wikipedia.org/wiki/Analog_Science_Fiction_and_Fact",
@@ -49,6 +55,9 @@ const MAGAZINE_DATA = [
     short: "F&SF",
     founded: 1949,
     status: 'active',
+    accent: '#5a7a4a',
+    coverUrl: "https://upload.wikimedia.org/wikipedia/en/8/85/Cover_of_October_1952_issue_of_The_Magazine_of_Fantasy_%26_Science_Fiction.jpg",
+    coverCaption: "October 1952",
     description: "Founded in 1949, F&SF is known for its literary approach to speculative fiction and has published some of the genre's landmark works, including stories by Harlan Ellison, Daniel Keyes, and Ursula K. Le Guin.",
     url: "https://www.sfsite.com/fsf/",
     wikiUrl: "https://en.wikipedia.org/wiki/The_Magazine_of_Fantasy_%26_Science_Fiction",
@@ -59,6 +68,9 @@ const MAGAZINE_DATA = [
     founded: 1950,
     defunct: 1980,
     status: 'defunct',
+    accent: '#8b6020',
+    coverUrl: "https://upload.wikimedia.org/wikipedia/en/1/1b/Galaxy_cover_layouts.jpg",
+    coverCaption: "A selection of Galaxy covers",
     description: "Published from 1950 to 1980, Galaxy was one of the leading SF magazines of its era — a rival to Astounding that favored social satire and soft science fiction. It published foundational work by Pohl, Bester, Sturgeon, and more.",
     wikiUrl: "https://en.wikipedia.org/wiki/Galaxy_Science_Fiction",
   },
@@ -67,6 +79,9 @@ const MAGAZINE_DATA = [
     short: "Clarkesworld",
     founded: 2006,
     status: 'active',
+    accent: '#3a6a8a',
+    coverUrl: "https://clarkesworldmagazine.com/covers/cw_236_large.jpg",
+    coverCaption: "Issue 236, May 2026",
     description: "An online-only magazine founded in 2006, Clarkesworld publishes original SF and fantasy short fiction and makes every story freely available. Multiple Hugo Award winner for Best Semiprozine.",
     url: "https://clarkesworldmagazine.com/",
     wikiUrl: "https://en.wikipedia.org/wiki/Clarkesworld_Magazine",
@@ -76,6 +91,9 @@ const MAGAZINE_DATA = [
     short: "Reactor",
     founded: 2008,
     status: 'active',
+    accent: '#7a3a6a',
+    coverUrl: "https://upload.wikimedia.org/wikipedia/en/7/71/Logo_of_Reactor_%28formerly_Tor.com%29_online_magazine.jpg",
+    coverCaption: "Reactor (formerly Tor.com)",
     description: "Launched as Tor.com in 2008 and now known as Reactor, this online platform publishes free original SF fiction alongside news and reviews. Its publishing imprint pioneered the Hugo-winning standalone novella format.",
     url: "https://reactormag.com/",
     wikiUrl: "https://en.wikipedia.org/wiki/Reactor_(magazine)",
@@ -85,6 +103,9 @@ const MAGAZINE_DATA = [
     short: "Lightspeed",
     founded: 2010,
     status: 'active',
+    accent: '#c08020',
+    coverUrl: "https://www.lightspeedmagazine.com/wp-content/files_mf/cache/th_364f27d0a9e0903ba4ca66b270091c81_lightspeed_47_april_201431.jpg",
+    coverCaption: "Issue 47, April 2014",
     description: "Founded in 2010 by John Joseph Adams, Lightspeed publishes SF and fantasy short fiction online, with many stories freely available. It regularly features Hugo and Nebula Award nominees.",
     url: "https://www.lightspeedmagazine.com/",
     wikiUrl: "https://en.wikipedia.org/wiki/Lightspeed_(magazine)",
@@ -953,39 +974,57 @@ function renderMagazines() {
     const magBooks = DATA.books.filter(b => MAGAZINE_CANONICAL[b.publisher] === mag.canonical);
     if (magBooks.length === 0) return '';
     magBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
-    const statusText = mag.status === 'defunct'
-      ? `${mag.founded}–${mag.defunct || 'unknown'} · defunct`
-      : `Founded ${mag.founded} · active`;
-    const siteLink = mag.url
-      ? `<a href="${escapeHtml(mag.url)}" target="_blank" rel="noopener" class="mag-ext-link">${escapeHtml(mag.short)} website ↗</a>`
-      : '';
-    const wikiLink = mag.wikiUrl
-      ? `<a href="${escapeHtml(mag.wikiUrl)}" target="_blank" rel="noopener" class="mag-ext-link">Wikipedia ↗</a>`
-      : '';
-    const editorialLink = mag.editorialUrl
-      ? `<a href="${escapeHtml(mag.editorialUrl)}" target="_blank" rel="noopener" class="mag-ext-link">Archive ↗</a>`
-      : '';
+
     const winCount = magBooks.filter(b => Object.values(b.awards || {}).includes('winner')).length;
-    return `<div class="magazine-block">
-      <div class="magazine-meta">
-        <div class="magazine-title-row">
-          <h3 class="magazine-name">${escapeHtml(mag.canonical)}</h3>
-          <span class="magazine-status ${mag.status}">${statusText}</span>
-        </div>
-        <p class="magazine-description">${escapeHtml(mag.description)}</p>
-        <div class="magazine-links">
-          ${siteLink}${wikiLink}${editorialLink}
-          <span class="magazine-count">${magBooks.length} book${magBooks.length !== 1 ? 's' : ''} · ${winCount} win${winCount !== 1 ? 's' : ''}</span>
+    const nomCount = magBooks.length - winCount;
+
+    const statusText = mag.status === 'defunct'
+      ? `${mag.founded}–${mag.defunct}`
+      : `Est. ${mag.founded}`;
+    const statusLabel = mag.status === 'defunct' ? 'Defunct' : 'Active';
+
+    const coverHtml = mag.coverUrl
+      ? `<figure class="mag-card-cover">
+           <img src="${escapeHtml(mag.coverUrl)}" alt="${escapeHtml(mag.canonical)} cover" loading="lazy">
+           ${mag.coverCaption ? `<figcaption>${escapeHtml(mag.coverCaption)}</figcaption>` : ''}
+         </figure>`
+      : '';
+
+    const links = [
+      mag.url        && `<a href="${escapeHtml(mag.url)}" target="_blank" rel="noopener" class="mag-pill-link">${escapeHtml(mag.short)} website ↗</a>`,
+      mag.wikiUrl    && `<a href="${escapeHtml(mag.wikiUrl)}" target="_blank" rel="noopener" class="mag-pill-link">Wikipedia ↗</a>`,
+      mag.editorialUrl && `<a href="${escapeHtml(mag.editorialUrl)}" target="_blank" rel="noopener" class="mag-pill-link">Issue archive ↗</a>`,
+    ].filter(Boolean).join('');
+
+    return `<div class="mag-card" style="--mag-accent: ${escapeHtml(mag.accent || '#888')};">
+      <div class="mag-card-header">
+        ${coverHtml}
+        <div class="mag-card-body">
+          <div class="mag-card-eyebrow">
+            <span class="mag-status-pill mag-status-${mag.status}">${statusLabel}</span>
+            <span class="mag-era">${statusText}</span>
+          </div>
+          <h2 class="mag-card-name">${escapeHtml(mag.canonical)}</h2>
+          <p class="mag-card-description">${escapeHtml(mag.description)}</p>
+          <div class="mag-card-stats">
+            <div class="mag-stat"><span class="mag-stat-value">${winCount}</span><span class="mag-stat-label">wins</span></div>
+            <div class="mag-stat"><span class="mag-stat-value">${nomCount}</span><span class="mag-stat-label">nominations</span></div>
+            <div class="mag-stat"><span class="mag-stat-value">${magBooks.length}</span><span class="mag-stat-label">total</span></div>
+          </div>
+          <div class="mag-card-links">${links}</div>
         </div>
       </div>
-      <div class="swimlane-strip">${magBooks.map(b => makeSwimlaneCard(b)).join('')}</div>
+      <div class="mag-card-swimlane">
+        <div class="mag-swimlane-label">Stories on the list</div>
+        <div class="swimlane-strip">${magBooks.map(b => makeSwimlaneCard(b)).join('')}</div>
+      </div>
     </div>`;
   }).join('');
 
   root.innerHTML = `<div class="detail magazines-page">
     <h1>Magazines</h1>
-    <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet. Each swimlane shows all nominated and winning stories from that publication in our dataset.</p>
-    ${magBlocksHtml}
+    <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet.</p>
+    <div class="mag-grid">${magBlocksHtml}</div>
   </div>`;
 
   $$('.swimlane-card', root).forEach(el =>
