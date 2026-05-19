@@ -326,19 +326,17 @@ function matchesFilters(book) {
   }
   // Read-free filter: only show books with a direct publication_url.
   if (state.readFree && !book.publication_url) return false;
-  // Missing-data filter (Books mode): 'desc' or 'link' → book must be
-  // missing the corresponding field. 'author-image' is an author-mode
-  // filter and doesn't apply here. Empty set = no filter.
+  // Missing-data filter (Books mode): any checked → book must be missing
+  // at least one of the checked criteria. Empty set = no filter.
   if (state.missingFilter && state.missingFilter.size > 0) {
+    const missingDesc = !book.description || !book.description.trim();
+    const missingCover = !book.cover_url || !book.cover_url.trim();
+    const missingLink = !book.publication_url || !book.publication_url.trim();
     const wantsDesc = state.missingFilter.has('desc');
+    const wantsCover = state.missingFilter.has('cover');
     const wantsLink = state.missingFilter.has('link');
-    // If only 'author-image' is selected (authors-mode filter), don't filter books.
-    if (wantsDesc || wantsLink) {
-      const missingDesc = !book.description || !book.description.trim();
-      const missingLink = !book.publication_url || !book.publication_url.trim();
-      const matches = (wantsDesc && missingDesc) || (wantsLink && missingLink);
-      if (!matches) return false;
-    }
+    const matches = (wantsDesc && missingDesc) || (wantsCover && missingCover) || (wantsLink && missingLink);
+    if (!matches) return false;
   }
   return true;
 }
@@ -894,20 +892,6 @@ function renderAuthors(root = null, allowedBookIds = null) {
     if (!grid) return;
     const countEl = root.querySelector('#authors-count');
 
-    // Debug filter: "Authors missing image" — eagerly resolve Wikipedia
-    // thumbnails for every visible author and drop those that have one.
-    // Cached after first call so this only pays the network cost once.
-    const filterMissingImg = state.missingFilter && state.missingFilter.has('author-image');
-    if (filterMissingImg && visible.length > 0) {
-      grid.innerHTML = `<p class="authors-loading" style="color:var(--muted); padding: 12px 0;">Checking Wikipedia for ${visible.length} authors…</p>`;
-      if (countEl) countEl.textContent = '…';
-      const results = await Promise.all(visible.map(a =>
-        fetchWikiAuthor(a.name).then(wiki => ({ a, hasPhoto: !!(wiki && wiki.thumbnail) }))
-          .catch(() => ({ a, hasPhoto: false }))
-      ));
-      visible = results.filter(r => !r.hasPhoto).map(r => r.a);
-    }
-
     grid.innerHTML = visible.map(a => {
       const slug = a.name.replace(/[^a-z0-9]/gi, '-').toLowerCase();
       const winBadge = a.wins ? `<span class="author-badge wins">${a.wins}W</span>` : '';
@@ -926,30 +910,23 @@ function renderAuthors(root = null, allowedBookIds = null) {
       </a>`;
     }).join('');
     if (countEl) countEl.textContent = visible.length;
-    if (visible.length === 0 && filterMissingImg) {
-      grid.innerHTML = `<p style="color:var(--muted); padding: 12px 0;">Every visible author has a Wikipedia image. Clear the "Authors missing image" filter to see all authors.</p>`;
-      return;
-    }
-    // Re-attach lazy photo observer to newly rendered cards (skip when the
-    // missing-image filter is on — we already know these have no photo).
-    if (!filterMissingImg) {
-      const obs2 = new IntersectionObserver(entries => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          obs2.unobserve(entry.target);
-          const el = entry.target;
-          const name = el.dataset.name;
-          if (!name || el.dataset.loaded) continue;
-          el.dataset.loaded = '1';
-          fetchWikiAuthor(name).then(wiki => {
-            if (!wiki || !wiki.thumbnail) return;
-            el.innerHTML = `<img src="${escapeHtml(wiki.thumbnail.source)}" alt="${escapeHtml(name)}" loading="lazy">`;
-            el.classList.add('has-photo');
-          });
-        }
-      }, { rootMargin: '200px' });
-      grid.querySelectorAll('.author-card-photo').forEach(el => obs2.observe(el));
-    }
+    // Lazy-load Wikipedia thumbnails as cards scroll into view.
+    const obs2 = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        obs2.unobserve(entry.target);
+        const el = entry.target;
+        const name = el.dataset.name;
+        if (!name || el.dataset.loaded) continue;
+        el.dataset.loaded = '1';
+        fetchWikiAuthor(name).then(wiki => {
+          if (!wiki || !wiki.thumbnail) return;
+          el.innerHTML = `<img src="${escapeHtml(wiki.thumbnail.source)}" alt="${escapeHtml(name)}" loading="lazy">`;
+          el.classList.add('has-photo');
+        });
+      }
+    }, { rootMargin: '200px' });
+    grid.querySelectorAll('.author-card-photo').forEach(el => obs2.observe(el));
   };
 
   root.innerHTML = `
