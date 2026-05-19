@@ -2343,9 +2343,14 @@ function renderStats() {
   // Dashboard compare widget
   const dashCompareInput = document.getElementById('dashboard-compare-input');
   const dashCompareBtn = document.getElementById('dashboard-compare-btn');
-  const doCompare = () => {
+  const doCompare = async () => {
     const handle = (dashCompareInput?.value || '').trim().replace(/^@/, '');
     if (!handle) return;
+    // Wait for the auth bootstrap so we have a real handle. Without this,
+    // a rapid click after page load constructs ?u=me&u=<friend>; then
+    // renderCompare's "drop 'me' if not signed in" filter trims the URL
+    // to one id and redirects to #/, looking like "first click didn't work."
+    await window.MR_AUTH?.ready;
     const me = window.MR_AUTH?.profile?.handle || 'me';
     location.hash = `#/stats?u=${encodeURIComponent(me)}&u=${encodeURIComponent(handle)}`;
   };
@@ -4833,6 +4838,9 @@ async function init() {
   renderAuthPill();
   window.addEventListener('hashchange', () => { applySoloUI(); route(); });
   // Re-render on auth change: ACTIVE_READERS flips, then re-route.
+  // onChange is self-priming: if bootstrap already finished by the time we
+  // subscribe (common when data.json is the slowest network call), the
+  // callback fires once on a microtask with the current snapshot.
   if (window.MR_AUTH) {
     window.MR_AUTH.onChange(() => {
       recomputeReaders();
@@ -4847,6 +4855,18 @@ async function init() {
       route();
     });
   }
+  // Race-safe initial render: wait for the auth bootstrap so the FIRST
+  // route() sees a fully-populated MR_AUTH (user, profile, friends,
+  // leaderboards). Cap the wait so a stuck Supabase doesn't park the page
+  // forever — onChange will fire later if/when bootstrap eventually finishes.
+  try {
+    await Promise.race([
+      window.MR_AUTH?.ready,
+      new Promise(res => setTimeout(res, 4000)),
+    ]);
+  } catch (_) { /* ignore — render below with whatever state we have */ }
+  recomputeReaders();
+  applySoloUI();
   route();
 }
 

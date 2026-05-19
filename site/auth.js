@@ -95,11 +95,21 @@
     leaderboardByAward = byAward.data || [];
   }
 
-  function notify() {
-    const snapshot = {
+  // Tracks whether bootstrap has fired at least one notify. New subscribers
+  // added after that point need to be primed immediately — otherwise an
+  // app.js init() race (bootstrap completes during init's `await
+  // fetch('data.json')`, before init reaches the onChange call) silently
+  // drops the only notification, leaving friends/leaderboard data unrendered.
+  let bootstrapNotified = false;
+  function _currentSnapshot() {
+    return {
       user: currentUser, profile: currentProfile, userBooks: userBooksById,
       friends: friendsList, leaderboardOverall, leaderboardByAward,
     };
+  }
+  function notify() {
+    bootstrapNotified = true;
+    const snapshot = _currentSnapshot();
     subscribers.forEach(cb => {
       try { cb(snapshot); } catch (e) { console.error(e); }
     });
@@ -393,7 +403,17 @@
     get leaderboardOverall() { return leaderboardOverall; },
     get leaderboardByAward() { return leaderboardByAward; },
     statusFor(bookId) { return userBooksById[bookId]?.status || null; },
-    onChange(cb) { subscribers.add(cb); return () => subscribers.delete(cb); },
+    onChange(cb) {
+      subscribers.add(cb);
+      // If bootstrap already fired its initial notify, replay it for this
+      // late subscriber on a microtask so the caller's setup code can
+      // finish before the callback runs.
+      if (bootstrapNotified) {
+        const snapshot = _currentSnapshot();
+        queueMicrotask(() => { try { cb(snapshot); } catch (e) { console.error(e); } });
+      }
+      return () => subscribers.delete(cb);
+    },
     signOut: async () => { await client.auth.signOut(); },
     showSignInModal,
     setBookStatus,
