@@ -448,7 +448,7 @@ function renderList() {
   $('#grid').innerHTML = sorted.map(bookCard).join('');
   $$('.card', $('#grid')).forEach(card => {
     card.addEventListener('click', () => {
-      location.hash = `#/book/${card.dataset.id}`;
+      location.hash = `#/books/${card.dataset.id}`;
     });
   });
 }
@@ -572,7 +572,7 @@ function renderDetail(id) {
   </div>`;
   wireUserStatusControls();
   $$('.swimlane-card', root).forEach(el => {
-    el.addEventListener('click', () => { location.hash = `#/book/${el.dataset.id}`; });
+    el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
   });
 }
 
@@ -1488,7 +1488,7 @@ function renderStats() {
   </div>`;
 
   $$('.recent-read, .swimlane-card', root).forEach(el => {
-    el.addEventListener('click', () => { location.hash = `#/book/${el.dataset.id}`; });
+    el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
   });
   $$('.status-tab', root).forEach(btn => {
     btn.addEventListener('click', () => {
@@ -1849,7 +1849,7 @@ function renderGenre() {
   </div>`;
 
   $$('.swimlane-card', root).forEach(el => {
-    el.addEventListener('click', () => { location.hash = `#/book/${el.dataset.id}`; });
+    el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
   });
   $$('.status-tab', root).forEach(btn => {
     btn.addEventListener('click', () => {
@@ -3660,8 +3660,13 @@ function _route() {
     }
   }
   const [path, qs] = h.split('?');
+  // Legacy singular route — redirect to canonical plural form.
   if (path.startsWith('#/book/')) {
-    const id = path.slice('#/book/'.length);
+    location.replace('#/books/' + path.slice('#/book/'.length) + (qs ? '?' + qs : ''));
+    return;
+  }
+  if (path.startsWith('#/books/')) {
+    const id = path.slice('#/books/'.length);
     renderDetail(id);
     showView('detail');
     window.scrollTo(0, 0);
