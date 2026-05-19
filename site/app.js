@@ -970,6 +970,45 @@ function renderMagazines() {
   const root = $('#view-magazines');
   if (!root) return;
 
+  const HAS_READER = ACTIVE_READERS.length > 0;
+
+  // Genre swimlanes (moved here from Genre tab)
+  const swimlaneGenres = ['Time Travel', 'Horror', 'Military SF', 'Space Opera', 'Hard SF', 'Dystopian', 'First Contact', 'Cyberpunk'];
+  const swimlanes = swimlaneGenres.map(g => {
+    const books = DATA.books
+      .filter(b => (b.genres || []).includes(g))
+      .sort((a, b) => (b.year || 0) - (a.year || 0));
+    return { genre: g, books };
+  }).filter(s => s.books.length > 0);
+
+  const genreSwimlanesHtml = `<div class="progress-section collections-genre-section">
+    <h2 class="collections-section-head">Browse by genre</h2>
+    <p style="color: var(--muted); font-size: 13px;">Scroll any row sideways. Click a cover for details. Each row is sorted by publication year, newest first.</p>
+    ${swimlanes.map(lane => `
+      <div class="swimlane">
+        <div class="swimlane-header">
+          <h3>${escapeHtml(lane.genre)}</h3>
+          <span class="swimlane-count">${lane.books.length} books</span>
+        </div>
+        <div class="swimlane-strip">
+          ${lane.books.map(b => {
+            const cover = b.cover_url
+              ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
+              : `<span class="swimlane-placeholder">📖</span>`;
+            const isWinner = Object.values(b.awards || {}).includes('winner');
+            const readPill = HAS_READER && ACTIVE_READERS.some(r => readStatus(b, r.id) === 'read')
+              ? `<span class="swimlane-pill">read</span>` : '';
+            return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
+              <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}${readPill}</div>
+              <div class="swimlane-title">${escapeHtml(b.title)}</div>
+              <div class="swimlane-meta">${escapeHtml(b.authors[0] || '')} · ${b.year || ''}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+
   const magBlocksHtml = MAGAZINE_DATA.map(mag => {
     const magBooks = DATA.books.filter(b => MAGAZINE_CANONICAL[b.publisher] === mag.canonical);
     if (magBooks.length === 0) return '';
@@ -1022,9 +1061,13 @@ function renderMagazines() {
   }).join('');
 
   root.innerHTML = `<div class="detail magazines-page">
-    <h1>Magazines</h1>
+    <h1>Collections</h1>
+    ${awardFeaturedBannersHtml()}
+    ${freeReadBannerHtml()}
+    <h2 class="collections-section-head">Magazines</h2>
     <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet.</p>
     <div class="mag-grid">${magBlocksHtml}</div>
+    ${genreSwimlanesHtml}
   </div>`;
 
   $$('.swimlane-card', root).forEach(el =>
@@ -1751,9 +1794,7 @@ function renderStats() {
   const authorRows = renderAuthorRows(topAuthors, maxAppearances);
 
   root.innerHTML = `<div class="detail">
-    ${awardFeaturedBannersHtml()}
     <h1>Home</h1>
-    ${freeReadBannerHtml()}
     <div class="toggle-row">
       <div class="status-toggle" data-status="${STATUS}">
         <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
@@ -1970,7 +2011,7 @@ function renderStats() {
 
 
     <div class="progress-section progress-genre-link">
-      <p style="color: var(--muted); font-size: 13px;">Looking for genre breakdowns, the subgenre fingerprint, or the genre-vector win-rate table? They're on the <a href="#/genre">Genre</a> tab. Magazine histories and story swimlanes are on the <a href="#/magazines">Magazines</a> tab.</p>
+      <p style="color: var(--muted); font-size: 13px;">Looking for genre breakdowns or the subgenre fingerprint? They're on the <a href="#/genre">Genre</a> tab. Award spotlights, magazine histories, and browse-by-genre swimlanes are on the <a href="#/magazines">Collections</a> tab.</p>
     </div>
   </div>`;
 
@@ -2211,15 +2252,6 @@ function renderGenre() {
     .sort((a, b) => b.winRate - a.winRate || b.total - a.total)
     .slice(0, 15);
 
-  // Featured-genre swimlanes
-  const swimlaneGenres = ['Time Travel', 'Horror', 'Military SF', 'Space Opera', 'Hard SF', 'Dystopian', 'First Contact', 'Cyberpunk'];
-  const swimlanes = swimlaneGenres.map(g => {
-    const books = DATA.books
-      .filter(b => (b.genres || []).includes(g))
-      .sort((a, b) => (b.year || 0) - (a.year || 0));
-    return { genre: g, books };
-  }).filter(s => s.books.length > 0);
-
   const renderBars = (rows) => rows.map(g => {
     const activeRead = PRIMARY_READER ? g[PRIMARY_READER] : 0;
     const pct = (HAS_READER && g.total > 0) ? (activeRead / g.total) * 100 : 0;
@@ -2306,38 +2338,11 @@ function renderGenre() {
       </div>
     </div>
 
-    <div class="progress-section">
-      <h2>Browse by genre</h2>
-      <p style="color: var(--muted); font-size: 13px;">Scroll any row sideways. Click a cover for details. Each row is sorted by publication year, newest first.</p>
-      ${swimlanes.map(lane => `
-        <div class="swimlane">
-          <div class="swimlane-header">
-            <h3>${escapeHtml(lane.genre)}</h3>
-            <span class="swimlane-count">${lane.books.length} books</span>
-          </div>
-          <div class="swimlane-strip">
-            ${lane.books.map(b => {
-              const cover = b.cover_url
-                ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
-                : `<span class="swimlane-placeholder">📖</span>`;
-              const isWinner = Object.values(b.awards || {}).includes('winner');
-              const readPill = HAS_READER && ACTIVE_READERS.some(r => readStatus(b, r.id) === 'read')
-                ? `<span class="swimlane-pill">read</span>` : '';
-              return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
-                <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}${readPill}</div>
-                <div class="swimlane-title">${escapeHtml(b.title)}</div>
-                <div class="swimlane-meta">${escapeHtml(b.authors[0] || '')} · ${b.year || ''}</div>
-              </div>`;
-            }).join('')}
-          </div>
-        </div>
-      `).join('')}
+    <div class="progress-section progress-genre-link">
+      <p style="color: var(--muted); font-size: 13px;">Want to browse books by genre? Swimlanes organized by Time Travel, Horror, Military SF, and more are on the <a href="#/magazines">Collections</a> tab.</p>
     </div>
   </div>`;
 
-  $$('.swimlane-card', root).forEach(el => {
-    el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
-  });
   $$('.status-tab', root).forEach(btn => {
     btn.addEventListener('click', () => {
       const newStatus = btn.dataset.status;

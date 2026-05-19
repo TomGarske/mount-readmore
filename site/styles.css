@@ -2646,10 +2646,20 @@ fieldset label input { margin-right: 8px; }
   .author-detail-bio { max-width: 100%; }
 }
 
-/* ── Magazines tab ───────────────────────────────────────────────────────── */
+/* ── Collections tab (formerly Magazines) ────────────────────────────────── */
 .magazines-page { padding-bottom: 64px; }
 .magazines-page h1 { font-size: 26px; margin-bottom: 6px; }
 .magazines-section { margin-top: 48px; }
+/* Section separators inside Collections */
+.collections-section-head {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 48px 0 10px;
+  padding-top: 36px;
+  border-top: 2px solid var(--border);
+  color: var(--text);
+}
+.collections-genre-section { margin-top: 0; }
 .magazines-intro {
   font-size: 15px;
   color: var(--text-2);
