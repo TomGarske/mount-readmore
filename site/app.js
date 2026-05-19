@@ -1567,14 +1567,38 @@ function renderStats() {
     .sort((a, b) => b.winRate - a.winRate || b.total - a.total)
     .slice(0, 15);
 
-  // ===== Swimlanes — featured genres =====
-  const swimlaneGenres = ['Time Travel', 'Horror', 'Military SF', 'Space Opera', 'Hard SF', 'Dystopian', 'First Contact', 'Cyberpunk'];
-  const swimlanes = swimlaneGenres.map(g => {
-    const books = DATA.books
-      .filter(b => (b.genres || []).includes(g))
-      .sort((a, b) => (b.year || 0) - (a.year || 0));
-    return { genre: g, books };
-  }).filter(s => s.books.length > 0);
+  // ===== Genre section — primary radar, subgenre fingerprint, vector table =====
+  const PRIMARY_RADAR_AXES = primaryList.map(g => g.name);
+  const primaryRadarValues = {};
+  for (const r of ACTIVE_READERS) {
+    primaryRadarValues[r.id] = PRIMARY_RADAR_AXES.map(g => {
+      const bucket = primaryBuckets[g] || { total: 0 };
+      return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
+    });
+  }
+  const primaryRadarHtml = (HAS_READER && PRIMARY_RADAR_AXES.length >= 3)
+    ? buildRadar(PRIMARY_RADAR_AXES, primaryRadarValues)
+    : '';
+
+  const subList = Object.entries(subBuckets)
+    .map(([name, s]) => ({ name, ...s }))
+    .sort((a, b) => b.total - a.total);
+
+  const renderBars = (rows) => rows.map(g => {
+    const activeRead = PRIMARY_READER ? g[PRIMARY_READER] : 0;
+    const pct = (HAS_READER && g.total > 0) ? (activeRead / g.total) * 100 : 0;
+    const sub = !HAS_READER ? ''
+      : (SOLO ? `${activeRead} read`
+              : ACTIVE_READERS.map(r => `${r.label} ${g[r.id]}`).join(' · '));
+    const countHtml = HAS_READER
+      ? `${activeRead} / ${g.total}<span style="color:var(--muted)"> · ${sub}</span>`
+      : `${g.total}`;
+    return `<div class="genre-row">
+      <div class="genre-name">${escapeHtml(g.name)}</div>
+      <div class="genre-bar"><div class="genre-bar-fill" style="width: ${pct}%;"></div></div>
+      <div class="genre-count">${countHtml}</div>
+    </div>`;
+  }).join('');
 
   // ===== Author-gender breakdown (winners only) =====
   // Per-reader read counts so all active readers show in the gender cards.
@@ -1794,7 +1818,7 @@ function renderStats() {
   const authorRows = renderAuthorRows(topAuthors, maxAppearances);
 
   root.innerHTML = `<div class="detail">
-    <h1>Home</h1>
+    <h1>Dashboard</h1>
     <div class="toggle-row">
       <div class="status-toggle" data-status="${STATUS}">
         <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
@@ -2010,8 +2034,59 @@ function renderStats() {
     </div>
 
 
+    <div class="genre-twoup">
+      <div class="genre-twoup-chart radar-hero">
+        <h2>By primary genre</h2>
+        <p style="color: var(--muted); font-size: 13px;">Top-level genre derived from Open Library subjects. "Blend" means the tags clearly point at both SF and Fantasy.</p>
+        ${primaryRadarHtml || '<p style="color:var(--muted); font-size:13px;">Sign in to see the per-reader fingerprint.</p>'}
+      </div>
+      <div class="genre-twoup-bars">
+        <div class="genre-bars">${renderBars(primaryList)}</div>
+      </div>
+    </div>
+
+    <div class="genre-twoup">
+      <div class="genre-twoup-chart radar-hero">
+        <h2>Subgenre fingerprint</h2>
+        <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre this reader has finished. Bigger / more even shape = broader coverage.</p>
+        ${HAS_READER ? radarHtml : '<p style="color:var(--muted); font-size:13px;">Sign in to see the per-reader fingerprint.</p>'}
+      </div>
+      <div class="genre-twoup-bars">
+        <p style="color: var(--muted); font-size: 13px; margin: 0 0 10px;">Specific subgenre tags. A book can carry multiple.</p>
+        <div class="genre-bars">${renderBars(subList)}</div>
+      </div>
+    </div>
+
+    <div class="progress-section">
+      <h2>Genre vectors — which combinations win most?</h2>
+      <p style="color: var(--muted); font-size: 13px;">Every book on the list (winners + nominees) bucketed by <strong>primary genre / subgenres</strong>. Win rate = winners ÷ (winners + nominees). Filtered to combos with at least 3 books and sorted by win rate.</p>
+      <div class="vector-table">
+        <div class="vector-row vector-head">
+          <div>Genre vector</div>
+          <div>Books</div>
+          <div>Winners</div>
+          <div>Nominees</div>
+          <div>Win rate</div>
+          <div>${HAS_READER ? ACTIVE_READERS.map(r => `${r.initial} read`).join(' · ') : ''}</div>
+        </div>
+        ${genreVectors.map(v => {
+          const winRatePct = Math.round(v.winRate * 100);
+          const nominees = v.total - v.winners;
+          const readCol = HAS_READER ? ACTIVE_READERS.map(r => `<span style="color:${r.colorVar}">${r.initial} ${v[r.id + 'Read']}</span>`).join(' · ') : '';
+          return `<div class="vector-row">
+            <div class="vector-combo">${escapeHtml(v.combo)}</div>
+            <div>${v.total}</div>
+            <div><span style="color: var(--winner)">${v.winners}</span></div>
+            <div><span style="color: var(--nominee)">${nominees}</span></div>
+            <div><span class="vector-pct">${winRatePct}%</span></div>
+            <div>${readCol}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
     <div class="progress-section progress-genre-link">
-      <p style="color: var(--muted); font-size: 13px;">Looking for genre breakdowns or the subgenre fingerprint? They're on the <a href="#/genre">Genre</a> tab. Award spotlights, magazine histories, and browse-by-genre swimlanes are on the <a href="#/magazines">Collections</a> tab.</p>
+      <p style="color: var(--muted); font-size: 13px;">Award spotlights, magazine histories, and browse-by-genre swimlanes are on the <a href="#/magazines">Collections</a> tab.</p>
     </div>
   </div>`;
 
@@ -2132,233 +2207,6 @@ const HUGO_2026_FINALISTS = {
     { title: 'What Stalks the Deep',  author: 'T. Kingfisher',           publisher: 'Nightfire; Titan UK' },
   ],
 };
-
-// ===== Genre tab =========================================================
-// Consolidates everything genre-related: primary breakdown, subgenre detail,
-// subgenre fingerprint radar, win-rate vector table, and the browse-by-genre
-// swimlanes. Operates on the full catalog (no Hugo-only/winner-only filter)
-// because genre is mostly useful as an at-a-glance view of the whole list.
-function renderGenre() {
-  const root = $('#view-genre');
-  if (!root) return;
-
-  const READER_KEYS = [...ALL_READER_IDS, 'me'];
-  const HAS_READER = ACTIVE_READERS.length > 0;
-  const PRIMARY_READER = HAS_READER ? (SOLO || ACTIVE_READERS[0].id) : null;
-
-  // Same Status + Award toggles as the Home page — bucket buttons drive the
-  // whole Genre tab, so swapping winners/nominees or hugo/nebula re-counts
-  // every chart and bar list below.
-  const STATUS = state.progressStatus;  // 'winner' | 'nominee' | 'both'
-  const AWARD = state.progressAward;    // 'both' | 'hugo' | 'nebula'
-  const inAwardScope = (b) => AWARD === 'both' || !!(b.awards || {})[AWARD];
-  const matchesStatusAward = (b) => {
-    if (!inAwardScope(b)) return false;
-    const entries = Object.entries(b.awards || {}).filter(([a]) => AWARD === 'both' || a === AWARD);
-    if (STATUS === 'both') return entries.length > 0;
-    return entries.some(([, s]) => s === STATUS);
-  };
-  const scopedBooks = DATA.books.filter(matchesStatusAward);
-  const allHugoCount = DATA.books.filter(b => (b.awards || {}).hugo).length;
-  const allNebulaCount = DATA.books.filter(b => (b.awards || {}).nebula).length;
-  const allWinnersCount = DATA.books.filter(b => Object.values(b.awards || {}).includes('winner')).length;
-  const allNomineesCount = DATA.books.filter(b => Object.values(b.awards || {}).includes('nominee')).length;
-
-  const emptyBucket = () => {
-    const b = { total: 0 };
-    for (const id of READER_KEYS) b[id] = 0;
-    return b;
-  };
-
-  // Subgenre buckets (a book can be tagged with multiple subgenres)
-  const subBuckets = {};
-  for (const b of scopedBooks) {
-    for (const g of (b.subgenres || [])) {
-      if (!subBuckets[g]) subBuckets[g] = emptyBucket();
-      subBuckets[g].total++;
-      for (const id of READER_KEYS) {
-        if (readStatus(b, id) === 'read') subBuckets[g][id]++;
-      }
-    }
-  }
-
-  // Primary genre buckets (single top-level label per book)
-  const primaryBuckets = {};
-  for (const b of scopedBooks) {
-    const p = b.primary_genre || 'Unclassified';
-    if (!primaryBuckets[p]) primaryBuckets[p] = emptyBucket();
-    primaryBuckets[p].total++;
-    for (const id of READER_KEYS) {
-      if (readStatus(b, id) === 'read') primaryBuckets[p][id]++;
-    }
-  }
-  const primaryList = ['Science Fiction', 'Fantasy', 'Blend', 'Horror', 'Unclassified']
-    .filter(p => primaryBuckets[p] && primaryBuckets[p].total > 0)
-    .map(p => ({ name: p, ...primaryBuckets[p] }));
-
-  // Primary-genre radar — axes are the primary genres themselves so the
-  // shape shows where each reader has put their time. Values = % of that
-  // genre's scoped books they've read.
-  const PRIMARY_RADAR_AXES = primaryList.map(g => g.name);
-  const primaryRadarValues = {};
-  for (const r of ACTIVE_READERS) {
-    primaryRadarValues[r.id] = PRIMARY_RADAR_AXES.map(g => {
-      const bucket = primaryBuckets[g] || { total: 0 };
-      return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
-    });
-  }
-  const primaryRadarHtml = (HAS_READER && PRIMARY_RADAR_AXES.length >= 3)
-    ? buildRadar(PRIMARY_RADAR_AXES, primaryRadarValues)
-    : '';
-
-  // Radar (subgenre fingerprint) — top 8 most-populated subgenres, dropping
-  // axes where every active reader is at zero so the chart isn't sparse.
-  let RADAR_AXES = Object.entries(subBuckets)
-    .sort((a, b) => b[1].total - a[1].total)
-    .slice(0, 8)
-    .map(([name]) => name);
-  RADAR_AXES = RADAR_AXES.filter(g => ACTIVE_READERS.some(r => (subBuckets[g][r.id] || 0) > 0));
-  const radarValues = {};
-  for (const r of ACTIVE_READERS) {
-    radarValues[r.id] = RADAR_AXES.map(g => {
-      const bucket = subBuckets[g] || { total: 0 };
-      return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
-    });
-  }
-  const radarHtml = RADAR_AXES.length >= 3
-    ? buildRadar(RADAR_AXES, radarValues)
-    : '<p style="color:var(--muted)">Not enough subgenre coverage to draw the radar yet.</p>';
-
-  // Genre vectors — primary genre + sorted subgenre combinations
-  const comboBuckets = {};
-  for (const b of DATA.books) {
-    const primary = b.primary_genre || '';
-    const subs = (b.subgenres || []).slice().sort();
-    if (!primary && subs.length === 0) continue;
-    const key = primary + (subs.length ? ' / ' + subs.join(' + ') : '');
-    if (!comboBuckets[key]) {
-      comboBuckets[key] = { total: 0, winners: 0 };
-      for (const id of READER_KEYS) comboBuckets[key][`${id}Read`] = 0;
-    }
-    comboBuckets[key].total++;
-    if (Object.values(b.awards || {}).includes('winner')) comboBuckets[key].winners++;
-    for (const id of READER_KEYS) {
-      if (readStatus(b, id) === 'read') comboBuckets[key][`${id}Read`]++;
-    }
-  }
-  const genreVectors = Object.entries(comboBuckets)
-    .filter(([, v]) => v.total >= 3)
-    .map(([combo, v]) => ({ combo, ...v, winRate: v.winners / v.total }))
-    .sort((a, b) => b.winRate - a.winRate || b.total - a.total)
-    .slice(0, 15);
-
-  const renderBars = (rows) => rows.map(g => {
-    const activeRead = PRIMARY_READER ? g[PRIMARY_READER] : 0;
-    const pct = (HAS_READER && g.total > 0) ? (activeRead / g.total) * 100 : 0;
-    const sub = !HAS_READER ? ''
-      : (SOLO ? `${activeRead} read`
-              : ACTIVE_READERS.map(r => `${r.label} ${g[r.id]}`).join(' · '));
-    const countHtml = HAS_READER
-      ? `${activeRead} / ${g.total}<span style="color:var(--muted)"> · ${sub}</span>`
-      : `${g.total}`;
-    return `<div class="genre-row">
-      <div class="genre-name">${escapeHtml(g.name)}</div>
-      <div class="genre-bar"><div class="genre-bar-fill" style="width: ${pct}%;"></div></div>
-      <div class="genre-count">${countHtml}</div>
-    </div>`;
-  }).join('');
-
-  const subList = Object.entries(subBuckets).map(([name, s]) => ({ name, ...s })).sort((a, b) => b.total - a.total);
-
-  root.innerHTML = `<div class="detail">
-    <h1>Genre</h1>
-    <p style="color: var(--muted); max-width: 720px;">Every book on the canonical Hugo + Nebula list, grouped by genre. Numbers show <strong>read / total</strong> for the active reader (if any). Toggle below to flip between winners, nominees, both — and across awards.</p>
-
-    <div class="toggle-row">
-      <div class="status-toggle" data-status="${STATUS}">
-        <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
-        <button class="status-tab${STATUS === 'nominee' ? ' active' : ''}" data-status="nominee">Nominees <span class="status-count">${allNomineesCount}</span></button>
-        <button class="status-tab${STATUS === 'both' ? ' active' : ''}" data-status="both">Both <span class="status-count">${DATA.books.length}</span></button>
-      </div>
-      <div class="status-toggle award-toggle" data-award="${AWARD}">
-        <button class="status-tab${AWARD === 'both' ? ' active' : ''}" data-award="both">Both <span class="status-count">${DATA.books.length}</span></button>
-        <button class="status-tab status-tab-hugo${AWARD === 'hugo' ? ' active' : ''}" data-award="hugo">Hugo <span class="status-count">${allHugoCount}</span></button>
-        <button class="status-tab status-tab-nebula${AWARD === 'nebula' ? ' active' : ''}" data-award="nebula">Nebula <span class="status-count">${allNebulaCount}</span></button>
-      </div>
-    </div>
-
-    <div class="genre-twoup">
-      <div class="genre-twoup-chart radar-hero">
-        <h2>By primary genre</h2>
-        <p style="color: var(--muted); font-size: 13px;">Top-level genre derived from Open Library subjects. "Blend" means the tags clearly point at both SF and Fantasy.</p>
-        ${primaryRadarHtml || '<p style="color:var(--muted); font-size:13px;">Sign in to see the per-reader fingerprint.</p>'}
-      </div>
-      <div class="genre-twoup-bars">
-        <div class="genre-bars">${renderBars(primaryList)}</div>
-      </div>
-    </div>
-
-    <div class="genre-twoup">
-      <div class="genre-twoup-chart radar-hero">
-        <h2>Subgenre fingerprint</h2>
-        <p style="color: var(--muted); font-size: 13px;">Each axis = a subgenre. Distance from center = % of that subgenre this reader has finished. Bigger / more even shape = broader coverage.</p>
-        ${HAS_READER ? radarHtml : '<p style="color:var(--muted); font-size:13px;">Sign in to see the per-reader fingerprint.</p>'}
-      </div>
-      <div class="genre-twoup-bars">
-        <p style="color: var(--muted); font-size: 13px; margin: 0 0 10px;">Specific subgenre tags. A book can carry multiple.</p>
-        <div class="genre-bars">${renderBars(subList)}</div>
-      </div>
-    </div>
-
-    <div class="progress-section">
-      <h2>Genre vectors — which combinations win most?</h2>
-      <p style="color: var(--muted); font-size: 13px;">Every book on the list (winners + nominees) bucketed by <strong>primary genre / subgenres</strong>. Win rate = winners ÷ (winners + nominees). Filtered to combos with at least 3 books and sorted by win rate.</p>
-      <div class="vector-table">
-        <div class="vector-row vector-head">
-          <div>Genre vector</div>
-          <div>Books</div>
-          <div>Winners</div>
-          <div>Nominees</div>
-          <div>Win rate</div>
-          <div>${HAS_READER ? ACTIVE_READERS.map(r => `${r.initial} read`).join(' · ') : ''}</div>
-        </div>
-        ${genreVectors.map(v => {
-          const winRatePct = Math.round(v.winRate * 100);
-          const nominees = v.total - v.winners;
-          const readCol = HAS_READER ? ACTIVE_READERS.map(r => `<span style="color:${r.colorVar}">${r.initial} ${v[r.id + 'Read']}</span>`).join(' · ') : '';
-          return `<div class="vector-row">
-            <div class="vector-combo">${escapeHtml(v.combo)}</div>
-            <div>${v.total}</div>
-            <div><span style="color: var(--winner)">${v.winners}</span></div>
-            <div><span style="color: var(--nominee)">${nominees}</span></div>
-            <div><span class="vector-pct">${winRatePct}%</span></div>
-            <div>${readCol}</div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>
-
-    <div class="progress-section progress-genre-link">
-      <p style="color: var(--muted); font-size: 13px;">Want to browse books by genre? Swimlanes organized by Time Travel, Horror, Military SF, and more are on the <a href="#/magazines">Collections</a> tab.</p>
-    </div>
-  </div>`;
-
-  $$('.status-tab', root).forEach(btn => {
-    btn.addEventListener('click', () => {
-      const newStatus = btn.dataset.status;
-      const newAward = btn.dataset.award;
-      if (newStatus && state.progressStatus !== newStatus) {
-        state.progressStatus = newStatus;
-        renderGenre();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (newAward && state.progressAward !== newAward) {
-        state.progressAward = newAward;
-        renderGenre();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
-  });
-}
 
 function findBook(title, author, category) {
   // Match the data.json record so we can pull cover_url, id, etc.
@@ -4243,12 +4091,6 @@ function _route() {
     if (qs) applyFilterParams(params);
     renderList();
     showView('list');
-    window.scrollTo(0, 0);
-    return;
-  }
-  if (path === '#/genre') {
-    renderGenre();
-    showView('genre');
     window.scrollTo(0, 0);
     return;
   }
