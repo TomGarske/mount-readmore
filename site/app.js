@@ -944,6 +944,55 @@ function renderAuthorDetail(name) {
   });
 }
 
+// ─── Magazines tab ─────────────────────────────────────────────────────────
+function renderMagazines() {
+  const root = $('#view-magazines');
+  if (!root) return;
+
+  const magBlocksHtml = MAGAZINE_DATA.map(mag => {
+    const magBooks = DATA.books.filter(b => MAGAZINE_CANONICAL[b.publisher] === mag.canonical);
+    if (magBooks.length === 0) return '';
+    magBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
+    const statusText = mag.status === 'defunct'
+      ? `${mag.founded}–${mag.defunct || 'unknown'} · defunct`
+      : `Founded ${mag.founded} · active`;
+    const siteLink = mag.url
+      ? `<a href="${escapeHtml(mag.url)}" target="_blank" rel="noopener" class="mag-ext-link">${escapeHtml(mag.short)} website ↗</a>`
+      : '';
+    const wikiLink = mag.wikiUrl
+      ? `<a href="${escapeHtml(mag.wikiUrl)}" target="_blank" rel="noopener" class="mag-ext-link">Wikipedia ↗</a>`
+      : '';
+    const editorialLink = mag.editorialUrl
+      ? `<a href="${escapeHtml(mag.editorialUrl)}" target="_blank" rel="noopener" class="mag-ext-link">Archive ↗</a>`
+      : '';
+    const winCount = magBooks.filter(b => Object.values(b.awards || {}).includes('winner')).length;
+    return `<div class="magazine-block">
+      <div class="magazine-meta">
+        <div class="magazine-title-row">
+          <h3 class="magazine-name">${escapeHtml(mag.canonical)}</h3>
+          <span class="magazine-status ${mag.status}">${statusText}</span>
+        </div>
+        <p class="magazine-description">${escapeHtml(mag.description)}</p>
+        <div class="magazine-links">
+          ${siteLink}${wikiLink}${editorialLink}
+          <span class="magazine-count">${magBooks.length} book${magBooks.length !== 1 ? 's' : ''} · ${winCount} win${winCount !== 1 ? 's' : ''}</span>
+        </div>
+      </div>
+      <div class="swimlane-strip">${magBooks.map(b => makeSwimlaneCard(b)).join('')}</div>
+    </div>`;
+  }).join('');
+
+  root.innerHTML = `<div class="detail magazines-page">
+    <h1>Magazines</h1>
+    <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet. Each swimlane shows all nominated and winning stories from that publication in our dataset.</p>
+    ${magBlocksHtml}
+  </div>`;
+
+  $$('.swimlane-card', root).forEach(el =>
+    el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; })
+  );
+}
+
 // Nightstand visual — books rendered as vertical spines stacked side by
 // side on a "wooden" surface. Each spine is a colored rectangle with the
 // title written vertically along it; clicking opens the book detail.
@@ -1728,38 +1777,40 @@ function renderStats() {
       <div class="authors-list" id="authors-list">${authorRows}</div>
     </div>
 
-    <div class="progress-section era-coverage-section">
-      <h2>Coverage by era</h2>
-      <p style="color: var(--muted); font-size: 13px;">Bar width = ${SUBSET} that decade${HAS_READER ? ' · filled portion = ' + escapeHtml(READER_CONFIG[PRIMARY_READER].label) + ' read' : ''}.</p>
-      <div class="era-rows">${eraBarsHtml}</div>
-    </div>
+    <div class="era-twoup">
+      <div class="progress-section era-coverage-section">
+        <h2>Coverage by era</h2>
+        <p style="color: var(--muted); font-size: 13px;">Bar width = ${SUBSET} that decade${HAS_READER ? ' · filled portion = ' + escapeHtml(READER_CONFIG[PRIMARY_READER].label) + ' read' : ''}.</p>
+        <div class="era-rows">${eraBarsHtml}</div>
+      </div>
 
-    ${HAS_READER ? (() => {
-      // Influence by era — spider chart over DATA.books (winners + nominees,
-      // not the SUBSET). Each axis = a decade with at least 3 books; value =
-      // share of that decade the reader has finished.
-      const byDecade = bucketBooksByDecade(DATA.books);
-      const decades = eraRadarAxes(byDecade);
-      if (decades.length < 3) return '';
-      const axes = decades.map(eraAxisLabel);
-      const values = {};
-      for (const r of ACTIVE_READERS) {
-        values[r.id] = eraReaderValues(decades, byDecade, (b) => readStatus(b, r.id) === 'read');
-      }
-      const mrd = ACTIVE_READERS
-        .map(r => {
-          const m = mostReadDecade(DATA.books, (b) => readStatus(b, r.id) === 'read');
-          return m ? `<span style="color:${r.colorVar}"><strong>${r.label}</strong> · most-read ${eraAxisLabel(m.decade)} (${m.count})</span>` : '';
-        })
-        .filter(Boolean)
-        .join(' &nbsp;·&nbsp; ');
-      return `<div class="progress-section radar-hero">
-        <h2>Influence by era</h2>
-        <p style="color: var(--muted); font-size: 13px;">Each axis = a decade. Distance from center = % of that decade's winners + finalists this reader has read.</p>
-        ${buildRadar(axes, values)}
-        ${mrd ? `<p class="era-radar-stats">${mrd}</p>` : ''}
-      </div>`;
-    })() : ''}
+      ${HAS_READER ? (() => {
+        // Influence by era — spider chart over DATA.books (winners + nominees,
+        // not the SUBSET). Each axis = a decade with at least 3 books; value =
+        // share of that decade the reader has finished.
+        const byDecade = bucketBooksByDecade(DATA.books);
+        const decades = eraRadarAxes(byDecade);
+        if (decades.length < 3) return '';
+        const axes = decades.map(eraAxisLabel);
+        const values = {};
+        for (const r of ACTIVE_READERS) {
+          values[r.id] = eraReaderValues(decades, byDecade, (b) => readStatus(b, r.id) === 'read');
+        }
+        const mrd = ACTIVE_READERS
+          .map(r => {
+            const m = mostReadDecade(DATA.books, (b) => readStatus(b, r.id) === 'read');
+            return m ? `<span style="color:${r.colorVar}"><strong>${r.label}</strong> · most-read ${eraAxisLabel(m.decade)} (${m.count})</span>` : '';
+          })
+          .filter(Boolean)
+          .join(' &nbsp;·&nbsp; ');
+        return `<div class="progress-section radar-hero">
+          <h2>Influence by era</h2>
+          <p style="color: var(--muted); font-size: 13px;">Each axis = a decade. Distance from center = % of that decade's winners + finalists this reader has read.</p>
+          ${buildRadar(axes, values)}
+          ${mrd ? `<p class="era-radar-stats">${mrd}</p>` : ''}
+        </div>`;
+      })() : ''}
+    </div>
 
     ${comparisonHtml}
 
@@ -1852,44 +1903,7 @@ function renderStats() {
 
 
     <div class="progress-section progress-genre-link">
-      <p style="color: var(--muted); font-size: 13px;">Looking for genre breakdowns, the subgenre fingerprint, or the genre-vector win-rate table? They're on the <a href="#/genre">Genre</a> tab.</p>
-    </div>
-
-    <div class="progress-section magazines-section">
-      <h2>Magazines</h2>
-      <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet. Each swimlane below shows all nominated and winning stories from that publication in our dataset.</p>
-      ${MAGAZINE_DATA.map(mag => {
-        const magBooks = DATA.books.filter(b => MAGAZINE_CANONICAL[b.publisher] === mag.canonical);
-        if (magBooks.length === 0) return '';
-        magBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
-        const statusText = mag.status === 'defunct'
-          ? `${mag.founded}–${mag.defunct || 'unknown'} · defunct`
-          : `Founded ${mag.founded} · active`;
-        const siteLink = mag.url
-          ? `<a href="${escapeHtml(mag.url)}" target="_blank" rel="noopener" class="mag-ext-link">${escapeHtml(mag.short)} website ↗</a>`
-          : '';
-        const wikiLink = mag.wikiUrl
-          ? `<a href="${escapeHtml(mag.wikiUrl)}" target="_blank" rel="noopener" class="mag-ext-link">Wikipedia ↗</a>`
-          : '';
-        const editorialLink = mag.editorialUrl
-          ? `<a href="${escapeHtml(mag.editorialUrl)}" target="_blank" rel="noopener" class="mag-ext-link">Archive ↗</a>`
-          : '';
-        const winCount = magBooks.filter(b => Object.values(b.awards || {}).includes('winner')).length;
-        return `<div class="magazine-block">
-          <div class="magazine-meta">
-            <div class="magazine-title-row">
-              <h3 class="magazine-name">${escapeHtml(mag.canonical)}</h3>
-              <span class="magazine-status ${mag.status}">${statusText}</span>
-            </div>
-            <p class="magazine-description">${escapeHtml(mag.description)}</p>
-            <div class="magazine-links">
-              ${siteLink}${wikiLink}${editorialLink}
-              <span class="magazine-count">${magBooks.length} book${magBooks.length !== 1 ? 's' : ''} · ${winCount} win${winCount !== 1 ? 's' : ''}</span>
-            </div>
-          </div>
-          <div class="swimlane-strip">${magBooks.map(b => makeSwimlaneCard(b)).join('')}</div>
-        </div>`;
-      }).join('')}
+      <p style="color: var(--muted); font-size: 13px;">Looking for genre breakdowns, the subgenre fingerprint, or the genre-vector win-rate table? They're on the <a href="#/genre">Genre</a> tab. Magazine histories and story swimlanes are on the <a href="#/magazines">Magazines</a> tab.</p>
     </div>
   </div>`;
 
@@ -4164,6 +4178,12 @@ function _route() {
   if (path === '#/nebula2026') {
     renderNebula2026();
     showView('nebula2026');
+    window.scrollTo(0, 0);
+    return;
+  }
+  if (path === '#/magazines') {
+    renderMagazines();
+    showView('magazines');
     window.scrollTo(0, 0);
     return;
   }

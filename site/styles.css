@@ -1025,9 +1025,19 @@ a:hover { text-decoration: underline; }
   color: var(--text);
 }
 
-/* Era coverage — vertical list of horizontal bars (one row per decade).
-   Half-width on desktop; full-width below 720px. */
-.era-coverage-section { max-width: 540px; }
+/* Era coverage + radar — side-by-side on desktop. */
+.era-twoup {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-top: 0;
+}
+.era-twoup .progress-section {
+  flex: 1 1 320px;
+  margin-top: 36px;
+}
+.era-coverage-section { max-width: none; }
 .era-rows {
   display: flex;
   flex-direction: column;
@@ -2536,6 +2546,9 @@ fieldset label input { margin-right: 8px; }
 }
 
 /* ── Magazines section (home page) ───────────────────────────────────────── */
+/* Magazines tab — standalone page */
+.magazines-page { padding-bottom: 48px; }
+.magazines-page h1 { font-size: 24px; margin-bottom: 8px; }
 .magazines-section { margin-top: 48px; }
 .magazines-intro {
   font-size: 14px;
