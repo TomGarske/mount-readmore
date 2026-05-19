@@ -2136,6 +2136,52 @@ function renderStats() {
       </div>
     </div>
 
+    ${(() => {
+      const auth = window.MR_AUTH;
+      if (!auth?.user) return '';
+      const overall = auth.leaderboardOverall || [];
+      const byAward = auth.leaderboardByAward || [];
+      const meHandle = auth.profile?.handle || null;
+      const myUserId = auth.user?.id || null;
+      const hugoByUser = {};
+      const nebulaByUser = {};
+      for (const r of byAward) {
+        if (r.award === 'hugo') hugoByUser[r.user_id] = r.read_count;
+        else if (r.award === 'nebula') nebulaByUser[r.user_id] = r.read_count;
+      }
+      const totalLabel = overall[0]?.total_books ?? 0;
+      const meHandleSlug = meHandle ? encodeURIComponent(meHandle) : 'me';
+      const rowHtml = overall.map(r => {
+        const isMeRow = r.user_id === myUserId;
+        const compareTag = !isMeRow
+          ? `<a class="lb-compare" href="#/stats?u=${meHandleSlug}&u=${encodeURIComponent(r.handle)}">Compare →</a>`
+          : `<span class="lb-me">you</span>`;
+        return `<div class="lb-row${isMeRow ? ' lb-row-me' : ''}">
+          <div class="lb-rank">#${r.rank}</div>
+          <div class="lb-handle"><a href="#/u/${escapeHtml(r.handle)}">@${escapeHtml(r.handle)}</a></div>
+          <div class="lb-stat"><strong>${r.read_count}</strong> <span class="lb-of">/ ${r.total_books}</span></div>
+          <div class="lb-stat-sub" style="color:var(--sf)"><strong>${hugoByUser[r.user_id] ?? 0}</strong> Hugo</div>
+          <div class="lb-stat-sub" style="color:var(--fantasy)"><strong>${nebulaByUser[r.user_id] ?? 0}</strong> Nebula</div>
+          <div class="lb-pct">${r.pct ?? 0}%</div>
+          <div class="lb-action">${compareTag}</div>
+        </div>`;
+      }).join('');
+      const onLeaderboard = auth.profile?.on_leaderboard;
+      return `<div class="progress-section" id="stats-friends-section">
+        <h2>Friends</h2>
+        <p style="color:var(--muted);font-size:13px;">You and your friends, ranked by reads from the ${totalLabel} canonical books. Tap Compare for a head-to-head.</p>
+        ${!onLeaderboard ? `<p style="color:var(--muted);font-size:13px;">You're not on the leaderboard yet. <a href="#/settings">Opt in from Settings</a>.</p>` : ''}
+        <form id="stats-friends-add-form" class="friends-add-form">
+          <input type="text" id="stats-friends-add-handle" placeholder="@handle to add" autocomplete="off">
+          <button type="submit" class="mr-btn-primary">Add friend</button>
+          <span id="stats-friends-add-status" class="settings-inline-status"></span>
+        </form>
+        ${overall.length > 0
+          ? `<div class="lb-table">${rowHtml}</div>`
+          : `<p style="color:var(--muted);">No friends yet — add one above.</p>`}
+      </div>`;
+    })()}
+
   </div>`;
 
   // Dashboard compare widget
@@ -2145,10 +2191,31 @@ function renderStats() {
     const handle = (dashCompareInput?.value || '').trim().replace(/^@/, '');
     if (!handle) return;
     const me = window.MR_AUTH?.profile?.handle || 'me';
-    location.hash = `#/compare?u=${encodeURIComponent(me)}&u=${encodeURIComponent(handle)}`;
+    location.hash = `#/stats?u=${encodeURIComponent(me)}&u=${encodeURIComponent(handle)}`;
   };
   dashCompareBtn?.addEventListener('click', doCompare);
   dashCompareInput?.addEventListener('keydown', e => { if (e.key === 'Enter') doCompare(); });
+
+  // Friends add-form in the stats friends section
+  const statsFriendsForm = document.getElementById('stats-friends-add-form');
+  if (statsFriendsForm) {
+    const addStatus = document.getElementById('stats-friends-add-status');
+    statsFriendsForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('stats-friends-add-handle');
+      const v = (input?.value || '').trim();
+      if (!v) return;
+      if (addStatus) { addStatus.textContent = 'Adding…'; addStatus.className = 'settings-inline-status'; }
+      try {
+        const target = await window.MR_AUTH.addFriendByHandle(v);
+        if (addStatus) { addStatus.textContent = `✓ Added @${target.handle}`; addStatus.className = 'settings-inline-status success'; }
+        if (input) input.value = '';
+        setTimeout(() => renderStats(), 200);
+      } catch (err) {
+        if (addStatus) { addStatus.textContent = err.message || String(err); addStatus.className = 'settings-inline-status error'; }
+      }
+    });
+  }
 
   $$('.recent-read, .swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
@@ -2839,7 +2906,7 @@ async function renderFriends() {
   const rowHtml = rows.map(r => {
     const isMe = r.user_id === myUserId;
     const canCompare = isAuthed && !isMe;
-    const compareHref = canCompare ? `#/compare?u=${myHandleSlug}&u=${encodeURIComponent(r.handle)}` : '#';
+    const compareHref = canCompare ? `#/stats?u=${myHandleSlug}&u=${encodeURIComponent(r.handle)}` : '#';
     const compareTag = canCompare
       ? `<a class="lb-compare" href="${compareHref}">Compare →</a>`
       : isMe
@@ -3450,21 +3517,20 @@ async function animateAndCommit(card, dir, status) {
   card.style.transition = 'transform 280ms ease-out, opacity 280ms ease-out';
   card.style.transform = off;
   card.style.opacity = '0';
+  // Record in history for undo (optimistic — assume save succeeds).
   const prevStatus = auth.statusFor(bookId);
-  // Commit to DB optimistically — UI advances regardless of result; on failure
-  // we revert via the history-replay path.
-  try {
-    await auth.setBookStatus(bookId, status);
-    __discoverState.history.push({ bookId, prevStatus });
-    if (__discoverState.history.length > 50) __discoverState.history.shift();
-  } catch (err) {
-    console.error('setBookStatus failed in Discover:', err);
-    alert('Save failed: ' + (err.message || err));
-  }
+  __discoverState.history.push({ bookId, prevStatus });
+  if (__discoverState.history.length > 50) __discoverState.history.shift();
+  // Optimistically advance the queue so the UI moves immediately — don't
+  // block on the DB round-trip. On network failure the book reappears on refresh.
   __discoverState.skipped.delete(bookId);
-  __discoverState.queue = buildDiscoverQueue();
-  // Small delay so the user sees the fly-off before the next card slides in.
+  __discoverState.queue = __discoverState.queue.filter(id => id !== bookId);
+  // Show next card after animation — fire before the save resolves.
   setTimeout(() => drawDiscover(), 220);
+  // Background save — silent on failure so rapid swiping isn't interrupted.
+  auth.setBookStatus(bookId, status).catch(err => {
+    console.error('setBookStatus failed in Discover:', err);
+  });
 }
 
 // ===== Settings page ==================================================
@@ -3869,11 +3935,11 @@ async function renderProfile(handle) {
 
   const myHandle = window.MR_AUTH?.profile?.handle;
   const compareBtn = (meId && !isMe)
-    ? `<a class="mr-btn-primary" href="#/compare?u=${encodeURIComponent(myHandle || 'me')}&u=${encodeURIComponent(profile.handle)}">Compare with me →</a>`
+    ? `<a class="mr-btn-primary" href="#/stats?u=${encodeURIComponent(myHandle || 'me')}&u=${encodeURIComponent(profile.handle)}">Compare with me →</a>`
     : '';
   const friendBtn = (meId && !isMe)
     ? (alreadyFriends
-        ? `<span class="profile-friend-tag">✓ Friends</span>`
+        ? `<button type="button" class="mr-btn-ghost mr-btn-unfriend" id="profile-remove-friend">✓ Friends · Remove</button>`
         : `<button type="button" class="mr-btn-ghost" id="profile-add-friend">+ Add as friend</button>`)
     : '';
   const signInBtn = (!meId)
@@ -3952,7 +4018,7 @@ async function renderProfile(handle) {
       const rowHtml = overall.map(r => {
         const isMeRow = r.user_id === meId;
         const compareTag = !isMeRow
-          ? `<a class="lb-compare" href="#/compare?u=${encodeURIComponent(myHandle || 'me')}&u=${encodeURIComponent(r.handle)}">Compare →</a>`
+          ? `<a class="lb-compare" href="#/stats?u=${encodeURIComponent(myHandle || 'me')}&u=${encodeURIComponent(r.handle)}">Compare →</a>`
           : `<span class="lb-me">you</span>`;
         const hCount = hugoByUser[r.user_id] ?? 0;
         const nCount = nebulaByUser[r.user_id] ?? 0;
@@ -3988,6 +4054,15 @@ async function renderProfile(handle) {
   $('#profile-add-friend')?.addEventListener('click', async () => {
     try {
       await window.MR_AUTH.addFriendByHandle(profile.handle);
+      renderProfile(handle);
+    } catch (err) {
+      alert(err.message || String(err));
+    }
+  });
+  $('#profile-remove-friend')?.addEventListener('click', async () => {
+    if (!confirm(`Remove @${profile.handle} as a friend?`)) return;
+    try {
+      await window.MR_AUTH.removeFriend(profile.id);
       renderProfile(handle);
     } catch (err) {
       alert(err.message || String(err));
@@ -4228,18 +4303,36 @@ function _route() {
     location.hash = '#/collections';
     return;
   }
-  if (path === '#/compare') {
+  // Canonical stats + compare route.
+  // #/stats                  → stats for current user
+  // #/stats?u=tom            → same (u= is the named identity in the URL)
+  // #/stats?u=tom&u=Saffron  → head-to-head compare (renders into view-stats)
+  if (path === '#/stats') {
     const params = new URLSearchParams(qs || '');
-    // Head-to-head requires two u= values. Without them this used to render
-    // a friend-picker, which is now part of the Friends page — redirect.
-    const hasPair = params.getAll('u').length + params.getAll('reader').length + params.getAll('readers').length >= 2;
-    if (!hasPair) {
-      location.hash = '#/';
-      return;
+    const uVals = params.getAll('u');
+    if (uVals.length >= 2) {
+      renderCompare(params);
+    } else {
+      // If u= names a known hardcoded reader that isn't the current user,
+      // temporarily point SOLO + ACTIVE_READERS at them so renderStats
+      // shows that reader's data (e.g. #/stats?u=westdac).
+      const uHandle = (uVals[0] || '').toLowerCase();
+      const myHandle = (window.MR_AUTH?.profile?.handle || '').toLowerCase();
+      if (uHandle && ALL_READER_IDS.includes(uHandle) && uHandle !== myHandle) {
+        SOLO = uHandle;
+        ACTIVE_READERS = [READER_CONFIG[uHandle]].filter(Boolean);
+      } else {
+        recomputeReaders();
+      }
+      renderStats();
     }
-    renderCompare(params);
     showView('stats');
     window.scrollTo(0, 0);
+    return;
+  }
+  // Legacy #/compare → rewrite to #/stats preserving u= params
+  if (path === '#/compare') {
+    location.hash = '#/stats' + (qs ? '?' + qs : '');
     return;
   }
   if (path === '#/leaderboard') {
@@ -4310,6 +4403,12 @@ function _route() {
     renderProfile(handle);
     showView('profile');
     window.scrollTo(0, 0);
+    return;
+  }
+  // When signed in, give the home route a canonical identity URL.
+  const myHandleFallback = window.MR_AUTH?.profile?.handle;
+  if (myHandleFallback && path === '#/') {
+    location.hash = `#/stats?u=${encodeURIComponent(myHandleFallback)}`;
     return;
   }
   renderStats();
@@ -4444,7 +4543,7 @@ function renderAuthPill() {
   const progressLink = document.querySelector('a[data-route="stats"]');
   const handle = window.MR_AUTH?.profile?.handle;
   if (progressLink) {
-    progressLink.setAttribute('href', handle ? `#/u/${encodeURIComponent(handle)}` : '#/');
+    progressLink.setAttribute('href', handle ? `#/stats?u=${encodeURIComponent(handle)}` : '#/stats');
   }
   // Hide Friends + Discover nav links when signed out — both pages are
   // sign-in-only and the route handlers redirect anon visitors to Home.

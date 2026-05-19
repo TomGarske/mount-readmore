@@ -1586,6 +1586,15 @@ a:hover { text-decoration: underline; }
   border-radius: 999px;
   background: transparent;
 }
+.mr-btn-unfriend {
+  color: var(--muted);
+  border-color: var(--border);
+  font-size: 13px;
+}
+.mr-btn-unfriend:hover {
+  color: var(--sf);
+  border-color: var(--sf);
+}
 
 /* Auth admin gear */
 .auth-admin {
