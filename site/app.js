@@ -558,13 +558,15 @@ function renderList() {
   const listView = document.getElementById('view-list');
   if (listView) listView.classList.toggle('mode-authors', state.searchMode === 'authors');
   if (state.searchMode === 'authors') {
-    // Hide book-specific result controls
+    // Hide book-specific result controls, keep filter sidebar visible
     const rcEl = document.getElementById('result-count');
     const sortEl = document.getElementById('sort');
     if (rcEl) rcEl.style.display = 'none';
     if (sortEl) sortEl.style.display = 'none';
-    // Render authors content into the grid container
-    renderAuthors(document.getElementById('grid'));
+    // Build set of book IDs that pass the current filters so authors mode
+    // stays in sync with whatever filters are checked in the sidebar.
+    const filteredIds = new Set(DATA.books.filter(matchesFilters).map(b => b.id));
+    renderAuthors(document.getElementById('grid'), filteredIds);
     return;
   }
   // Restore book controls (in case we switched back from authors mode)
@@ -811,13 +813,15 @@ async function fetchWikiAuthor(name) {
 // When called without a root, renders into #view-authors (standalone authors tab).
 // When called with a DOM element (e.g. #grid), renders authors into that container
 // so the Search view can show authors inline without a separate full-page view.
-function renderAuthors(root = null) {
+// allowedBookIds: optional Set of book IDs to restrict author stats to (for filter sync).
+function renderAuthors(root = null, allowedBookIds = null) {
   root = root || $('#view-authors');
   if (!root) return;
 
-  // Build per-author stats from DATA.books
+  // Build per-author stats from DATA.books (optionally filtered)
   const map = new Map();
   for (const b of DATA.books) {
+    if (allowedBookIds && !allowedBookIds.has(b.id)) continue;
     const isWin = Object.values(b.awards || {}).includes('winner');
     const isNom = !isWin && Object.keys(b.awards || {}).length > 0;
     for (const name of (b.authors || [])) {
@@ -1240,7 +1244,7 @@ function featuredBanner(opts) {
         </div>
       </div>`;
     }).join('');
-    return `<div class="featured-category-label">${escapeHtml(rowLabel)}</div>
+    return `<div class="featured-category-label">${escapeHtml(rowLabel)} <span class="featured-category-count">· ${books.length}</span></div>
       <div class="featured-cover-strip">${covers}</div>`;
   };
 
@@ -1862,9 +1866,10 @@ function renderStats() {
   </div>`;
 
   root.innerHTML = `<div class="detail">
-    <h1>Dashboard</h1>
+    <h1>Stats</h1>
     <p class="dashboard-intro"><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
     ${compareWidgetHtml}
+    ${!HAS_READER ? `<p class="dashboard-sort-cta">New here? Use the <a href="#/discover"><strong>Sort</strong></a> tab to rapidly label every book as Read, Nightstand, or Skip — builds your reading list in minutes.</p>` : ''}
     <div class="toggle-row">
       <div class="status-toggle" data-status="${STATUS}">
         <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
@@ -2397,7 +2402,7 @@ async function loadCompareSide(id, colorIdx = 0) {
 }
 
 async function renderCompare(params) {
-  const root = $('#view-compare');
+  const root = $('#view-stats');
   if (!root) return;
   root.innerHTML = `<div class="detail"><h1>Compare reads</h1><p style="color: var(--muted);">Loading…</p></div>`;
   // Wait for the initial auth bootstrap so MR_AUTH.user is settled before we
@@ -2947,10 +2952,18 @@ let __discoverState = null;
 function buildDiscoverQueue() {
   const auth = window.MR_AUTH;
   if (!auth || !auth.user) return [];
+  const dStatus = __discoverState?.status || 'winner';
+  const dAward  = __discoverState?.award  || 'both';
   // Unrated only — anything in user_books (read/nightstand/started) is
   // already categorized and shouldn't reappear in the swipe queue.
   return DATA.books
-    .filter(b => auth.statusFor(b.id) === null)
+    .filter(b => {
+      if (auth.statusFor(b.id) !== null) return false;
+      if (dAward !== 'both' && !(b.awards || {})[dAward]) return false;
+      if (dStatus === 'winner') return Object.values(b.awards || {}).includes('winner');
+      if (dStatus === 'nominee') return !Object.values(b.awards || {}).includes('winner') && Object.keys(b.awards || {}).length > 0;
+      return true;
+    })
     .sort((a, b) => {
       const aWin = Object.values(a.awards || {}).includes('winner') ? 1 : 0;
       const bWin = Object.values(b.awards || {}).includes('winner') ? 1 : 0;
@@ -3095,21 +3108,20 @@ function awardFeaturedBannersHtml() {
         finalists: NEBULA_2026_FINALISTS,
         href: '#/nebula2026',
       })}
-    </div>
-    <p class="awards-tracks-note">Readmore tracks <strong>winners + finalists</strong> across both. A book appearing on either list is on Readmore.</p>`;
+    </div>`;
 }
 
 async function renderDiscover() {
   const root = $('#view-discover');
   if (!root) return;
-  root.innerHTML = `<div class="detail"><h1>Discover</h1><p style="color: var(--muted);">Loading…</p></div>`;
+  root.innerHTML = `<div class="detail"><h1>Sort</h1><p style="color: var(--muted);">Loading…</p></div>`;
   try {
     await Promise.race([
       window.MR_AUTH?.ready,
       new Promise((_, rej) => setTimeout(() => rej(new Error('Auth bootstrap timed out')), 10000)),
     ]);
   } catch (err) {
-    root.innerHTML = `<div class="detail"><h1>Discover</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
+    root.innerHTML = `<div class="detail"><h1>Sort</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
     return;
   }
 
@@ -3123,11 +3135,14 @@ async function renderDiscover() {
 
   if (!__discoverState) {
     __discoverState = {
-      queue: buildDiscoverQueue(),
+      queue: [],
       history: [],
       skipped: new Set(),
       tab: 'cover',
+      status: 'winner',
+      award: 'both',
     };
+    __discoverState.queue = buildDiscoverQueue();
   }
   drawDiscover();
 }
@@ -3168,7 +3183,7 @@ function drawDiscover() {
 
   if (!book) {
     root.innerHTML = `<div class="detail discover-page">
-      <h1>Discover</h1>
+      <h1>Sort</h1>
       ${statsRow}
       <div class="discover-empty">
         <p style="font-size: 18px;"><strong>You've labeled every book.</strong></p>
@@ -3242,8 +3257,29 @@ function drawDiscover() {
   };
 
   root.innerHTML = `<div class="detail discover-page">
-    <h1>Discover</h1>
-    ${discoverIntroHtml()}
+    <h1>Sort</h1>
+    <p class="discover-instructions">Rapidly label every book on the list. <strong>Swipe left</strong> (or ✓ Read) to mark as Read · <strong>Swipe right</strong> (or ○ Not read) to skip · <strong>Swipe up</strong> (or 📖 Nightstand) to queue it. Tap Cover / About / Author to learn more before deciding.</p>
+    ${(() => {
+      const dStatus = __discoverState.status || 'winner';
+      const dAward  = __discoverState.award  || 'both';
+      const allW = DATA.books.filter(b => Object.values(b.awards||{}).includes('winner')).length;
+      const allN = DATA.books.filter(b => !Object.values(b.awards||{}).includes('winner') && Object.keys(b.awards||{}).length > 0).length;
+      const allB = allW + allN;
+      const hugoAll = DATA.books.filter(b => (b.awards||{}).hugo).length;
+      const nebAll  = DATA.books.filter(b => (b.awards||{}).nebula).length;
+      return `<div class="discover-toggles">
+        <div class="status-toggle" data-discover-status="${dStatus}">
+          <button class="status-tab${dStatus==='winner'?' active':''}" data-discover-status="winner">Winners <span class="status-count">${allW}</span></button>
+          <button class="status-tab${dStatus==='nominee'?' active':''}" data-discover-status="nominee">Nominees <span class="status-count">${allN}</span></button>
+          <button class="status-tab${dStatus==='both'?' active':''}" data-discover-status="both">Both <span class="status-count">${allB}</span></button>
+        </div>
+        <div class="status-toggle award-toggle" data-discover-award="${dAward}">
+          <button class="status-tab${dAward==='both'?' active':''}" data-discover-award="both">Both <span class="status-count">${allB}</span></button>
+          <button class="status-tab status-tab-hugo${dAward==='hugo'?' active':''}" data-discover-award="hugo">Hugo <span class="status-count">${hugoAll}</span></button>
+          <button class="status-tab status-tab-nebula${dAward==='nebula'?' active':''}" data-discover-award="nebula">Nebula <span class="status-count">${nebAll}</span></button>
+        </div>
+      </div>`;
+    })()}
     ${statsRow}
     <div class="discover-stage">
       <div class="discover-side-controls">
@@ -3285,7 +3321,29 @@ function wireDiscover() {
   const root = $('#view-discover');
   if (!root) return;
 
-  // Tabs
+  // Status/award toggle buttons (Winners / Nominees / Both, Hugo / Nebula)
+  root.querySelectorAll('[data-discover-status]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const val = btn.dataset.discoverStatus;
+      if (!val || val === __discoverState.status) return;
+      __discoverState.status = val;
+      __discoverState.skipped = new Set();
+      __discoverState.queue = buildDiscoverQueue();
+      drawDiscover();
+    });
+  });
+  root.querySelectorAll('[data-discover-award]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const val = btn.dataset.discoverAward;
+      if (!val || val === __discoverState.award) return;
+      __discoverState.award = val;
+      __discoverState.skipped = new Set();
+      __discoverState.queue = buildDiscoverQueue();
+      drawDiscover();
+    });
+  });
+
+  // Card tabs (Cover / About / Author)
   root.querySelectorAll('.discover-tab').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -3352,9 +3410,9 @@ function wireDiscover() {
     const leftHint = card.querySelector('.discover-swipe-hint-left');
     const rightHint = card.querySelector('.discover-swipe-hint-right');
     const upHint = card.querySelector('.discover-swipe-hint-up');
-    leftHint.style.opacity = (dx < 0 && absX > absY) ? Math.min(1, absX / 120) : 0;
-    rightHint.style.opacity = (dx > 0 && absX > absY) ? Math.min(1, absX / 120) : 0;
-    upHint.style.opacity = (dy < 0 && absY >= absX) ? Math.min(1, absY / 120) : 0;
+    if (leftHint) leftHint.style.opacity = (dx < 0 && absX > absY) ? Math.min(1, absX / 120) : 0;
+    if (rightHint) rightHint.style.opacity = (dx > 0 && absX > absY) ? Math.min(1, absX / 120) : 0;
+    if (upHint) upHint.style.opacity = (dy < 0 && absY >= absX) ? Math.min(1, absY / 120) : 0;
   };
   const onUp = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
@@ -4175,7 +4233,7 @@ function _route() {
       return;
     }
     renderCompare(params);
-    showView('compare');
+    showView('stats');
     window.scrollTo(0, 0);
     return;
   }
@@ -4197,7 +4255,7 @@ function _route() {
     renderDiscover().catch(err => {
       console.error('renderDiscover threw:', err);
       const root = document.getElementById('view-discover');
-      if (root) root.innerHTML = `<div class="detail"><h1>Discover</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
+      if (root) root.innerHTML = `<div class="detail"><h1>Sort</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
     });
     return;
   }
