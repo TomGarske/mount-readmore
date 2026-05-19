@@ -566,25 +566,12 @@ a:hover { text-decoration: underline; }
   padding-top: 14px;
 }
 .featured-banner.featured-hugo .featured-how-to-vote { border-top-color: rgba(0,0,0,0.08); }
-.featured-htv-summary {
+.featured-htv-label {
   font-size: 13px;
   font-weight: 700;
-  cursor: pointer;
-  list-style: none;
-  display: flex;
-  align-items: center;
-  gap: 6px;
   color: var(--text);
-  user-select: none;
+  margin-bottom: 2px;
 }
-.featured-htv-summary::-webkit-details-marker { display: none; }
-.featured-htv-summary::before {
-  content: '▶';
-  font-size: 9px;
-  transition: transform 0.15s;
-  display: inline-block;
-}
-details[open] .featured-htv-summary::before { transform: rotate(90deg); }
 .featured-htv-body {
   margin-top: 14px;
   padding: 18px 20px;

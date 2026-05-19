@@ -1215,10 +1215,10 @@ function featuredBanner(opts) {
       <div class="featured-cover-strip">${covers}</div>`;
   };
 
-  // Optional "How to vote" collapsible (currently Hugo-only).
+  // Optional "How to vote" section (always expanded).
   const howToVoteHtml = howToVote ? `
-    <details class="featured-how-to-vote">
-      <summary class="featured-htv-summary">How to vote</summary>
+    <div class="featured-how-to-vote">
+      <div class="featured-htv-label">How to vote</div>
       <div class="featured-htv-body">
         <ol class="featured-htv-steps">
           ${howToVote.steps.map(s =>
@@ -1232,10 +1232,9 @@ function featuredBanner(opts) {
           ).join('')}
         </div>
       </div>
-    </details>` : '';
+    </div>` : '';
 
   return `<div class="featured-banner featured-full featured-${theme}">
-    <a class="featured-banner-link" href="${href}" aria-label="${escapeHtml(name)} — view all finalists"></a>
     <div class="featured-head">
       <span class="featured-tag featured-tag-${theme}">${escapeHtml(name)}</span>
       <span class="awards-tag awards-tag-${audience.toLowerCase()}">${escapeHtml(audience)}</span>
@@ -1250,7 +1249,6 @@ function featuredBanner(opts) {
     <div class="featured-finalists-label">${escapeHtml(finalistsTagline)}</div>
     ${makeCoverRow(finalists.Novel,   'Novel')}
     ${makeCoverRow(finalists.Novella, 'Novella')}
-    <a class="featured-cta" href="${href}">View all finalists <span class="featured-arrow">→</span></a>
     ${howToVoteHtml}
   </div>`;
 }
@@ -1846,11 +1844,11 @@ function renderStats() {
           const readBooks = winnersByReader[r];
           const shelfCount = shelfCountByReader[r] || 0;
           const startedCount = DATA.books.filter(b => readStatus(b, r) === 'started').length;
+          const nightstandTotal = shelfCount + startedCount;
           return `
             ${card(totalLabel, winnersTotal, totalSub)}
             ${card('Read', readBooks.length, `${(readBooks.length / winnersTotal * 100).toFixed(1)}% of ${SUBSET}`, readBooks.length / winnersTotal * 100)}
-            ${card('On the nightstand', shelfCount, 'from this list')}
-            ${card('Queued / started', startedCount, 'across all categories')}
+            ${card('On Nightstand', nightstandTotal, 'nightstand + in progress')}
           `;
         }
         const readerCards = ACTIVE_READERS.map(r => {
@@ -2086,9 +2084,6 @@ function renderStats() {
       </div>
     </div>
 
-    <div class="progress-section progress-genre-link">
-      <p style="color: var(--muted); font-size: 13px;">Award spotlights, magazine histories, and browse-by-genre swimlanes are on the <a href="#/magazines">Collections</a> tab.</p>
-    </div>
   </div>`;
 
   $$('.recent-read, .swimlane-card', root).forEach(el => {
@@ -2259,79 +2254,6 @@ function finalistSection(catLabel, items, theme) {
 }
 
 // Body HTML for the 2026 Hugo Awards page — hero, voting steps, finalist
-// grids, source attribution. Extracted so the same content can be embedded on
-// the Home page directly without a roundtrip to /hugo2026.
-function hugo2026Body() {
-  return `<div class="hugo-hero hugo-hero-hugo">
-      <div class="hugo-hero-tag hugo-hero-tag-hugo">2026 Hugo Awards · Finalists</div>
-      <h1 id="hugo2026">The ballot is out.</h1>
-      <p>Announced for <strong>LAcon V</strong> — the 84th World Science Fiction Convention, Anaheim, August 27–31, 2026. Ceremony: <strong>Sunday, August 30, 2026</strong>.</p>
-      <div class="hugo-hero-stats">
-        <span><strong>1,153</strong> ballots cast</span>
-        <span><strong>555</strong> unique nominees</span>
-        <span>Finalists ranged <strong>126–210</strong> nominations</span>
-      </div>
-    </div>
-
-    <section class="hugo-vote">
-      <h2>How to vote</h2>
-      <ol>
-        <li><strong>You need a LAcon V membership.</strong> Only attending and supporting members of the 2026 WorldCon can vote on the final ballot. Register at <a href="https://laconv.org/" target="_blank" rel="noopener">laconv.org</a> (a "WSFS-only" supporting membership is the cheapest path if you're not attending).</li>
-        <li><strong>Read the Hugo Voter Packet.</strong> LAcon V will release a free packet of digital copies of (most) finalists to members ahead of the voting deadline. Watch your member email.</li>
-        <li><strong>Rank the finalists.</strong> Voting uses instant-runoff: rank the works you've read in order of preference. You can leave the rest blank. "No Award" is a legitimate ranking.</li>
-        <li><strong>Submit by the deadline.</strong> Voting typically closes in mid-to-late July 2026 — exact dates posted on the <a href="https://www.thehugoawards.org/hugo-voting/" target="_blank" rel="noopener">official Hugo voting page</a>.</li>
-      </ol>
-      <div class="hugo-vote-links">
-        <a class="hugo-btn" href="https://www.thehugoawards.org/hugo-voting/" target="_blank" rel="noopener">Hugo voting instructions →</a>
-        <a class="hugo-btn hugo-btn-secondary" href="https://laconv.org/" target="_blank" rel="noopener">LAcon V membership →</a>
-      </div>
-    </section>
-
-    ${finalistSection('Novel', HUGO_2026_FINALISTS.Novel, 'hugo')}
-    ${finalistSection('Novella', HUGO_2026_FINALISTS.Novella, 'hugo')}
-
-    <p class="hugo-source">Source: <a href="https://www.thehugoawards.org/hugo-history/2026-hugo-awards/" target="_blank" rel="noopener">thehugoawards.org · 2026 Hugo Awards announcement</a></p>`;
-}
-
-function nebula2026Body() {
-  return `<div class="hugo-hero hugo-hero-nebula">
-      <div class="hugo-hero-tag hugo-hero-tag-nebula">2026 Nebula Awards · Finalists</div>
-      <h1 id="nebula2026">What the writers chose.</h1>
-      <p>The 61st annual Nebulas, voted on by members of the <strong>Science Fiction and Fantasy Writers Association</strong>. Ceremony: <strong>Saturday, June 6, 2026</strong>, at the SFWA Nebula Conference in Chicago.</p>
-      <div class="hugo-hero-stats">
-        <span>Voting closes <strong>11:59 PM PDT · April 15, 2026</strong></span>
-        <span>Winners announced <strong>Jun 6, 2026 · Chicago</strong></span>
-      </div>
-    </div>
-
-    <section class="hugo-vote">
-      <h2>How to vote</h2>
-      <ol>
-        <li><strong>You need an active SFWA membership.</strong> Unlike the Hugos, the Nebulas are peer-voted: only Active, Associate, and Senior SFWA members may vote. If you qualify (typically through pro-rate fiction sales), join at <a href="https://www.sfwa.org/join/" target="_blank" rel="noopener">sfwa.org/join</a>.</li>
-        <li><strong>Sign in to the SFWA portal.</strong> The ballot lives on the member side of the SFWA Nebula Conference site. You can rank as many or as few finalists as you've read.</li>
-        <li><strong>Vote before April 15.</strong> The ballot closes 11:59 PM PDT, April 15, 2026 — winners are announced June 6 at the Nebula Conference in Chicago.</li>
-        <li><strong>Not a member?</strong> You can still attend or stream the ceremony. Conference registration is at <a href="https://nebulas.sfwa.org/" target="_blank" rel="noopener">nebulas.sfwa.org</a>.</li>
-      </ol>
-      <div class="hugo-vote-links">
-        <a class="hugo-btn hugo-btn-nebula" href="https://www.sfwa.org/nebula-conference/" target="_blank" rel="noopener">Nebula Conference + ballot →</a>
-        <a class="hugo-btn hugo-btn-secondary" href="https://www.sfwa.org/join/" target="_blank" rel="noopener">SFWA membership →</a>
-      </div>
-    </section>
-
-    ${finalistSection('Novel', NEBULA_2026_FINALISTS.Novel, 'nebula')}
-    ${finalistSection('Novella', NEBULA_2026_FINALISTS.Novella, 'nebula')}
-
-    <p class="hugo-source">Source: <a href="https://nebulas.sfwa.org/9192-2/" target="_blank" rel="noopener">nebulas.sfwa.org · 2026 Nebula Awards Finalists</a></p>`;
-}
-
-function renderHugo2026() {
-  $('#view-hugo2026').innerHTML = `<div class="detail hugo2026">${hugo2026Body()}</div>`;
-}
-
-function renderNebula2026() {
-  $('#view-nebula2026').innerHTML = `<div class="detail hugo2026 nebula2026">${nebula2026Body()}</div>`;
-}
-
 // Standalone two-reader comparison page.
 // URL shape: #/compare?u=tom&u=nika  (alias: ?reader=tom,nika or initials T,N)
 // Reads the legacy CSV columns in data.json for the requested readers. Future:
@@ -4172,18 +4094,6 @@ function _route() {
   if (path === '#/authors') {
     renderAuthors();
     showView('authors');
-    window.scrollTo(0, 0);
-    return;
-  }
-  if (path === '#/hugo2026') {
-    renderHugo2026();
-    showView('hugo2026');
-    window.scrollTo(0, 0);
-    return;
-  }
-  if (path === '#/nebula2026') {
-    renderNebula2026();
-    showView('nebula2026');
     window.scrollTo(0, 0);
     return;
   }
