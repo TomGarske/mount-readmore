@@ -129,9 +129,6 @@
   "gilgamesh-in-the-outback-silverberg-1987-novella": {
     "cover_url": "https://covers.openlibrary.org/b/id/9217228-L.jpg"
   },
-  "the-day-the-world-turned-upside-down-dutch-2015-novelette": {
-    "cover_url": "https://covers.openlibrary.org/b/id/12964281-L.jpg"
-  },
   "the-emperor-of-mars-steele-2011-novelette": {
     "cover_url": "https://covers.openlibrary.org/b/id/8422465-L.jpg"
   },
@@ -189,6 +186,7 @@
     "publication_label": "Clarkesworld Magazine"
   },
   "the-day-the-world-turned-upside-down-dutch-2015-novelette": {
+    "cover_url": "https://www.lightspeedmagazine.com/wp-content/files_mf/cache/th_364f27d0a9e0903ba4ca66b270091c81_lightspeed_47_april_201431.jpg",
     "publication_url": "https://www.lightspeedmagazine.com/fiction/the-day-the-world-turned-upside-down/",
     "publication_label": "Lightspeed Magazine"
   }

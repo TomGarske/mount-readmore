@@ -43809,6 +43809,7 @@
         "hugo": 2015
       },
       "description": "Thomas Olde Heuvelt's 2015 Hugo Novelette winner, translated from the Dutch (Lightspeed, April 2014). On the morning the woman the narrator loves dumps him, gravity reverses. Houses, lawns, dogs, oceans, everything except a few clinging humans fall into the sky. The narrator carries his goldfish in a bowl across the upside-down sky to give it back to his ex. A literal love-as-falling story, played painfully and absurdly straight.",
+      "cover_url": "https://www.lightspeedmagazine.com/wp-content/files_mf/cache/th_364f27d0a9e0903ba4ca66b270091c81_lightspeed_47_april_201431.jpg",
       "publication_url": "https://www.lightspeedmagazine.com/fiction/the-day-the-world-turned-upside-down/",
       "publication_label": "Lightspeed Magazine",
       "author_genders": [
@@ -46508,8 +46509,8 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novelette": 78,
       "Novel": 638,
+      "Novelette": 78,
       "Novella": 78
     }
   }

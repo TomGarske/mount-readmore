@@ -1555,6 +1555,7 @@ function renderStats() {
   root.innerHTML = `<div class="detail">
     ${awardFeaturedBannersHtml()}
     <h1>Home</h1>
+    ${freeReadBannerHtml()}
     <div class="toggle-row">
       <div class="status-toggle" data-status="${STATUS}">
         <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
@@ -2995,6 +2996,58 @@ function discoverIntroHtml() {
   return `<section class="home-cta">
       <p><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
     </section>`;
+}
+
+// "Read Free Online" spotlight banner — pinned featured book + strip of others.
+// Appears on the Home page between the H1 and the stat toggles.
+function freeReadBannerHtml() {
+  const FEATURED_ID = 'the-day-the-world-turned-upside-down-dutch-2015-novelette';
+  const featured = DATA.books.find(b => b.id === FEATURED_ID);
+  if (!featured) return '';
+
+  const allFree = DATA.books.filter(b => b.publication_url);
+  const otherFree = allFree
+    .filter(b => b.id !== FEATURED_ID)
+    .sort((a, b) => (b.year || 0) - (a.year || 0));
+
+  const awardPills = Object.entries(featured.awards || {}).map(([a, s]) =>
+    `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+  ).join('');
+
+  const coverHtml = featured.cover_url
+    ? `<img src="${escapeHtml(featured.cover_url)}" alt="${escapeHtml(featured.title)}" class="free-banner-cover-img">`
+    : `<div class="free-banner-cover-placeholder">📖</div>`;
+
+  const sourceLabel = featured.publication_label || MAGAZINE_CANONICAL[featured.publisher] || null;
+  const metaParts = [
+    featured.year,
+    featured.category,
+    sourceLabel ? `Free at ${sourceLabel}` : null,
+  ].filter(Boolean).join(' · ');
+
+  const otherStrip = otherFree.length === 0 ? '' : `
+    <div class="free-banner-others">
+      <div class="free-banner-others-label">More free reads</div>
+      <div class="swimlane-strip">${otherFree.map(b => makeSwimlaneCard(b)).join('')}</div>
+    </div>`;
+
+  return `<div class="free-banner">
+    <div class="free-banner-eyebrow">Read Free Online</div>
+    <div class="free-banner-body">
+      <a class="free-banner-cover" href="#/books/${escapeHtml(featured.id)}">${coverHtml}</a>
+      <div class="free-banner-info">
+        <div class="free-banner-pills">${awardPills}</div>
+        <h2 class="free-banner-title"><a href="#/books/${escapeHtml(featured.id)}">${escapeHtml(featured.title)}</a></h2>
+        <div class="free-banner-author">by ${escapeHtml(featured.author_raw || (featured.authors || []).join(', '))}</div>
+        <div class="free-banner-meta">${escapeHtml(metaParts)}</div>
+        <div class="free-banner-ctas">
+          <a href="${escapeHtml(featured.publication_url)}" target="_blank" rel="noopener" class="free-banner-cta-primary">Read Free →</a>
+          <a href="#/books?readFree=1" class="free-banner-cta-secondary">Browse all ${allFree.length} free reads</a>
+        </div>
+      </div>
+    </div>
+    ${otherStrip}
+  </div>`;
 }
 
 // Hugo + Nebula featured banners — used on Home above the toggle row.

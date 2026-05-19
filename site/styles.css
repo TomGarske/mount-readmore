@@ -644,6 +644,90 @@ a:hover { text-decoration: underline; }
   .featured-banners { grid-template-columns: 1fr; }
 }
 
+/* ── Read Free Online banner (home page) ─────────────────────────────────── */
+.free-banner {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 2px);
+  padding: 22px 24px 20px;
+  margin-bottom: 28px;
+}
+.free-banner-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
+.free-banner-body {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.free-banner-cover {
+  flex-shrink: 0;
+  width: 100px;
+  display: block;
+  border-radius: 3px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  text-decoration: none;
+}
+.free-banner-cover-img { width: 100%; display: block; }
+.free-banner-cover-placeholder {
+  width: 100px; height: 150px;
+  background: var(--bg-3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px;
+}
+.free-banner-info { flex: 1; min-width: 0; }
+.free-banner-pills { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+.free-banner-title {
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0 0 5px;
+}
+.free-banner-title a { color: var(--text); text-decoration: none; }
+.free-banner-title a:hover { color: var(--accent); text-decoration: underline; }
+.free-banner-author { font-size: 14px; color: var(--text-2); margin-bottom: 3px; }
+.free-banner-meta { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+.free-banner-ctas { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.free-banner-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.15s;
+}
+.free-banner-cta-primary:hover { opacity: 0.85; }
+.free-banner-cta-secondary {
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: none;
+}
+.free-banner-cta-secondary:hover { text-decoration: underline; }
+.free-banner-others { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 16px; }
+.free-banner-others-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+@media (max-width: 520px) {
+  .free-banner-body { gap: 14px; }
+  .free-banner-cover { width: 72px; }
+  .free-banner-title { font-size: 16px; }
+}
+
 /* Featured shelves on Home — recently read / nightstand / up next.
    A header row with title + caption on the left and a "View all →" CTA
    on the right, then the content below. */
