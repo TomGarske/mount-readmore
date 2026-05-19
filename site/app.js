@@ -4217,10 +4217,15 @@ function _route() {
     location.hash = '#/search';
     return;
   }
-  if (path === '#/magazines') {
+  if (path === '#/collections') {
     renderMagazines();
     showView('magazines');
     window.scrollTo(0, 0);
+    return;
+  }
+  // #/magazines → #/collections (backward compat)
+  if (path === '#/magazines') {
+    location.hash = '#/collections';
     return;
   }
   if (path === '#/compare') {
