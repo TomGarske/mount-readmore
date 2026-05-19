@@ -33216,6 +33216,7 @@
       "award_years": {
         "nebula": 1966
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9251753-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -46435,8 +46436,8 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novella": 78,
       "Novel": 638,
+      "Novella": 78,
       "Novelette": 78
     }
   }
