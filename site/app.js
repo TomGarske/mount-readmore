@@ -1948,10 +1948,19 @@ function renderStats() {
           const shelfCount = shelfCountByReader[r] || 0;
           const startedCount = DATA.books.filter(b => readStatus(b, r) === 'started').length;
           const nightstandTotal = shelfCount + startedCount;
+          // Avg pub year + most-read decade — both computed from the books
+          // this reader has read in the current STATUS subset.
+          const yearedReads = readBooks.filter(b => b.year);
+          const avgYear = yearedReads.length > 0
+            ? Math.round(yearedReads.reduce((s, b) => s + b.year, 0) / yearedReads.length)
+            : null;
+          const mrd = mostReadDecade(winners, (b) => readStatus(b, r) === 'read');
           return `
             ${card(totalLabel, winnersTotal, totalSub)}
             ${card('Read', readBooks.length, `${(readBooks.length / winnersTotal * 100).toFixed(1)}% of ${SUBSET}`, readBooks.length / winnersTotal * 100)}
             ${card('On Nightstand', nightstandTotal, 'nightstand + in progress')}
+            ${card('Avg pub year', avgYear ?? '—', avgYear ? `Across the books you've read` : 'No reads yet')}
+            ${card('Most-read decade', mrd ? eraAxisLabel(mrd.decade) : '—', mrd ? `${mrd.count} ${SUBSET}` : 'No reads yet')}
           `;
         }
         const readerCards = ACTIVE_READERS.map(r => {
