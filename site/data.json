@@ -40146,6 +40146,7 @@
       "award_years": {
         "hugo": 2009
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8579745-L.jpg",
       "author_genders": [
         "female"
       ],
@@ -40305,6 +40306,7 @@
       "award_years": {
         "hugo": 2006
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/955283-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -40686,6 +40688,7 @@
       "award_years": {
         "hugo": 1998
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/730292-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -40767,6 +40770,7 @@
       "award_years": {
         "hugo": 1996
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/730292-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -43875,6 +43879,7 @@
         "hugo": 2013
       },
       "description": "Pat Cadigan's 2013 Hugo Novelette winner (Edge of Infinity anthology, 2012). In the asteroid belt of a near-future outer system, the humans who do the dangerous work are body-modded into deep-vacuum forms — sushi, the slur goes — that make Earth-shaped bodies an awkward memory. A working sushi crew gets a new arrival straight from Earth, still in her default biological body, and the story tells what happens to her assumptions when they don't fit.",
+      "cover_url": "https://covers.openlibrary.org/b/id/9041938-L.jpg",
       "author_genders": [
         "unknown"
       ],
@@ -44240,6 +44245,8 @@
         "hugo": 2005
       },
       "cover_url": "https://covers.openlibrary.org/b/id/957053-L.jpg",
+      "publication_url": "https://kellylink.net/books/magic-for-beginners-old/the-faery-handbag",
+      "publication_label": "Kelly Link's website",
       "author_genders": [
         "female"
       ],
@@ -44445,6 +44452,7 @@
       "award_years": {
         "hugo": 2000
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8363492-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -44779,6 +44787,7 @@
       "award_years": {
         "hugo": 1993
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/7087691-L.jpg",
       "author_genders": [
         "female"
       ],
@@ -45495,6 +45504,7 @@
       "award_years": {
         "hugo": 1979
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8427612-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -46318,6 +46328,7 @@
       "award_years": {
         "hugo": 1944
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8310684-L.jpg",
       "author_genders": [
         "unknown"
       ],
@@ -46420,6 +46431,7 @@
       "award_years": {
         "hugo": 1941
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/6943737-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -46469,9 +46481,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novelette": 78,
+      "Novel": 638,
       "Novella": 78,
-      "Novel": 638
+      "Novelette": 78
     }
   }
 }

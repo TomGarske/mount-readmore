@@ -47,7 +47,9 @@
     "cover_url": "https://covers.openlibrary.org/b/id/955271-L.jpg"
   },
   "the-faery-handbag-link-2005-novelette": {
-    "cover_url": "https://covers.openlibrary.org/b/id/957053-L.jpg"
+    "cover_url": "https://covers.openlibrary.org/b/id/957053-L.jpg",
+    "publication_url": "https://kellylink.net/books/magic-for-beginners-old/the-faery-handbag",
+    "publication_label": "Kelly Link's website"
   },
   "two-hearts-beagle-2006-novelette": {
     "cover_url": "https://covers.openlibrary.org/b/id/941479-L.jpg"
@@ -93,5 +95,35 @@
   },
   "the-little-black-bag-kornbluth-1951-novelette": {
     "cover_url": "https://covers.openlibrary.org/b/id/9320906-L.jpg"
+  },
+  "the-erdmann-nexus-kress-2009-novella": {
+    "cover_url": "https://covers.openlibrary.org/b/id/8579745-L.jpg"
+  },
+  "a-billion-eves-reed-2006-novella": {
+    "cover_url": "https://covers.openlibrary.org/b/id/955283-L.jpg"
+  },
+  "where-angels-fear-to-tread-steele-1998-novella": {
+    "cover_url": "https://covers.openlibrary.org/b/id/730292-L.jpg"
+  },
+  "the-death-of-captain-future-steele-1996-novella": {
+    "cover_url": "https://covers.openlibrary.org/b/id/730292-L.jpg"
+  },
+  "the-nutcracker-coup-kagan-1993-novelette": {
+    "cover_url": "https://covers.openlibrary.org/b/id/7087691-L.jpg"
+  },
+  "1016-to-1-kelly-2000-novelette": {
+    "cover_url": "https://covers.openlibrary.org/b/id/8363492-L.jpg"
+  },
+  "the-girl-thing-who-went-out-for-sushi-cadigan-2013-novelette": {
+    "cover_url": "https://covers.openlibrary.org/b/id/9041938-L.jpg"
+  },
+  "hunter-s-moon-anderson-1979-novelette": {
+    "cover_url": "https://covers.openlibrary.org/b/id/8427612-L.jpg"
+  },
+  "mimsy-were-the-borogoves-moore-1944-novelette": {
+    "cover_url": "https://covers.openlibrary.org/b/id/8310684-L.jpg"
+  },
+  "the-roads-must-roll-heinlein-1941-novelette": {
+    "cover_url": "https://covers.openlibrary.org/b/id/6943737-L.jpg"
   }
 }
