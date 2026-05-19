@@ -3660,11 +3660,6 @@ function _route() {
     }
   }
   const [path, qs] = h.split('?');
-  // Legacy singular route — redirect to canonical plural form.
-  if (path.startsWith('#/book/')) {
-    location.replace('#/books/' + path.slice('#/book/'.length) + (qs ? '?' + qs : ''));
-    return;
-  }
   if (path.startsWith('#/books/')) {
     const id = path.slice('#/books/'.length);
     renderDetail(id);
