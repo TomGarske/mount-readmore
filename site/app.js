@@ -1108,23 +1108,49 @@ function buildCalloutGrid(items, options = {}) {
 // each cover without violating HTML's no-nested-anchor rule. A full-card
 // overlay <a> makes the whole banner clickable.
 function featuredBanner(opts) {
-  const { theme, name, audience, since, descriptionHtml, ceremonyDate, ceremonyLoc, finalistsTagline, finalists, href } = opts;
-  const pool = [...(finalists.Novel || []), ...(finalists.Novella || [])];
-  const covers = pool.map(f => {
-    const match = findBook(f.title, f.author, 'Novel')
-      || findBook(f.title, f.author, 'Novella');
-    if (match && match.cover_url) {
-      return `<a class="featured-cover" href="#/book/${escapeHtml(match.id)}" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">
-        <img src="${escapeHtml(match.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">
-      </a>`;
-    }
-    return `<div class="featured-cover featured-cover-stub" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">
-      <div class="featured-cover-fallback">
-        <div class="fc-title">${escapeHtml(f.title)}</div>
-        <div class="fc-author">${escapeHtml(f.author)}</div>
+  const { theme, name, audience, since, descriptionHtml, ceremonyDate, ceremonyLoc, finalistsTagline, finalists, href, howToVote } = opts;
+
+  // Build a cover strip for one category, with a label above it.
+  const makeCoverRow = (books, rowLabel) => {
+    if (!books || books.length === 0) return '';
+    const covers = books.map(f => {
+      const match = findBook(f.title, f.author, 'Novel')
+        || findBook(f.title, f.author, 'Novella');
+      if (match && match.cover_url) {
+        return `<a class="featured-cover" href="#/books/${escapeHtml(match.id)}" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">
+          <img src="${escapeHtml(match.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">
+        </a>`;
+      }
+      return `<div class="featured-cover featured-cover-stub" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">
+        <div class="featured-cover-fallback">
+          <div class="fc-title">${escapeHtml(f.title)}</div>
+          <div class="fc-author">${escapeHtml(f.author)}</div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div class="featured-category-label">${escapeHtml(rowLabel)}</div>
+      <div class="featured-cover-strip">${covers}</div>`;
+  };
+
+  // Optional "How to vote" collapsible (currently Hugo-only).
+  const howToVoteHtml = howToVote ? `
+    <details class="featured-how-to-vote">
+      <summary class="featured-htv-summary">How to vote</summary>
+      <div class="featured-htv-body">
+        <ol class="featured-htv-steps">
+          ${howToVote.steps.map(s =>
+            `<li><strong>${escapeHtml(s.title)}</strong> ${s.bodyHtml}</li>`
+          ).join('')}
+        </ol>
+        <div class="featured-htv-ctas">
+          ${howToVote.links.map(l =>
+            `<a href="${escapeHtml(l.href)}" target="_blank" rel="noopener"
+                class="${l.primary ? 'featured-htv-cta-primary' : 'featured-htv-cta-secondary'}">${escapeHtml(l.label)} →</a>`
+          ).join('')}
+        </div>
       </div>
-    </div>`;
-  }).join('');
+    </details>` : '';
+
   return `<div class="featured-banner featured-full featured-${theme}">
     <a class="featured-banner-link" href="${href}" aria-label="${escapeHtml(name)} — view all finalists"></a>
     <div class="featured-head">
@@ -1139,8 +1165,10 @@ function featuredBanner(opts) {
       <span class="featured-loc">${escapeHtml(ceremonyLoc)}</span>
     </div>
     <div class="featured-finalists-label">${escapeHtml(finalistsTagline)}</div>
-    <div class="featured-cover-strip">${covers}</div>
+    ${makeCoverRow(finalists.Novel,   'Novel')}
+    ${makeCoverRow(finalists.Novella, 'Novella')}
     <a class="featured-cta" href="${href}">View all finalists <span class="featured-arrow">→</span></a>
+    ${howToVoteHtml}
   </div>`;
 }
 
@@ -3160,6 +3188,30 @@ function awardFeaturedBannersHtml() {
         finalistsTagline: '2026 Best Novel + Novella finalists',
         finalists: HUGO_2026_FINALISTS,
         href: '#/hugo2026',
+        howToVote: {
+          steps: [
+            {
+              title: 'You need a LAcon V membership.',
+              bodyHtml: 'Only attending and supporting members of the 2026 WorldCon can vote on the final ballot. Register at <a href="https://laconv.org" target="_blank" rel="noopener">laconv.org</a> (a "WSFS-only" supporting membership is the cheapest path if you\'re not attending).',
+            },
+            {
+              title: 'Read the Hugo Voter Packet.',
+              bodyHtml: 'LAcon V will release a free packet of digital copies of (most) finalists to members ahead of the voting deadline. Watch your member email.',
+            },
+            {
+              title: 'Rank the finalists.',
+              bodyHtml: 'Voting uses instant-runoff: rank the works you\'ve read in order of preference. You can leave the rest blank. "No Award" is a legitimate ranking.',
+            },
+            {
+              title: 'Submit by the deadline.',
+              bodyHtml: 'Voting typically closes in mid-to-late July 2026 — exact dates posted on the <a href="https://www.thehugoawards.org/hugo-voting/" target="_blank" rel="noopener">official Hugo voting page</a>.',
+            },
+          ],
+          links: [
+            { label: 'Hugo voting instructions', href: 'https://www.thehugoawards.org/hugo-voting/', primary: true },
+            { label: 'LAcon V membership', href: 'https://laconv.org', primary: false },
+          ],
+        },
       })}
       ${featuredBanner({
         theme: 'nebula',
