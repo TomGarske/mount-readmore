@@ -559,6 +559,9 @@ function renderList() {
   // Toggle sidebar visibility via class on the view container
   const listView = document.getElementById('view-list');
   if (listView) listView.classList.toggle('mode-authors', state.searchMode === 'authors');
+  // Sync URL on every render so filter changes are persistent regardless
+  // of which mode (books or authors) the user is in.
+  pushFiltersToUrl();
   if (state.searchMode === 'authors') {
     // Hide book-specific result controls, keep filter sidebar visible
     const rcEl = document.getElementById('result-count');
@@ -576,8 +579,6 @@ function renderList() {
   const sortEl = document.getElementById('sort');
   if (rcEl) rcEl.style.display = '';
   if (sortEl) sortEl.style.display = '';
-
-  pushFiltersToUrl();
   const filtered = DATA.books.filter(matchesFilters);
   const sorted = sortBooks(filtered);
   const activeFilters = [];
@@ -1497,15 +1498,20 @@ function renderStats() {
   recentEither.sort((a, b) => (b.year || 0) - (a.year || 0));
 
   // Combined nightstand across active readers, deduped, sorted.
-  // 'me' uses MR_AUTH.userBooks status='nightstand'; legacy readers use
-  // the CSV `<reader>_shelf === 'to-read'` columns.
+  // 'me' uses MR_AUTH.userBooks status of 'nightstand' OR 'started' — both
+  // count as "on the nightstand" (matches the headline card's label
+  // "nightstand + in progress"); legacy readers use the CSV `<reader>_shelf`
+  // === 'to-read' columns.
   const nightstandBooks = [];
   const seenShelf = new Set();
   const myBooksForShelf = window.MR_AUTH?.userBooks || {};
   for (const b of DATA.books) {
     if (seenShelf.has(b.id)) continue;
     let on = false;
-    if (showReader('me') && myBooksForShelf[b.id]?.status === 'nightstand') on = true;
+    if (showReader('me')) {
+      const s = myBooksForShelf[b.id]?.status;
+      if (s === 'nightstand' || s === 'started') on = true;
+    }
     if (!on) {
       on = ACTIVE_READERS.some(r =>
         r.id !== 'me'
@@ -4311,10 +4317,12 @@ function syncFiltersToDom() {
 // shareable. Only emit params for non-default values to keep URLs short.
 // Uses replaceState so checkbox flicks don't pollute history.
 function pushFiltersToUrl() {
-  // Only sync the URL while we're on the Search page (books mode) — other
-  // routes have their own URL semantics we shouldn't clobber.
+  // Only sync the URL while we're on the Search page — other routes have
+  // their own URL semantics we shouldn't clobber.
   if (!location.hash.startsWith('#/search') && !location.hash.startsWith('#/books')) return;
   const p = new URLSearchParams();
+  // searchMode persists across reloads — 'authors' explicit, 'books' default.
+  if (state.searchMode === 'authors') p.set('mode', 'authors');
   if (state.search) p.set('search', state.search);
   if (state.awards.size && state.awards.size < Object.keys(AWARD_LABELS).length) {
     p.set('award', [...state.awards].join(','));
@@ -4377,9 +4385,11 @@ function _route() {
     window.scrollTo(0, 0);
     return;
   }
-  // #/search is the canonical Search route (books + authors toggle)
+  // #/search is the canonical Search route (books + authors toggle).
+  // ?mode=authors switches the Books/Authors toggle; default is books.
   if (path === '#/search') {
     const params = new URLSearchParams(qs || '');
+    state.searchMode = params.get('mode') === 'authors' ? 'authors' : 'books';
     if (qs) applyFilterParams(params);
     renderList();
     showView('list');
@@ -4582,14 +4592,19 @@ function wireFilters() {
     else state.meStatus.delete(e.target.value);
     renderList();
   }));
-  // Books / Authors toggle tabs
+  // Books / Authors toggle tabs — renderList() calls pushFiltersToUrl()
+  // internally, which now serializes searchMode too so the URL persists.
   document.getElementById('search-tab-books')?.addEventListener('click', () => {
+    if (state.searchMode === 'books') return;
     state.searchMode = 'books';
     renderList();
+    pushFiltersToUrl();
   });
   document.getElementById('search-tab-authors')?.addEventListener('click', () => {
+    if (state.searchMode === 'authors') return;
     state.searchMode = 'authors';
     renderList();
+    pushFiltersToUrl();
   });
 
   $('#reset').addEventListener('click', () => {
