@@ -18143,6 +18143,7 @@
         "hugo": 1995,
         "nebula": 1995
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/182455-L.jpg",
       "author_genders": [
         "female"
       ],
@@ -40344,6 +40345,7 @@
       "award_years": {
         "hugo": 2005
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/955271-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -40384,6 +40386,7 @@
       "award_years": {
         "hugo": 2004
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/183344-L.jpg",
       "author_genders": [
         "unknown"
       ],
@@ -41138,6 +41141,7 @@
       "award_years": {
         "hugo": 1989
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/368729-L.jpg",
       "author_genders": [
         "female"
       ],
@@ -41275,6 +41279,7 @@
       "award_years": {
         "hugo": 1986
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/4225265-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -42783,6 +42788,7 @@
       "award_years": {
         "hugo": 1941
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/14632189-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -44007,6 +44013,7 @@
         "hugo": 2010
       },
       "description": "Peter Watts's 2010 Hugo Novelette winner (The New Space Opera 2 anthology, 2009). A crew of grudge-bonded engineers, kept on ice between assignments aboard an automated terraforming ship, are thawed out to lay another stargate. The engineering site turns out to be inside the body of an intelligent star-spanning lifeform — which the mission AI has already decided is acceptable collateral damage.",
+      "cover_url": "https://covers.openlibrary.org/b/id/13859660-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -44150,6 +44157,7 @@
       "award_years": {
         "hugo": 2007
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/6484658-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -44190,6 +44198,7 @@
       "award_years": {
         "hugo": 2006
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/941479-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -44230,6 +44239,7 @@
       "award_years": {
         "hugo": 2005
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/957053-L.jpg",
       "author_genders": [
         "female"
       ],
@@ -44270,6 +44280,7 @@
       "award_years": {
         "hugo": 2004
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/2096842-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -44474,6 +44485,7 @@
       "award_years": {
         "hugo": 1999
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9977803-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -44554,6 +44566,7 @@
       "award_years": {
         "hugo": 1997
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9977803-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -45098,6 +45111,7 @@
       "award_years": {
         "hugo": 1986
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8275679-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -45524,6 +45538,7 @@
       "ol_key": "/works/OL43081216W",
       "first_pub_year": 1979,
       "pages": 260,
+      "cover_url": "https://covers.openlibrary.org/b/id/12688235-L.jpg",
       "author_genders": [
         "female"
       ],
@@ -45621,6 +45636,7 @@
       "award_years": {
         "hugo": 1976
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/2404687-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -45701,6 +45717,7 @@
       "award_years": {
         "hugo": 1974
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/4510264-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -45741,6 +45758,7 @@
       "award_years": {
         "hugo": 1973
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/4430872-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -45781,6 +45799,7 @@
       "award_years": {
         "hugo": 1969
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/4430872-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -46144,6 +46163,7 @@
       "award_years": {
         "hugo": 1951
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9320906-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -46450,8 +46470,8 @@
     "total": 794,
     "by_category": {
       "Novelette": 78,
-      "Novel": 638,
-      "Novella": 78
+      "Novella": 78,
+      "Novel": 638
     }
   }
 }
