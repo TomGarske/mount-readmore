@@ -1849,11 +1849,14 @@ function renderStats() {
   }).join('');
   const authorRows = renderAuthorRows(topAuthors, maxAppearances);
 
-  // Compare widget — suggest friends from the preloaded leaderboard
+  // Compare widget — suggest friends. Use friends list (all friends regardless
+  // of leaderboard opt-in) and fall back to leaderboardOverall if friends
+  // list is empty (e.g. auth not yet bootstrapped).
   const dashMyHandle = window.MR_AUTH?.profile?.handle || null;
-  const dashFriendHandles = (window.MR_AUTH?.leaderboardOverall || [])
-    .map(r => r.handle)
-    .filter(h => h && h !== dashMyHandle);
+  const rawFriends = window.MR_AUTH?.friends?.length
+    ? window.MR_AUTH.friends.map(f => f.handle)
+    : (window.MR_AUTH?.leaderboardOverall || []).map(r => r.handle);
+  const dashFriendHandles = rawFriends.filter(h => h && h !== dashMyHandle);
   const compareWidgetHtml = `<div class="dashboard-compare">
     <input type="text" id="dashboard-compare-input" class="dashboard-compare-input"
       placeholder="Compare with a friend by @handle…"
@@ -2505,7 +2508,7 @@ async function renderCompare(params) {
   ]);
   if (!aSide || !bSide) {
     root.innerHTML = `<div class="detail">
-      <a href="#/friends" class="back">← back to Friends</a>
+      <a href="#/stats" class="back">← back to Stats</a>
       <h1>Compare reads</h1>
       <p style="color: var(--sf);">Couldn't find one of those readers (${escapeHtml(ids.join(' / '))}).</p>
     </div>`;
@@ -2739,7 +2742,7 @@ async function renderCompare(params) {
     .join('');
 
   root.innerHTML = `<div class="detail compare-page">
-    <a href="#/friends" class="back">← compare another</a>
+    <a href="#/stats" class="back">← back to Stats</a>
     <div class="compare-header">
       <h1>
         <span style="color: ${aSide.colorVar}">@${escapeHtml(aSide.label)}</span>
@@ -4311,22 +4314,30 @@ function _route() {
     const params = new URLSearchParams(qs || '');
     const uVals = params.getAll('u');
     if (uVals.length >= 2) {
+      // #/stats?u=tom&u=SappySaffron → head-to-head compare
       renderCompare(params);
+      showView('stats');
     } else {
-      // If u= names a known hardcoded reader that isn't the current user,
-      // temporarily point SOLO + ACTIVE_READERS at them so renderStats
-      // shows that reader's data (e.g. #/stats?u=westdac).
       const uHandle = (uVals[0] || '').toLowerCase();
       const myHandle = (window.MR_AUTH?.profile?.handle || '').toLowerCase();
       if (uHandle && ALL_READER_IDS.includes(uHandle) && uHandle !== myHandle) {
+        // Known hardcoded reader (tom/nika/westdac/etc) that isn't the signed-in user
         SOLO = uHandle;
         ACTIVE_READERS = [READER_CONFIG[uHandle]].filter(Boolean);
+        renderStats();
+        showView('stats');
+      } else if (uHandle && (!myHandle || uHandle !== myHandle) && !ALL_READER_IDS.includes(uHandle)) {
+        // Supabase user that is neither a hardcoded reader nor the signed-in user
+        // → show their public profile
+        renderProfile(uHandle);
+        showView('profile');
       } else {
+        // Own handle, no handle, or signed-in user's handle → own stats
         recomputeReaders();
+        renderStats();
+        showView('stats');
       }
-      renderStats();
     }
-    showView('stats');
     window.scrollTo(0, 0);
     return;
   }
@@ -4342,9 +4353,9 @@ function _route() {
     return;
   }
   if (path === '#/friends') {
-    // Friends has moved into the profile page — redirect to your own profile.
+    // Friends section now lives inside the Stats page — redirect there.
     const myHandle = window.MR_AUTH?.profile?.handle;
-    location.hash = myHandle ? `#/u/${encodeURIComponent(myHandle)}` : '#/';
+    location.hash = myHandle ? `#/stats?u=${encodeURIComponent(myHandle)}` : '#/stats';
     return;
   }
   if (path === '#/discover') {
@@ -4390,19 +4401,10 @@ function _route() {
     return;
   }
   if (path.startsWith('#/u/')) {
-    const handle = path.slice('#/u/'.length).split('?')[0];
-    // Viewing your OWN profile URL shows the full Progress dashboard so
-    // /#u/<handle> is a shareable canonical link for the signed-in reader.
-    const myHandle = window.MR_AUTH?.profile?.handle;
-    if (myHandle && handle.toLowerCase() === myHandle.toLowerCase()) {
-      renderStats();
-      showView('stats');
-      window.scrollTo(0, 0);
-      return;
-    }
-    renderProfile(handle);
-    showView('profile');
-    window.scrollTo(0, 0);
+    // #/u/<handle> is a legacy URL — the canonical public profile is
+    // #/stats?u=<handle>. Redirect everyone there.
+    const rawHandle = decodeURIComponent(path.slice('#/u/'.length).split('?')[0]);
+    location.hash = `#/stats?u=${encodeURIComponent(rawHandle)}`;
     return;
   }
   // When signed in, give the home route a canonical identity URL.
