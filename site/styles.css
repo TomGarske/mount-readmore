@@ -2905,6 +2905,36 @@ fieldset label input { margin-right: 8px; }
 .magazines-page { padding-bottom: 64px; }
 .magazines-page h1 { font-size: 26px; margin-bottom: 6px; }
 .magazines-section { margin-top: 48px; }
+
+/* In-page table of contents for Collections — shareable section anchors. */
+.collections-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin: 8px 0 24px;
+  padding: 10px 14px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 13px;
+}
+.collections-toc-label {
+  color: var(--muted);
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.collections-toc a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+.collections-toc a:hover { text-decoration: underline; }
+
+/* Scroll offset so anchored headings sit clear of the sticky topbar. */
+.magazines-page [id] { scroll-margin-top: 80px; }
 /* Section separators inside Collections */
 .collections-section-head {
   font-size: 20px;

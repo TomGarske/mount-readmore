@@ -41261,7 +41261,7 @@
       "award_years": {
         "hugo": 1986
       },
-      "cover_url": "https://covers.openlibrary.org/b/id/4225265-L.jpg",
+      "cover_url": "https://covers.openlibrary.org/b/id/6939443-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -46459,8 +46459,8 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novelette": 78,
       "Novel": 638,
+      "Novelette": 78,
       "Novella": 78
     }
   }

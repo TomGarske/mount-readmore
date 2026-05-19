@@ -1059,7 +1059,7 @@ function renderMagazines() {
     return { genre: g, books };
   }).filter(s => s.books.length > 0);
 
-  const genreSwimlanesHtml = `<div class="progress-section collections-genre-section">
+  const genreSwimlanesHtml = `<div id="genres" class="progress-section collections-genre-section">
     <h2 class="collections-section-head">Browse by genre</h2>
     <p style="color: var(--muted); font-size: 13px;">Scroll any row sideways. Click a cover for details. Each row is sorted by publication year, newest first.</p>
     ${swimlanes.map(lane => `
@@ -1144,7 +1144,7 @@ function renderMagazines() {
     .filter(b => (b.awards || {}).hugo === 'winner' && (b.awards || {}).nebula === 'winner')
     .sort((a, b) => (b.year || 0) - (a.year || 0));
   const superWinnersHtml = superWinners.length === 0 ? '' : `
-    <div class="progress-section collections-superwinners-section">
+    <div id="super-winners" class="progress-section collections-superwinners-section">
       <h2 class="collections-section-head">Super Winners <span class="collections-section-count">${superWinners.length}</span></h2>
       <p style="color: var(--muted); font-size: 13px;">Books that won <strong>both</strong> the Hugo and the Nebula — the rare double crown.</p>
       <div class="swimlane">
@@ -1152,13 +1152,27 @@ function renderMagazines() {
       </div>
     </div>`;
 
+  // Anchorable sections: each top-level group gets a stable id so links
+  // like #/collections?section=super-winners scroll directly to it after
+  // route render. Section ids:
+  //   nominees      — This Year's Nominees!
+  //   super-winners — Hugo + Nebula double crown
+  //   magazines     — Genre magazines block
+  //   genres        — Browse by genre swimlanes
   root.innerHTML = `<div class="detail magazines-page">
     <h1>Collections</h1>
-    <h2 class="collections-section-head collections-section-head-first">This Year's Nominees!</h2>
+    <div class="collections-toc">
+      <span class="collections-toc-label">Jump to:</span>
+      <a href="#/collections?section=nominees">Nominees</a>
+      ${superWinners.length ? `<a href="#/collections?section=super-winners">Super Winners</a>` : ''}
+      <a href="#/collections?section=magazines">Magazines</a>
+      <a href="#/collections?section=genres">Genres</a>
+    </div>
+    <h2 id="nominees" class="collections-section-head collections-section-head-first">This Year's Nominees!</h2>
     ${awardFeaturedBannersHtml()}
     ${freeReadBannerHtml()}
     ${superWinnersHtml}
-    <h2 class="collections-section-head">Magazines</h2>
+    <h2 id="magazines" class="collections-section-head">Magazines</h2>
     <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet.</p>
     <div class="mag-grid">${magBlocksHtml}</div>
     ${genreSwimlanesHtml}
@@ -4568,7 +4582,21 @@ function _route() {
   if (path === '#/collections') {
     renderMagazines();
     showView('magazines');
-    window.scrollTo(0, 0);
+    // If the URL specifies ?section=<id>, scroll to that anchor inside
+    // the page; otherwise scroll to the top. Section ids: nominees /
+    // super-winners / magazines / genres.
+    const params = new URLSearchParams(qs || '');
+    const section = params.get('section');
+    if (section) {
+      // Wait a beat for the layout to settle (covers lazy-load etc.).
+      setTimeout(() => {
+        const el = document.getElementById(section);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        else window.scrollTo(0, 0);
+      }, 30);
+    } else {
+      window.scrollTo(0, 0);
+    }
     return;
   }
   // #/magazines → #/collections (backward compat)
