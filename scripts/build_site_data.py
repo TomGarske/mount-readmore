@@ -264,6 +264,35 @@ def apply_google_books_cache(records: list[dict], path: Path) -> int:
     return applied
 
 
+def apply_goodreads_metadata(records: list[dict], path: Path) -> tuple[int, int]:
+    """Fold scraped Goodreads book/show data onto canon records.
+
+    Only writes a field when the record is missing it — OL data wins where it
+    exists. Returns (covers_added, descriptions_added) for the build log.
+    """
+    if not path.exists():
+        return 0, 0
+    with path.open() as f:
+        gr = json.load(f)
+    covers = 0
+    descs = 0
+    for r in records:
+        entry = gr.get(r.get("id"))
+        if not entry:
+            continue
+        if entry.get("cover_url") and not (r.get("cover_url") or "").strip():
+            r["cover_url"] = entry["cover_url"]
+            covers += 1
+        if entry.get("description") and not (r.get("description") or "").strip():
+            r["description"] = entry["description"]
+            descs += 1
+        if entry.get("isbn") and not r.get("isbn"):
+            r["isbn"] = entry["isbn"]
+        if entry.get("pages") and not r.get("pages"):
+            r["pages"] = entry["pages"]
+    return covers, descs
+
+
 def apply_goodreads_ids(records: list[dict], path: Path) -> int:
     """Fold Goodreads Book IDs (and any ISBNs harvested alongside them) onto
     canon records. Map is keyed by the site's canonical id, so the lookup is
@@ -412,12 +441,13 @@ def main() -> None:
 
     covers = apply_cover_cache(all_records, args.data / "openlib_cache.json", args.data / "openlib_descriptions.json")
     google_covers = apply_google_books_cache(all_records, args.data / "google_books_cache.json")
+    gr_covers, gr_descs = apply_goodreads_metadata(all_records, args.data / "goodreads_metadata.json")
     descs = sum(1 for r in all_records if r.get("description"))
     gend = apply_author_gender(all_records, args.data / "author_gender.json")
     gr_ids = apply_goodreads_ids(all_records, args.data / "goodreads_ids.json")
     genres = sum(1 for r in all_records if r.get("genres"))
     total_covers = sum(1 for r in all_records if r.get("cover_url"))
-    print(f"  Applied {covers} OL covers + {google_covers} Google Books covers ({total_covers} total) + {descs} descs + {genres} genre sets + {gend} genders + {gr_ids} Goodreads ids")
+    print(f"  Applied {covers} OL covers + {google_covers} Google Books covers + {gr_covers} GR covers ({total_covers} total) + {descs} descs (incl. {gr_descs} from GR) + {genres} genre sets + {gend} genders + {gr_ids} Goodreads ids")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w") as f:

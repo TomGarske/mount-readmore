@@ -1,10 +1,186 @@
 {
+  "2010-odyssey-two-clarke-1983-novel": {
+    "goodreads_id": "2285008",
+    "isbn": "0586056998",
+    "isbn13": null,
+    "matched_author": "Arthur C. Clarke",
+    "matched_title": "2010: Odyssey Two",
+    "source": "open_library"
+  },
+  "334-disch-1975-novel": {
+    "goodreads_id": "939263",
+    "isbn": "0261632833",
+    "isbn13": null,
+    "matched_author": "Thomas M. Disch",
+    "matched_title": "334",
+    "source": "open_library"
+  },
+  "a-canticle-for-leibowitz-miller-1961-novel": {
+    "goodreads_id": "258937",
+    "isbn": "0606025278",
+    "isbn13": null,
+    "matched_author": "Walter M. Miller",
+    "matched_title": "A Canticle for Leibowitz",
+    "source": "open_library"
+  },
+  "a-case-of-conscience-blish-1954-novella": {
+    "goodreads_id": "430900",
+    "isbn": "9780345027559",
+    "isbn13": null,
+    "matched_author": "James Blish",
+    "matched_title": "A Case of Conscience",
+    "source": "open_library"
+  },
+  "a-case-of-conscience-blish-1959-novel": {
+    "goodreads_id": "430900",
+    "isbn": "9780345027559",
+    "isbn13": null,
+    "matched_author": "James Blish",
+    "matched_title": "A Case of Conscience",
+    "source": "open_library"
+  },
+  "a-choice-of-gods-simak-1973-novel": {
+    "goodreads_id": "2393499",
+    "isbn": "9780425034156",
+    "isbn13": null,
+    "matched_author": "Clifford D. Simak",
+    "matched_title": "A Choice of Gods",
+    "source": "open_library"
+  },
+  "a-civil-campaign-bujold-2000-novel": {
+    "goodreads_id": "990101",
+    "isbn": "9785170031443",
+    "isbn13": null,
+    "matched_author": "Lois McMaster Bujold",
+    "matched_title": "A Civil Campaign",
+    "source": "open_library"
+  },
+  "a-clash-of-kings-martin-2000-novel": {
+    "goodreads_id": "https://www.goodreads.com/book/show/822995.A_Clash_of_Kings",
+    "isbn": "9786073108409",
+    "isbn13": null,
+    "matched_author": "George R. R. Martin",
+    "matched_title": "A Clash of Kings",
+    "source": "open_library"
+  },
+  "a-dance-with-dragons-martin-2012-novel": {
+    "goodreads_id": "822996",
+    "isbn": "6073130244",
+    "isbn13": null,
+    "matched_author": "George R. R. Martin",
+    "matched_title": "A Dance with Dragons",
+    "source": "open_library"
+  },
+  "a-deepness-in-the-sky-vinge-2000-novel": {
+    "goodreads_id": "2008806",
+    "isbn": "1857988515",
+    "isbn13": null,
+    "matched_author": "Vernor Vinge",
+    "matched_title": "A Deepness in the Sky",
+    "source": "open_library"
+  },
+  "a-desolation-called-peace-martine-2022-novel": {
+    "goodreads_id": "45046970",
+    "isbn": "1529001625",
+    "isbn13": null,
+    "matched_author": "Arkady Martine",
+    "matched_title": "A Desolation Called Peace",
+    "source": "open_library"
+  },
   "a-drop-of-corruption-bennett-2026-novel": {
     "goodreads_id": "213618143",
     "isbn": "0593723821",
     "isbn13": "9780593723821",
     "matched_author": "Robert Jackson Bennett",
     "matched_title": "A Drop of Corruption (Shadow of the Leviathan, #2)"
+  },
+  "a-fall-of-moondust-clarke-1963-novel": {
+    "goodreads_id": "3011691",
+    "isbn": "0451123670",
+    "isbn13": null,
+    "matched_author": "Arthur C. Clarke",
+    "matched_title": "A Fall of Moondust",
+    "source": "open_library"
+  },
+  "a-feast-for-crows-martin-2006-novel": {
+    "goodreads_id": "13497",
+    "isbn": "1514260190",
+    "isbn13": null,
+    "matched_author": "George R. R. Martin",
+    "matched_title": "A Feast for Crows",
+    "source": "open_library"
+  },
+  "a-fire-in-the-sun-effinger-1990-novel": {
+    "goodreads_id": "358991",
+    "isbn": "8427015291",
+    "isbn13": null,
+    "matched_author": "George Alec Effinger",
+    "matched_title": "A Fire in the Sun",
+    "source": "open_library"
+  },
+  "a-fire-upon-the-deep-vinge-1993-novel": {
+    "goodreads_id": "245551",
+    "isbn": "9782221125779",
+    "isbn13": null,
+    "matched_author": "Vernor Vinge",
+    "matched_title": "A Fire Upon the Deep",
+    "source": "open_library"
+  },
+  "a-funeral-for-the-eyes-of-fire-bishop-1976-novel": {
+    "goodreads_id": "1409039",
+    "isbn": "1933846496",
+    "isbn13": null,
+    "matched_author": "Michael Bishop",
+    "matched_title": "A Funeral for the Eyes of Fire",
+    "source": "open_library"
+  },
+  "a-game-of-thrones-martin-1998-novel": {
+    "goodreads_id": "768889",
+    "isbn": "9789506442279",
+    "isbn13": null,
+    "matched_author": "George R. R. Martin",
+    "matched_title": "A Game of Thrones",
+    "source": "open_library"
+  },
+  "a-memory-called-empire-martine-2020-novel": {
+    "goodreads_id": "39863238",
+    "isbn": "1529001587",
+    "isbn13": null,
+    "matched_author": "Arkady Martine",
+    "matched_title": "A Memory Called Empire",
+    "source": "open_library"
+  },
+  "a-midsummer-tempest-anderson-1976-novel": {
+    "goodreads_id": "1527435",
+    "isbn": "9780812530797",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "A Midsummer Tempest",
+    "source": "open_library"
+  },
+  "a-million-open-doors-barnes-1993-novel": {
+    "goodreads_id": "15902894",
+    "isbn": "1857980824",
+    "isbn13": null,
+    "matched_author": "John Barnes",
+    "matched_title": "A Million Open Doors",
+    "source": "open_library"
+  },
+  "a-night-in-the-lonesome-october-zelazny-1995-novel": {
+    "goodreads_id": "3274435",
+    "isbn": "9780688125080",
+    "isbn13": null,
+    "matched_author": "Roger Zelazny",
+    "matched_title": "A Night in the Lonesome October",
+    "source": "open_library"
+  },
+  "a-plague-of-demons-laumer-1966-novel": {
+    "goodreads_id": "6146323",
+    "isbn": "9780671829759",
+    "isbn13": null,
+    "matched_author": "Keith Laumer",
+    "matched_title": "A Plague of Demons",
+    "source": "open_library"
   },
   "a-psalm-for-the-wild-built-chambers-2022-novella": {
     "goodreads_id": "40864002",
@@ -13,12 +189,124 @@
     "matched_author": "Becky Chambers",
     "matched_title": "A Psalm for the Wild-Built (Monk & Robot, #1)"
   },
+  "a-song-for-lya-martin-1975-novella": {
+    "goodreads_id": "358847",
+    "isbn": "2277213802",
+    "isbn13": null,
+    "matched_author": "George R. R. Martin",
+    "matched_title": "A Song for Lya",
+    "source": "open_library"
+  },
+  "a-storm-of-swords-martin-2001-novel": {
+    "goodreads_id": "535758",
+    "isbn": "0007426232",
+    "isbn13": null,
+    "matched_author": "George R. R. Martin",
+    "matched_title": "A Storm of Swords",
+    "source": "open_library"
+  },
+  "a-time-of-changes-silverberg-1972-novel": {
+    "goodreads_id": "1025119",
+    "isbn": "078614999X",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "A Time of Changes",
+    "source": "open_library"
+  },
+  "accelerando-stross-2006-novel": {
+    "goodreads_id": "491931",
+    "isbn": "0441012841",
+    "isbn13": null,
+    "matched_author": "Charles Stross",
+    "matched_title": "Accelerando",
+    "source": "open_library"
+  },
+  "against-infinity-benford-1984-novel": {
+    "goodreads_id": "149082",
+    "isbn": "0575118148",
+    "isbn13": null,
+    "matched_author": "Gregory Benford",
+    "matched_title": "Against Infinity",
+    "source": "open_library"
+  },
+  "air-ryman-2006-novel": {
+    "goodreads_id": "258094",
+    "isbn": "0312261217",
+    "isbn13": null,
+    "matched_author": "Geoff Ryman",
+    "matched_title": "Air",
+    "source": "open_library"
+  },
+  "all-flesh-is-grass-simak-1966-novel": {
+    "goodreads_id": "2393516",
+    "isbn": "9780380399338",
+    "isbn13": null,
+    "matched_author": "Clifford D. Simak",
+    "matched_title": "All Flesh is Grass",
+    "source": "open_library"
+  },
+  "all-seated-on-the-ground-willis-2007-novella": {
+    "goodreads_id": "2034628",
+    "isbn": "1596061618",
+    "isbn13": null,
+    "matched_author": "Connie Willis",
+    "matched_title": "All Seated on the Ground",
+    "source": "open_library"
+  },
   "all-systems-red-wells-2018-novella": {
     "goodreads_id": "33396171",
     "isbn": null,
     "isbn13": null,
     "matched_author": "Martha Wells",
     "matched_title": "All Systems Red (The Murderbot Diaries, #1)"
+  },
+  "all-the-weyrs-of-pern-mccaffrey-1992-novel": {
+    "goodreads_id": "728272",
+    "isbn": "9780345368935",
+    "isbn13": null,
+    "matched_author": "Anne McCaffrey",
+    "matched_title": "All the Weyrs of Pern",
+    "source": "open_library"
+  },
+  "amberlough-donnelly-2018-novel": {
+    "goodreads_id": "39931835",
+    "isbn": "1466893419",
+    "isbn13": null,
+    "matched_author": "Lara Elena Donnelly",
+    "matched_title": "Amberlough",
+    "source": "open_library"
+  },
+  "american-gods-gaiman-2002-novel": {
+    "goodreads_id": "58273006",
+    "isbn": "0747263744",
+    "isbn13": null,
+    "matched_author": "Neil Gaiman",
+    "matched_title": "American Gods",
+    "source": "open_library"
+  },
+  "among-others-walton-2012-novel": {
+    "goodreads_id": "18746685",
+    "isbn": "6155508402",
+    "isbn13": null,
+    "matched_author": "Jo Walton",
+    "matched_title": "Among Others",
+    "source": "open_library"
+  },
+  "anathem-stephenson-2009-novel": {
+    "goodreads_id": "10642321",
+    "isbn": "9780061668159",
+    "isbn13": null,
+    "matched_author": "Neal Stephenson",
+    "matched_title": "Anathem",
+    "source": "open_library"
+  },
+  "ancient-shores-mcdevitt-1998-novel": {
+    "goodreads_id": "1281229",
+    "isbn": "0061567612",
+    "isbn13": null,
+    "matched_author": "Jack McDevitt",
+    "matched_title": "Ancient Shores",
+    "source": "open_library"
   },
   "ancillary-justice-leckie-2014-novel": {
     "goodreads_id": "35696749",
@@ -27,12 +315,36 @@
     "matched_author": "Ann Leckie",
     "matched_title": "Ancillary Justice (Imperial Radch, #1)"
   },
+  "ancillary-mercy-leckie-2016-novel": {
+    "goodreads_id": "25984820",
+    "isbn": "9780316565189",
+    "isbn13": null,
+    "matched_author": "Ann Leckie",
+    "matched_title": "Ancillary Mercy",
+    "source": "open_library"
+  },
   "ancillary-sword-leckie-2015-novel": {
     "goodreads_id": "20944489",
     "isbn": null,
     "isbn13": null,
     "matched_author": "Ann Leckie",
     "matched_title": "Ancillary Sword (Imperial Radch, #2)"
+  },
+  "and-chaos-died-russ-1971-novel": {
+    "goodreads_id": "4505023",
+    "isbn": "9781504050920",
+    "isbn13": null,
+    "matched_author": "Joanna Russ",
+    "matched_title": "And Chaos Died",
+    "source": "open_library"
+  },
+  "animal-farm-orwell-1946-novella": {
+    "goodreads_id": "54799",
+    "isbn": "9781398816534",
+    "isbn13": null,
+    "matched_author": "George Orwell",
+    "matched_title": "Animal Farm",
+    "source": "open_library"
   },
   "annihilation-vandermeer-2015-novel": {
     "goodreads_id": "17934530",
@@ -48,12 +360,980 @@
     "matched_author": "Martha Wells",
     "matched_title": "Artificial Condition (The Murderbot Diaries, #2)"
   },
+  "assemblers-of-infinity-anderson-1994-novel": {
+    "goodreads_id": "1022771",
+    "isbn": "1680570803",
+    "isbn13": null,
+    "matched_author": "Kevin J. Anderson",
+    "matched_title": "Assemblers of Infinity",
+    "source": "open_library"
+  },
+  "autumn-angels-cover-1976-novel": {
+    "goodreads_id": "1638881",
+    "isbn": "0515037877",
+    "isbn13": null,
+    "matched_author": "Arthur Byron Cover",
+    "matched_title": "Autumn Angels",
+    "source": "open_library"
+  },
+  "babel-17-delany-1967-novel": {
+    "goodreads_id": "145356",
+    "isbn": "0575094206",
+    "isbn13": null,
+    "matched_author": "Samuel R. Delany",
+    "matched_title": "Babel-17",
+    "source": "open_library"
+  },
+  "babel-or-the-necessity-of-violence-an-arcane-history-of-the-oxford-translators-revolution-kuang-2023-novel": {
+    "goodreads_id": "59720674",
+    "isbn": "9780008501839",
+    "isbn13": null,
+    "matched_author": "R. F. Kuang",
+    "matched_title": "Babel: Or the Necessity of Violence: An Arcane History of the Oxford Translators' Revolution",
+    "source": "open_library"
+  },
+  "barnacle-bill-the-spacer-shepard-1993-novella": {
+    "goodreads_id": "331715",
+    "isbn": "185798501X",
+    "isbn13": null,
+    "matched_author": "Lucius Shepard",
+    "matched_title": "Barnacle Bill the Spacer",
+    "source": "open_library"
+  },
+  "barrayar-bujold-1992-novel": {
+    "goodreads_id": "61905",
+    "isbn": "3453072278",
+    "isbn13": null,
+    "matched_author": "Lois McMaster Bujold",
+    "matched_title": "Barrayar",
+    "source": "open_library"
+  },
+  "beggars-in-spain-kress-1992-novella": {
+    "goodreads_id": "2167752",
+    "isbn": "9780061931963",
+    "isbn13": null,
+    "matched_author": "Nancy Kress",
+    "matched_title": "Beggars in Spain",
+    "source": "open_library"
+  },
+  "beggars-in-spain-kress-1994-novel": {
+    "goodreads_id": "2167752",
+    "isbn": "9780061931963",
+    "isbn13": null,
+    "matched_author": "Nancy Kress",
+    "matched_title": "Beggars in Spain",
+    "source": "open_library"
+  },
+  "bellwether-willis-1998-novel": {
+    "goodreads_id": "1206542",
+    "isbn": "0307571947",
+    "isbn13": null,
+    "matched_author": "Connie Willis",
+    "matched_title": "Bellwether",
+    "source": "open_library"
+  },
+  "beyond-the-blue-event-horizon-pohl-1981-novel": {
+    "goodreads_id": "6014350",
+    "isbn": "9780345320674",
+    "isbn13": null,
+    "matched_author": "Frederik Pohl",
+    "matched_title": "Beyond the Blue Event Horizon",
+    "source": "open_library"
+  },
+  "black-easter-blish-1969-novel": {
+    "goodreads_id": "1477001",
+    "isbn": "9780571086993",
+    "isbn13": null,
+    "matched_author": "James Blish",
+    "matched_title": "Black Easter",
+    "source": "open_library"
+  },
+  "black-genesis-hubbard-1987-novel": {
+    "goodreads_id": "5053244",
+    "isbn": "9788773364765",
+    "isbn13": null,
+    "matched_author": "L. Ron Hubbard",
+    "matched_title": "Black Genesis",
+    "source": "open_library"
+  },
+  "blind-lake-wilson-2004-novel": {
+    "goodreads_id": "1117783",
+    "isbn": "2070360695",
+    "isbn13": null,
+    "matched_author": "Robert Charles Wilson",
+    "matched_title": "Blind Lake",
+    "source": "open_library"
+  },
+  "blind-voices-reamy-1979-novel": {
+    "goodreads_id": "1118000",
+    "isbn": "0140061487",
+    "isbn13": null,
+    "matched_author": "Tom Reamy",
+    "matched_title": "Blind Voices",
+    "source": "open_library"
+  },
+  "blindsight-watts-2007-novel": {
+    "goodreads_id": "2542808",
+    "isbn": "9787547739792",
+    "isbn13": null,
+    "matched_author": "Peter Watts",
+    "matched_title": "Blindsight",
+    "source": "open_library"
+  },
+  "blood-music-bear-1984-novelette": {
+    "goodreads_id": "420072",
+    "isbn": "1497607434",
+    "isbn13": null,
+    "matched_author": "Greg Bear",
+    "matched_title": "Blood Music",
+    "source": "open_library"
+  },
+  "blood-music-bear-1986-novel": {
+    "goodreads_id": "420072",
+    "isbn": "1497607434",
+    "isbn13": null,
+    "matched_author": "Greg Bear",
+    "matched_title": "Blood Music",
+    "source": "open_library"
+  },
+  "bloodchild-butler-1985-novelette": {
+    "goodreads_id": "60930",
+    "isbn": "1888363118",
+    "isbn13": null,
+    "matched_author": "Octavia E. Butler",
+    "matched_title": "Bloodchild",
+    "source": "open_library"
+  },
+  "blue-mars-robinson-1997-novel": {
+    "goodreads_id": "41132",
+    "isbn": "9782744129094",
+    "isbn13": null,
+    "matched_author": "Kim Stanley Robinson",
+    "matched_title": "Blue Mars",
+    "source": "open_library"
+  },
+  "bone-dance-bull-1992-novel": {
+    "goodreads_id": "70583",
+    "isbn": "9780441574575",
+    "isbn13": null,
+    "matched_author": "Emma Bull",
+    "matched_title": "Bone Dance",
+    "source": "open_library"
+  },
+  "bones-of-the-earth-swanwick-2003-novel": {
+    "goodreads_id": "1739592",
+    "isbn": "9780380978366",
+    "isbn13": null,
+    "matched_author": "Michael Swanwick",
+    "matched_title": "Bones of the Earth",
+    "source": "open_library"
+  },
+  "boneshaker-priest-2010-novel": {
+    "goodreads_id": "1137215",
+    "isbn": "9780765318411",
+    "isbn13": null,
+    "matched_author": "Cherie Priest",
+    "matched_title": "Boneshaker",
+    "source": "open_library"
+  },
+  "brasyl-mcdonald-2008-novel": {
+    "goodreads_id": "278281",
+    "isbn": "0575080515",
+    "isbn13": null,
+    "matched_author": "Ian McDonald",
+    "matched_title": "Brasyl",
+    "source": "open_library"
+  },
+  "briar-rose-yolen-1993-novel": {
+    "goodreads_id": "831017",
+    "isbn": "9780812558623",
+    "isbn13": null,
+    "matched_author": "Jane Yolen",
+    "matched_title": "Briar Rose",
+    "source": "open_library"
+  },
+  "brightness-reef-brin-1996-novel": {
+    "goodreads_id": "2460178",
+    "isbn": "9781857233612",
+    "isbn13": null,
+    "matched_author": "David Brin",
+    "matched_title": "Brightness Reef",
+    "source": "open_library"
+  },
+  "brittle-innings-bishop-1995-novel": {
+    "goodreads_id": "970565",
+    "isbn": "9780553569438",
+    "isbn13": null,
+    "matched_author": "Michael Bishop",
+    "matched_title": "Brittle Innings",
+    "source": "open_library"
+  },
+  "buffalo-gals-won-t-you-come-out-tonight-guin-1988-novelette": {
+    "goodreads_id": "68034",
+    "isbn": "9780876540718",
+    "isbn13": null,
+    "matched_author": "Ursula K. Le Guin",
+    "matched_title": "Buffalo Gals, Won't You Come Out Tonight",
+    "source": "open_library"
+  },
+  "bug-jack-barron-spinrad-1970-novel": {
+    "goodreads_id": "5093992",
+    "isbn": "9780425044483",
+    "isbn13": null,
+    "matched_author": "Norman Spinrad",
+    "matched_title": "Bug Jack Barron",
+    "source": "open_library"
+  },
+  "by-any-other-name-robinson-1977-novella": {
+    "goodreads_id": "74988",
+    "isbn": "9780671319748",
+    "isbn13": null,
+    "matched_author": "Spider Robinson",
+    "matched_title": "By Any Other Name",
+    "source": "open_library"
+  },
+  "calculating-god-sawyer-2001-novel": {
+    "goodreads_id": "2201826",
+    "isbn": "9780765322890",
+    "isbn13": null,
+    "matched_author": "Robert J. Sawyer",
+    "matched_title": "Calculating God",
+    "source": "open_library"
+  },
+  "calde-of-the-long-sun-wolfe-1996-novel": {
+    "goodreads_id": "1455441",
+    "isbn": "0312855834",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "Calde of the Long Sun",
+    "source": "open_library"
+  },
+  "camouflage-haldeman-2006-novel": {
+    "goodreads_id": "2023798",
+    "isbn": "9789721056879",
+    "isbn13": null,
+    "matched_author": "Joe Haldeman",
+    "matched_title": "Camouflage",
+    "source": "open_library"
+  },
+  "carson-of-venus-burroughs-1939-novel": {
+    "goodreads_id": "6158922",
+    "isbn": "0441091989",
+    "isbn13": null,
+    "matched_author": "Edgar Rice Burroughs",
+    "matched_title": "Carson of Venus",
+    "source": "open_library"
+  },
+  "cascade-point-zahn-1984-novella": {
+    "goodreads_id": "216448",
+    "isbn": "9780312940416",
+    "isbn13": null,
+    "matched_author": "Timothy Zahn",
+    "matched_title": "Cascade Point",
+    "source": "open_library"
+  },
+  "cat-s-cradle-vonnegut-1964-novel": {
+    "goodreads_id": "759359",
+    "isbn": "0805013199",
+    "isbn13": null,
+    "matched_author": "Kurt Vonnegut",
+    "matched_title": "Cat's Cradle",
+    "source": "open_library"
+  },
+  "cauldron-mcdevitt-2009-novel": {
+    "goodreads_id": "535318",
+    "isbn": "9780441015252",
+    "isbn13": null,
+    "matched_author": "Jack McDevitt",
+    "matched_title": "Cauldron",
+    "source": "open_library"
+  },
+  "celestis-park-1996-novel": {
+    "goodreads_id": "1462682",
+    "isbn": "031285899X",
+    "isbn13": null,
+    "matched_author": "Paul Park",
+    "matched_title": "Celestis",
+    "source": "open_library"
+  },
+  "childhood-s-end-clarke-1954-novel": {
+    "goodreads_id": "2555009",
+    "isbn": "8445070223",
+    "isbn13": null,
+    "matched_author": "Arthur C. Clarke",
+    "matched_title": "Childhood's End",
+    "source": "open_library"
+  },
+  "children-of-dune-herbert-1977-novel": {
+    "goodreads_id": "53789",
+    "isbn": "9783453186859",
+    "isbn13": null,
+    "matched_author": "Frank Herbert",
+    "matched_title": "Children of Dune",
+    "source": "open_library"
+  },
+  "children-of-god-russell-1999-novel": {
+    "goodreads_id": "896838",
+    "isbn": "067945635X",
+    "isbn13": null,
+    "matched_author": "Mary Doria Russell",
+    "matched_title": "Children of God",
+    "source": "open_library"
+  },
+  "china-mountain-zhang-mchugh-1993-novel": {
+    "goodreads_id": "1088147",
+    "isbn": "9781473214620",
+    "isbn13": null,
+    "matched_author": "Maureen F. McHugh",
+    "matched_title": "China Mountain Zhang",
+    "source": "open_library"
+  },
+  "chindi-mcdevitt-2004-novel": {
+    "goodreads_id": "382161",
+    "isbn": "0441009387",
+    "isbn13": null,
+    "matched_author": "Jack McDevitt",
+    "matched_title": "Chindi",
+    "source": "open_library"
+  },
+  "chthon-anthony-1968-novel": {
+    "goodreads_id": "263408",
+    "isbn": "9781497657335",
+    "isbn13": null,
+    "matched_author": "Piers Anthony",
+    "matched_title": "Chthon",
+    "source": "open_library"
+  },
+  "cirque-carr-1978-novel": {
+    "goodreads_id": "2819648",
+    "isbn": "9780449235560",
+    "isbn13": null,
+    "matched_author": "Terry Carr",
+    "matched_title": "Cirque",
+    "source": "open_library"
+  },
+  "city-on-fire-williams-1998-novel": {
+    "goodreads_id": "2953050",
+    "isbn": "0061052132",
+    "isbn13": null,
+    "matched_author": "Walter Jon Williams",
+    "matched_title": "City on Fire",
+    "source": "open_library"
+  },
+  "city-simak-1945-novelette": {
+    "goodreads_id": "2260871",
+    "isbn": "0413146308",
+    "isbn13": null,
+    "matched_author": "Clifford D. Simak",
+    "matched_title": "City",
+    "source": "open_library"
+  },
+  "cloud-atlas-mitchell-2005-novel": {
+    "goodreads_id": "6796",
+    "isbn": "0340822775",
+    "isbn13": null,
+    "matched_author": "David Mitchell",
+    "matched_title": "Cloud Atlas",
+    "source": "open_library"
+  },
+  "conjure-wife-leiber-1944-novel": {
+    "goodreads_id": "801205",
+    "isbn": "9780839823773",
+    "isbn13": null,
+    "matched_author": "Fritz Leiber",
+    "matched_title": "Conjure Wife",
+    "source": "open_library"
+  },
+  "coraline-gaiman-2003-novella": {
+    "goodreads_id": "924808",
+    "isbn": "9780060571528",
+    "isbn13": null,
+    "matched_author": "Neil Gaiman",
+    "matched_title": "Coraline",
+    "source": "open_library"
+  },
+  "cosmonaut-keep-macleod-2002-novel": {
+    "goodreads_id": "185824",
+    "isbn": "4444408294",
+    "isbn13": null,
+    "matched_author": "Ken MacLeod",
+    "matched_title": "Cosmonaut Keep",
+    "source": "open_library"
+  },
+  "count-zero-gibson-1987-novel": {
+    "goodreads_id": "14776",
+    "isbn": "000648042X",
+    "isbn13": null,
+    "matched_author": "William Gibson",
+    "matched_title": "Count Zero",
+    "source": "open_library"
+  },
+  "courtship-rite-kingsbury-1983-novel": {
+    "goodreads_id": "3215002",
+    "isbn": "9780671452247",
+    "isbn13": null,
+    "matched_author": "Donald Kingsbury",
+    "matched_title": "Courtship Rite",
+    "source": "open_library"
+  },
+  "crescent-city-rhapsody-goonan-2001-novel": {
+    "goodreads_id": "1255652",
+    "isbn": "0380977117",
+    "isbn13": null,
+    "matched_author": "Kathleen Ann Goonan",
+    "matched_title": "Crescent City Rhapsody",
+    "source": "open_library"
+  },
+  "cryptonomicon-stephenson-2000-novel": {
+    "goodreads_id": "169253",
+    "isbn": "9780060575489",
+    "isbn13": null,
+    "matched_author": "Neal Stephenson",
+    "matched_title": "Cryptonomicon",
+    "source": "open_library"
+  },
+  "cuckoo-s-egg-cherryh-1986-novel": {
+    "goodreads_id": "126490",
+    "isbn": "0886773717",
+    "isbn13": null,
+    "matched_author": "C. J. Cherryh",
+    "matched_title": "Cuckoo's Egg",
+    "source": "open_library"
+  },
+  "cyteen-cherryh-1989-novel": {
+    "goodreads_id": "57102",
+    "isbn": "9783453042957",
+    "isbn13": null,
+    "matched_author": "C. J. Cherryh",
+    "matched_title": "Cyteen",
+    "source": "open_library"
+  },
+  "dark-universe-galouye-1962-novel": {
+    "goodreads_id": "6350342",
+    "isbn": "3945493846",
+    "isbn13": null,
+    "matched_author": "Daniel F. Galouye",
+    "matched_title": "Dark Universe",
+    "source": "open_library"
+  },
+  "darkness-and-the-light-stapledon-1943-novel": {
+    "goodreads_id": "3470265",
+    "isbn": "9798717814034",
+    "isbn13": null,
+    "matched_author": "Olaf Stapledon",
+    "matched_title": "Darkness and the Light",
+    "source": "open_library"
+  },
+  "darwin-s-radio-bear-2000-novel": {
+    "goodreads_id": "2344941",
+    "isbn": "0006511384",
+    "isbn13": null,
+    "matched_author": "Greg Bear",
+    "matched_title": "Darwin's Radio",
+    "source": "open_library"
+  },
+  "darwinia-wilson-1999-novel": {
+    "goodreads_id": "174959",
+    "isbn": "9780312860387",
+    "isbn13": null,
+    "matched_author": "Robert Charles Wilson",
+    "matched_title": "Darwinia",
+    "source": "open_library"
+  },
+  "davy-pangborn-1965-novel": {
+    "goodreads_id": "920960",
+    "isbn": "1882968301",
+    "isbn13": null,
+    "matched_author": "Edgar Pangborn",
+    "matched_title": "Davy",
+    "source": "open_library"
+  },
+  "day-of-the-minotaur-swann-1967-novel": {
+    "goodreads_id": "845741",
+    "isbn": "9781434441317",
+    "isbn13": null,
+    "matched_author": "Thomas Burnett Swann",
+    "matched_title": "Day of the Minotaur",
+    "source": "open_library"
+  },
+  "deathworld-harrison-1961-novel": {
+    "goodreads_id": "2383270",
+    "isbn": "9798455258251",
+    "isbn13": null,
+    "matched_author": "Harry Harrison",
+    "matched_title": "Deathworld",
+    "source": "open_library"
+  },
+  "declare-powers-2002-novel": {
+    "goodreads_id": "190554",
+    "isbn": "9781892284792",
+    "isbn13": null,
+    "matched_author": "Tim Powers",
+    "matched_title": "Declare",
+    "source": "open_library"
+  },
+  "deserted-cities-of-the-heart-shiner-1989-novel": {
+    "goodreads_id": "379202",
+    "isbn": "9780349100012",
+    "isbn13": null,
+    "matched_author": "Lewis Shiner",
+    "matched_title": "Deserted Cities of the Heart",
+    "source": "open_library"
+  },
+  "destiny-times-three-leiber-1946-novel": {
+    "goodreads_id": "297426",
+    "isbn": "0440105641",
+    "isbn13": null,
+    "matched_author": "Fritz Leiber",
+    "matched_title": "Destiny Times Three",
+    "source": "open_library"
+  },
+  "dhalgren-delany-1976-novel": {
+    "goodreads_id": "1159160",
+    "isbn": "3404240111",
+    "isbn13": null,
+    "matched_author": "Samuel R. Delany",
+    "matched_title": "Dhalgren",
+    "source": "open_library"
+  },
+  "dinner-at-deviant-s-palace-powers-1986-novel": {
+    "goodreads_id": "1111966",
+    "isbn": "9780701130527",
+    "isbn13": null,
+    "matched_author": "Tim Powers",
+    "matched_title": "Dinner at Deviant's Palace",
+    "source": "open_library"
+  },
+  "diplomatic-immunity-bujold-2004-novel": {
+    "goodreads_id": "61901",
+    "isbn": "0743436121",
+    "isbn13": null,
+    "matched_author": "Lois McMaster Bujold",
+    "matched_title": "Diplomatic Immunity",
+    "source": "open_library"
+  },
+  "distraction-sterling-1999-novel": {
+    "goodreads_id": "977390",
+    "isbn": "9781857989281",
+    "isbn13": null,
+    "matched_author": "Bruce Sterling",
+    "matched_title": "Distraction",
+    "source": "open_library"
+  },
+  "do-androids-dream-of-electric-sheep-dick-1969-novel": {
+    "goodreads_id": "258902",
+    "isbn": "2874270970",
+    "isbn13": null,
+    "matched_author": "Philip K. Dick",
+    "matched_title": "Do Androids Dream of Electric Sheep?",
+    "source": "open_library"
+  },
+  "donovan-s-brain-siodmak-1943-novel": {
+    "goodreads_id": "973215",
+    "isbn": "9780214653292",
+    "isbn13": null,
+    "matched_author": "Curt Siodmak",
+    "matched_title": "Donovan's Brain",
+    "source": "open_library"
+  },
+  "doomsday-book-willis-1993-novel": {
+    "goodreads_id": "938335",
+    "isbn": "0450579875",
+    "isbn13": null,
+    "matched_author": "Connie Willis",
+    "matched_title": "Doomsday Book",
+    "source": "open_library"
+  },
+  "double-star-heinlein-1956-novel": {
+    "goodreads_id": "1654971",
+    "isbn": "9753420846",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "Double Star",
+    "source": "open_library"
+  },
+  "down-and-out-in-the-magic-kingdom-doctorow-2005-novel": {
+    "goodreads_id": "64270",
+    "isbn": "1976474329",
+    "isbn13": null,
+    "matched_author": "Cory Doctorow",
+    "matched_title": "Down and Out in the Magic Kingdom",
+    "source": "open_library"
+  },
+  "down-in-the-bottomlands-turtledove-1994-novella": {
+    "goodreads_id": "666260",
+    "isbn": "9780575121584",
+    "isbn13": null,
+    "matched_author": "Harry Turtledove",
+    "matched_title": "Down in the Bottomlands",
+    "source": "open_library"
+  },
+  "downbelow-station-cherryh-1982-novel": {
+    "goodreads_id": "941231",
+    "isbn": "9780727810731",
+    "isbn13": null,
+    "matched_author": "C. J. Cherryh",
+    "matched_title": "Downbelow Station",
+    "source": "open_library"
+  },
+  "dragonquest-mccaffrey-1972-novel": {
+    "goodreads_id": "2490205",
+    "isbn": "0345314484",
+    "isbn13": null,
+    "matched_author": "Anne McCaffrey",
+    "matched_title": "Dragonquest",
+    "source": "open_library"
+  },
+  "dreamsnake-mcintyre-1979-novel": {
+    "goodreads_id": "1078421",
+    "isbn": "033025863X",
+    "isbn13": null,
+    "matched_author": "Vonda N. McIntyre",
+    "matched_title": "Dreamsnake",
+    "source": "open_library"
+  },
+  "drowning-towers-turner-1989-novel": {
+    "goodreads_id": "930314",
+    "isbn": "9781557100382",
+    "isbn13": null,
+    "matched_author": "George Turner",
+    "matched_title": "Drowning Towers",
+    "source": "open_library"
+  },
+  "dune-herbert-1966-novel": {
+    "goodreads_id": "42430",
+    "isbn": "9780606031110",
+    "isbn13": null,
+    "matched_author": "Frank Herbert",
+    "matched_title": "Dune",
+    "source": "open_library"
+  },
+  "dune-world-herbert-1964-novel": {
+    "goodreads_id": "115",
+    "isbn": "0425094650",
+    "isbn13": null,
+    "matched_author": "Frank Herbert",
+    "matched_title": "Dune World",
+    "source": "open_library"
+  },
+  "dying-inside-silverberg-1973-novel": {
+    "goodreads_id": "968903",
+    "isbn": "3453215273",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "Dying Inside",
+    "source": "open_library"
+  },
+  "dying-of-the-light-martin-1978-novel": {
+    "goodreads_id": "2591662",
+    "isbn": "9785170846108",
+    "isbn13": null,
+    "matched_author": "George R. R. Martin",
+    "matched_title": "Dying of the Light",
+    "source": "open_library"
+  },
+  "earth-brin-1991-novel": {
+    "goodreads_id": "1230393",
+    "isbn": "9780708848722",
+    "isbn13": null,
+    "matched_author": "David Brin",
+    "matched_title": "Earth",
+    "source": "open_library"
+  },
+  "earth-s-last-citadel-moore-1944-novel": {
+    "goodreads_id": "952356",
+    "isbn": "0441181112",
+    "isbn13": null,
+    "matched_author": "C. L. Moore",
+    "matched_title": "Earth's Last Citadel",
+    "source": "open_library"
+  },
+  "earthman-come-home-blish-1954-novelette": {
+    "goodreads_id": "4447474",
+    "isbn": "9780571063918",
+    "isbn13": null,
+    "matched_author": "James Blish",
+    "matched_title": "Earthman, Come Home",
+    "source": "open_library"
+  },
+  "eifelheim-flynn-2007-novel": {
+    "goodreads_id": "2975820",
+    "isbn": "9781433206108",
+    "isbn13": null,
+    "matched_author": "Michael F. Flynn",
+    "matched_title": "Eifelheim",
+    "source": "open_library"
+  },
+  "embassytown-mieville-2012-novel": {
+    "goodreads_id": "11297288",
+    "isbn": "6051721495",
+    "isbn13": null,
+    "matched_author": "China Mi\u00e9ville",
+    "matched_title": "Embassytown",
+    "source": "open_library"
+  },
+  "emergence-palmer-1985-novel": {
+    "goodreads_id": "1157866",
+    "isbn": "9780553245011",
+    "isbn13": null,
+    "matched_author": "David R. Palmer",
+    "matched_title": "Emergence",
+    "source": "open_library"
+  },
   "ender-s-game-card-1986-novel": {
     "goodreads_id": "375802",
     "isbn": "0812550706",
     "isbn13": "9780812550702",
     "matched_author": "Orson Scott Card",
     "matched_title": "Ender\u2019s Game (Ender's Saga, #1)"
+  },
+  "enemy-mine-longyear-1980-novella": {
+    "goodreads_id": "2519688",
+    "isbn": "0595309763",
+    "isbn13": null,
+    "matched_author": "Barry B. Longyear",
+    "matched_title": "Enemy Mine",
+    "source": "open_library"
+  },
+  "eternity-s-end-carver-2002-novel": {
+    "goodreads_id": "364903",
+    "isbn": "9780812534436",
+    "isbn13": null,
+    "matched_author": "Jeffrey Carver",
+    "matched_title": "Eternity's End",
+    "source": "open_library"
+  },
+  "expiration-date-powers-1997-novel": {
+    "goodreads_id": "602513",
+    "isbn": "9780765317520",
+    "isbn13": null,
+    "matched_author": "Tim Powers",
+    "matched_title": "Expiration Date",
+    "source": "open_library"
+  },
+  "exploration-team-leinster-1956-novelette": {
+    "goodreads_id": "6070298",
+    "isbn": "9781556560279",
+    "isbn13": null,
+    "matched_author": "Murray Leinster",
+    "matched_title": "Exploration Team",
+    "source": "open_library"
+  },
+  "eye-for-eye-card-1988-novella": {
+    "goodreads_id": "92980",
+    "isbn": "1933299517",
+    "isbn13": null,
+    "matched_author": "Orson Scott Card",
+    "matched_title": "Eye for Eye",
+    "source": "open_library"
+  },
+  "factoring-humanity-sawyer-1999-novel": {
+    "goodreads_id": "580254",
+    "isbn": "9780765381460",
+    "isbn13": null,
+    "matched_author": "Robert J. Sawyer",
+    "matched_title": "Factoring Humanity",
+    "source": "open_library"
+  },
+  "fahrenheit-451-bradbury-1954-novel": {
+    "goodreads_id": "119787",
+    "isbn": "9781613832493",
+    "isbn13": null,
+    "matched_author": "Ray Bradbury",
+    "matched_title": "Fahrenheit 451",
+    "source": "open_library"
+  },
+  "falling-free-bujold-1989-novel": {
+    "goodreads_id": "990090",
+    "isbn": "9781886778535",
+    "isbn13": null,
+    "matched_author": "Lois McMaster Bujold",
+    "matched_title": "Falling Free",
+    "source": "open_library"
+  },
+  "farmer-in-the-sky-heinlein-1951-novel": {
+    "goodreads_id": "50891",
+    "isbn": "0345275969",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "Farmer in the Sky",
+    "source": "open_library"
+  },
+  "farthing-walton-2007-novel": {
+    "goodreads_id": "183740",
+    "isbn": "1444822446",
+    "isbn13": null,
+    "matched_author": "Jo Walton",
+    "matched_title": "Farthing",
+    "source": "open_library"
+  },
+  "fire-time-anderson-1975-novel": {
+    "goodreads_id": "5576510",
+    "isbn": "9780586043929",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "Fire Time",
+    "source": "open_library"
+  },
+  "fire-watch-willis-1983-novelette": {
+    "goodreads_id": "1381657",
+    "isbn": "0553260456",
+    "isbn13": null,
+    "matched_author": "Connie Willis",
+    "matched_title": "Fire Watch",
+    "source": "open_library"
+  },
+  "first-contact-leinster-1946-novelette": {
+    "goodreads_id": "6070297",
+    "isbn": "9781556561955",
+    "isbn13": null,
+    "matched_author": "Murray Leinster",
+    "matched_title": "First Contact",
+    "source": "open_library"
+  },
+  "first-lensman-smith-1951-novel": {
+    "goodreads_id": "826505",
+    "isbn": "1981847537",
+    "isbn13": null,
+    "matched_author": "E. E. Smith",
+    "matched_title": "First Lensman",
+    "source": "open_library"
+  },
+  "flesh-and-fire-gilman-2010-novel": {
+    "goodreads_id": "6314293",
+    "isbn": "9781439101414",
+    "isbn13": null,
+    "matched_author": "Laura Anne Gilman",
+    "matched_title": "Flesh and Fire",
+    "source": "open_library"
+  },
+  "flow-my-tears-the-policeman-said-dick-1975-novel": {
+    "goodreads_id": "498162",
+    "isbn": "9787894000750",
+    "isbn13": null,
+    "matched_author": "Philip K. Dick",
+    "matched_title": "Flow My Tears, the Policeman Said",
+    "source": "open_library"
+  },
+  "flowers-for-algernon-keyes-1967-novel": {
+    "goodreads_id": "16639711",
+    "isbn": "9780745131924",
+    "isbn13": null,
+    "matched_author": "Daniel Keyes",
+    "matched_title": "Flowers for Algernon",
+    "source": "open_library"
+  },
+  "footfall-niven-1986-novel": {
+    "goodreads_id": "1116923",
+    "isbn": "0722163398",
+    "isbn13": null,
+    "matched_author": "Larry Niven",
+    "matched_title": "Footfall",
+    "source": "open_library"
+  },
+  "forests-of-the-heart-lint-2001-novel": {
+    "goodreads_id": "186418",
+    "isbn": "0575072326",
+    "isbn13": null,
+    "matched_author": "Charles de Lint",
+    "matched_title": "Forests of the Heart",
+    "source": "open_library"
+  },
+  "forever-peace-haldeman-1998-novel": {
+    "goodreads_id": "2734889",
+    "isbn": "9780441004065",
+    "isbn13": null,
+    "matched_author": "Joe Haldeman",
+    "matched_title": "Forever Peace",
+    "source": "open_library"
+  },
+  "foundation-s-edge-asimov-1983-novel": {
+    "goodreads_id": "583206",
+    "isbn": "0553293389",
+    "isbn13": null,
+    "matched_author": "Isaac Asimov",
+    "matched_title": "Foundation's Edge",
+    "source": "open_library"
+  },
+  "fourth-mansions-lafferty-1971-novel": {
+    "goodreads_id": "972912",
+    "isbn": "1557850488",
+    "isbn13": null,
+    "matched_author": "R. A. Lafferty",
+    "matched_title": "Fourth Mansions",
+    "source": "open_library"
+  },
+  "frameshift-sawyer-1998-novel": {
+    "goodreads_id": "264941",
+    "isbn": "9780765381453",
+    "isbn13": null,
+    "matched_author": "Robert J. Sawyer",
+    "matched_title": "Frameshift",
+    "source": "open_library"
+  },
+  "free-live-free-wolfe-1987-novel": {
+    "goodreads_id": "976365",
+    "isbn": "0961297018",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "Free Live Free",
+    "source": "open_library"
+  },
+  "friday-heinlein-1983-novel": {
+    "goodreads_id": "853258",
+    "isbn": "0886461863",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "Friday",
+    "source": "open_library"
+  },
+  "from-the-files-of-the-time-rangers-bowes-2007-novel": {
+    "goodreads_id": "821543",
+    "isbn": "1930846355",
+    "isbn13": null,
+    "matched_author": "Richard Bowes",
+    "matched_title": "From the Files of the Time Rangers",
+    "source": "open_library"
+  },
+  "frontera-shiner-1985-novel": {
+    "goodreads_id": "379200",
+    "isbn": "0671558994",
+    "isbn13": null,
+    "matched_author": "Lewis Shiner",
+    "matched_title": "Frontera",
+    "source": "open_library"
+  },
+  "galactic-patrol-smith-1939-novel": {
+    "goodreads_id": "1383301",
+    "isbn": "0491003889",
+    "isbn13": null,
+    "matched_author": "E. E. Smith",
+    "matched_title": "Galactic Patrol",
+    "source": "open_library"
+  },
+  "gateway-pohl-1978-novel": {
+    "goodreads_id": "6123547",
+    "isbn": "0345007778",
+    "isbn13": null,
+    "matched_author": "Frederik Pohl",
+    "matched_title": "Gateway",
+    "source": "open_library"
+  },
+  "gather-darkness-leiber-1944-novel": {
+    "goodreads_id": "2356069",
+    "isbn": "0345245857",
+    "isbn13": null,
+    "matched_author": "Fritz Leiber",
+    "matched_title": "Gather, Darkness!",
+    "source": "open_library"
+  },
+  "georgia-on-my-mind-sheffield-1994-novelette": {
+    "goodreads_id": "1039024",
+    "isbn": "9780312862251",
+    "isbn13": null,
+    "matched_author": "Charles Sheffield",
+    "matched_title": "Georgia on My Mind",
+    "source": "open_library"
   },
   "gideon-the-ninth-muir-2020-novel": {
     "goodreads_id": "42288661",
@@ -62,12 +1342,468 @@
     "matched_author": "Tamsyn Muir",
     "matched_title": "Gideon the Ninth (The Locked Tomb, #1)"
   },
+  "glasshouse-stross-2007-novel": {
+    "goodreads_id": "17866",
+    "isbn": "9780441014033",
+    "isbn13": null,
+    "matched_author": "Charles Stross",
+    "matched_title": "Glasshouse",
+    "source": "open_library"
+  },
+  "glory-road-heinlein-1964-novel": {
+    "goodreads_id": "3564352",
+    "isbn": "9780425031346",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "Glory Road",
+    "source": "open_library"
+  },
+  "glory-season-brin-1994-novel": {
+    "goodreads_id": "940058",
+    "isbn": "9781405514439",
+    "isbn13": null,
+    "matched_author": "David Brin",
+    "matched_title": "Glory Season",
+    "source": "open_library"
+  },
+  "going-postal-pratchett-2006-novel": {
+    "goodreads_id": "13619116",
+    "isbn": "9780060502935",
+    "isbn13": null,
+    "matched_author": "Terry Pratchett",
+    "matched_title": "Going Postal",
+    "source": "open_library"
+  },
+  "gold-asimov-1992-novelette": {
+    "goodreads_id": "438743",
+    "isbn": "9780061054099",
+    "isbn13": null,
+    "matched_author": "Isaac Asimov",
+    "matched_title": "Gold",
+    "source": "open_library"
+  },
+  "gonna-roll-the-bones-leiber-1968-novelette": {
+    "goodreads_id": "561354",
+    "isbn": "9780689035913",
+    "isbn13": null,
+    "matched_author": "Fritz Leiber",
+    "matched_title": "Gonna Roll the Bones",
+    "source": "open_library"
+  },
+  "good-news-from-outer-space-kessel-1990-novel": {
+    "goodreads_id": "1138865",
+    "isbn": "9780312931780",
+    "isbn13": null,
+    "matched_author": "John Kessel",
+    "matched_title": "Good News From Outer Space",
+    "source": "open_library"
+  },
+  "grass-tepper-1990-novel": {
+    "goodreads_id": "876303",
+    "isbn": "0385260121",
+    "isbn13": null,
+    "matched_author": "Sheri S. Tepper",
+    "matched_title": "Grass",
+    "source": "open_library"
+  },
+  "gravity-s-rainbow-pynchon-1974-novel": {
+    "goodreads_id": "490160",
+    "isbn": "8490669406",
+    "isbn13": null,
+    "matched_author": "Thomas Pynchon",
+    "matched_title": "Gravity's Rainbow",
+    "source": "open_library"
+  },
+  "gray-lensman-smith-1941-novel": {
+    "goodreads_id": "826525",
+    "isbn": "9781882968121",
+    "isbn13": null,
+    "matched_author": "E. E. Smith",
+    "matched_title": "Gray Lensman",
+    "source": "open_library"
+  },
+  "great-sky-river-benford-1989-novel": {
+    "goodreads_id": "453975",
+    "isbn": "9780575118171",
+    "isbn13": null,
+    "matched_author": "Gregory Benford",
+    "matched_title": "Great Sky River",
+    "source": "open_library"
+  },
+  "green-mars-robinson-1994-novel": {
+    "goodreads_id": "302442",
+    "isbn": "9782744129100",
+    "isbn13": null,
+    "matched_author": "Kim Stanley Robinson",
+    "matched_title": "Green Mars",
+    "source": "open_library"
+  },
+  "guernica-night-malzberg-1976-novel": {
+    "goodreads_id": "287101",
+    "isbn": "9780672519918",
+    "isbn13": null,
+    "matched_author": "Barry N. Malzberg",
+    "matched_title": "Guernica Night",
+    "source": "open_library"
+  },
+  "gun-with-occasional-music-lethem-1995-novel": {
+    "goodreads_id": "826591",
+    "isbn": "057131788X",
+    "isbn13": null,
+    "matched_author": "Jonathan Lethem",
+    "matched_title": "Gun, with Occasional Music",
+    "source": "open_library"
+  },
+  "half-past-human-bass-1972-novel": {
+    "goodreads_id": "1890995",
+    "isbn": "9780345023063",
+    "isbn13": null,
+    "matched_author": "T. J. Bass",
+    "matched_title": "Half Past Human",
+    "source": "open_library"
+  },
+  "halting-state-stross-2008-novel": {
+    "goodreads_id": "2564523",
+    "isbn": "0441016073",
+    "isbn13": null,
+    "matched_author": "Charles Stross",
+    "matched_title": "Halting State",
+    "source": "open_library"
+  },
+  "hard-landing-budrys-1994-novel": {
+    "goodreads_id": "195754",
+    "isbn": "9781982557577",
+    "isbn13": null,
+    "matched_author": "Algis Budrys",
+    "matched_title": "Hard Landing",
+    "source": "open_library"
+  },
+  "harpist-in-the-wind-mckillip-1980-novel": {
+    "goodreads_id": "121590",
+    "isbn": "0345324404",
+    "isbn13": null,
+    "matched_author": "Patricia A. McKillip",
+    "matched_title": "Harpist in the Wind",
+    "source": "open_library"
+  },
+  "harrow-the-ninth-muir-2021-novel": {
+    "goodreads_id": "51952407",
+    "isbn": "1250313201",
+    "isbn13": null,
+    "matched_author": "Tamsyn Muir",
+    "matched_title": "Harrow the Ninth",
+    "source": "open_library"
+  },
+  "harry-potter-and-the-goblet-of-fire-rowling-2001-novel": {
+    "goodreads_id": "536405",
+    "isbn": "8372780218",
+    "isbn13": null,
+    "matched_author": "J. K. Rowling",
+    "matched_title": "Harry Potter and the Goblet of Fire",
+    "source": "open_library"
+  },
+  "harry-potter-and-the-prisoner-of-azkaban-rowling-2000-novel": {
+    "goodreads_id": "8723737",
+    "isbn": "9788884516121",
+    "isbn13": null,
+    "matched_author": "J. K. Rowling",
+    "matched_title": "Harry Potter and the Prisoner of Azkaban",
+    "source": "open_library"
+  },
+  "helliconia-spring-aldiss-1983-novel": {
+    "goodreads_id": "3798908",
+    "isbn": "0425088952",
+    "isbn13": null,
+    "matched_author": "Brian Aldiss",
+    "matched_title": "Helliconia Spring",
+    "source": "open_library"
+  },
+  "helliconia-winter-aldiss-1986-novel": {
+    "goodreads_id": "1876845",
+    "isbn": "9780689115417",
+    "isbn13": null,
+    "matched_author": "Brian Aldiss",
+    "matched_title": "Helliconia Winter",
+    "source": "open_library"
+  },
+  "his-majesty-s-dragon-novik-2007-novel": {
+    "goodreads_id": "28876",
+    "isbn": "1435257898",
+    "isbn13": null,
+    "matched_author": "Naomi Novik",
+    "matched_title": "His Majesty's Dragon",
+    "source": "open_library"
+  },
+  "home-is-the-hangman-zelazny-1976-novella": {
+    "goodreads_id": "239916",
+    "isbn": "9780812509830",
+    "isbn13": null,
+    "matched_author": "Roger Zelazny",
+    "matched_title": "Home Is the Hangman",
+    "source": "open_library"
+  },
+  "hominids-sawyer-2003-novel": {
+    "goodreads_id": "264946",
+    "isbn": "97807653455004",
+    "isbn13": null,
+    "matched_author": "Robert J. Sawyer",
+    "matched_title": "Hominids",
+    "source": "open_library"
+  },
+  "houston-houston-do-you-read-tiptree-1977-novella": {
+    "goodreads_id": "318011",
+    "isbn": "3902711078",
+    "isbn13": null,
+    "matched_author": "James Tiptree",
+    "matched_title": "Houston, Houston, Do You Read?",
+    "source": "open_library"
+  },
+  "how-few-remain-turtledove-1999-novel": {
+    "goodreads_id": "1714219",
+    "isbn": "9780340715406",
+    "isbn13": null,
+    "matched_author": "Harry Turtledove",
+    "matched_title": "How Few Remain",
+    "source": "open_library"
+  },
   "hyperion-simmons-1990-novel": {
     "goodreads_id": "10240738",
     "isbn": null,
     "isbn13": null,
     "matched_author": "Dan Simmons",
     "matched_title": "Hyperion (Hyperion Cantos, #1)"
+  },
+  "ilium-simmons-2004-novel": {
+    "goodreads_id": "967477",
+    "isbn": "8466623299",
+    "isbn13": null,
+    "matched_author": "Dan Simmons",
+    "matched_title": "Ilium",
+    "source": "open_library"
+  },
+  "ill-met-in-lankhmar-leiber-1971-novella": {
+    "goodreads_id": "944748",
+    "isbn": "1565049268",
+    "isbn13": null,
+    "matched_author": "Fritz Leiber",
+    "matched_title": "Ill Met in Lankhmar",
+    "source": "open_library"
+  },
+  "in-the-ocean-of-night-benford-1978-novel": {
+    "goodreads_id": "2998492",
+    "isbn": "1306758610",
+    "isbn13": null,
+    "matched_author": "Gregory Benford",
+    "matched_title": "In the Ocean of Night",
+    "source": "open_library"
+  },
+  "inferno-niven-1976-novel": {
+    "goodreads_id": "302539",
+    "isbn": "0839824505",
+    "isbn13": null,
+    "matched_author": "Larry Niven",
+    "matched_title": "Inferno",
+    "source": "open_library"
+  },
+  "infinity-beach-mcdevitt-2001-novel": {
+    "goodreads_id": "1281234",
+    "isbn": "0061828289",
+    "isbn13": null,
+    "matched_author": "Jack McDevitt",
+    "matched_title": "Infinity Beach",
+    "source": "open_library"
+  },
+  "inside-job-willis-2006-novella": {
+    "goodreads_id": "24978",
+    "isbn": "1596060247",
+    "isbn13": null,
+    "matched_author": "Connie Willis",
+    "matched_title": "Inside Job",
+    "source": "open_library"
+  },
+  "inverted-world-priest-1975-novel": {
+    "goodreads_id": "2220811",
+    "isbn": "9780571104444",
+    "isbn13": null,
+    "matched_author": "Christopher Priest",
+    "matched_title": "Inverted World",
+    "source": "open_library"
+  },
+  "iron-council-mieville-2005-novel": {
+    "goodreads_id": "25072129",
+    "isbn": "0345478541",
+    "isbn13": null,
+    "matched_author": "China Mi\u00e9ville",
+    "matched_title": "Iron Council",
+    "source": "open_library"
+  },
+  "iron-sunrise-stross-2005-novel": {
+    "goodreads_id": "463974",
+    "isbn": "110120835X",
+    "isbn13": null,
+    "matched_author": "Charles Stross",
+    "matched_title": "Iron Sunrise",
+    "source": "open_library"
+  },
+  "islandia-wright-1943-novel": {
+    "goodreads_id": "2066113",
+    "isbn": "9780452253063",
+    "isbn13": null,
+    "matched_author": "Austin Tappan Wright",
+    "matched_title": "Islandia",
+    "source": "open_library"
+  },
+  "islands-in-the-net-sterling-1989-novel": {
+    "goodreads_id": "32859762",
+    "isbn": "1497686512",
+    "isbn13": null,
+    "matched_author": "Bruce Sterling",
+    "matched_title": "Islands in the Net",
+    "source": "open_library"
+  },
+  "islands-randall-1977-novel": {
+    "goodreads_id": "1521194",
+    "isbn": "9780759240032",
+    "isbn13": null,
+    "matched_author": "Marta Randall",
+    "matched_title": "Islands",
+    "source": "open_library"
+  },
+  "isle-of-the-dead-zelazny-1970-novel": {
+    "goodreads_id": "1117641",
+    "isbn": "159687483X",
+    "isbn13": null,
+    "matched_author": "Roger Zelazny",
+    "matched_title": "Isle of the Dead",
+    "source": "open_library"
+  },
+  "ivory-a-legend-of-past-and-future-resnick-1990-novel": {
+    "goodreads_id": "1823535",
+    "isbn": "9780712634656",
+    "isbn13": null,
+    "matched_author": "Mike Resnick",
+    "matched_title": "Ivory: A Legend of Past and Future",
+    "source": "open_library"
+  },
+  "jack-faust-swanwick-1998-novel": {
+    "goodreads_id": "243860",
+    "isbn": "9780380974443",
+    "isbn13": null,
+    "matched_author": "Michael Swanwick",
+    "matched_title": "Jack Faust",
+    "source": "open_library"
+  },
+  "jack-of-shadows-zelazny-1972-novel": {
+    "goodreads_id": "3274411",
+    "isbn": "9780451159762",
+    "isbn13": null,
+    "matched_author": "Roger Zelazny",
+    "matched_title": "Jack of Shadows",
+    "source": "open_library"
+  },
+  "jem-pohl-1980-novel": {
+    "goodreads_id": "2794888",
+    "isbn": "9780553251449",
+    "isbn13": null,
+    "matched_author": "Frederik Pohl",
+    "matched_title": "Jem",
+    "source": "open_library"
+  },
+  "job-a-comedy-of-justice-heinlein-1985-novel": {
+    "goodreads_id": "1035534",
+    "isbn": "0345316509",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "Job: A Comedy of Justice",
+    "source": "open_library"
+  },
+  "jonathan-strange-mr-norrell-clarke-2005-novel": {
+    "goodreads_id": "373991",
+    "isbn": "2221104048",
+    "isbn13": null,
+    "matched_author": "Susanna Clarke",
+    "matched_title": "Jonathan Strange & Mr Norrell",
+    "source": "open_library"
+  },
+  "julian-comstock-a-story-of-22nd-century-america-wilson-2010-novel": {
+    "goodreads_id": "5997978",
+    "isbn": "9780765359230",
+    "isbn13": null,
+    "matched_author": "Robert Charles Wilson",
+    "matched_title": "Julian Comstock: A Story of 22nd-Century America",
+    "source": "open_library"
+  },
+  "juniper-time-wilhelm-1980-novel": {
+    "goodreads_id": "91137",
+    "isbn": "0099255502",
+    "isbn13": null,
+    "matched_author": "Kate Wilhelm",
+    "matched_title": "Juniper Time",
+    "source": "open_library"
+  },
+  "kalki-vidal-1979-novel": {
+    "goodreads_id": "88880",
+    "isbn": "9781888329018",
+    "isbn13": null,
+    "matched_author": "Gore Vidal",
+    "matched_title": "Kalki",
+    "source": "open_library"
+  },
+  "kallocain-boye-1941-novel": {
+    "goodreads_id": "65717",
+    "isbn": "0880640502",
+    "isbn13": null,
+    "matched_author": "Karin Boye",
+    "matched_title": "Kallocain",
+    "source": "open_library"
+  },
+  "katabasis-kuang-2026-novel": {
+    "goodreads_id": "241199710",
+    "isbn": "9780008501877",
+    "isbn13": null,
+    "matched_author": "R. F. Kuang",
+    "matched_title": "Katabasis",
+    "source": "open_library"
+  },
+  "killdozer-sturgeon-1945-novella": {
+    "goodreads_id": "274620",
+    "isbn": "1299568289",
+    "isbn13": null,
+    "matched_author": "Theodore Sturgeon",
+    "matched_title": "Killdozer!",
+    "source": "open_library"
+  },
+  "king-s-dragon-elliott-1998-novel": {
+    "goodreads_id": "202039",
+    "isbn": "0886777712",
+    "isbn13": null,
+    "matched_author": "Kate Elliott",
+    "matched_title": "King's Dragon",
+    "source": "open_library"
+  },
+  "land-of-terror-burroughs-1945-novel": {
+    "goodreads_id": "2352362",
+    "isbn": "0441470017",
+    "isbn13": null,
+    "matched_author": "Edgar Rice Burroughs",
+    "matched_title": "Land of Terror",
+    "source": "open_library"
+  },
+  "learning-the-world-macleod-2006-novel": {
+    "goodreads_id": "1626949",
+    "isbn": "1405519460",
+    "isbn13": null,
+    "matched_author": "Ken MacLeod",
+    "matched_title": "Learning the World",
+    "source": "open_library"
+  },
+  "legends-lattes-baldree-2023-novel": {
+    "goodreads_id": "201938849",
+    "isbn": "9781035007318",
+    "isbn13": null,
+    "matched_author": "Travis Baldree",
+    "matched_title": "Legends & Lattes",
+    "source": "open_library"
   },
   "leviathan-wakes-corey-2012-novel": {
     "goodreads_id": "38213061",
@@ -76,12 +1812,364 @@
     "matched_author": "James S.A. Corey",
     "matched_title": "Leviathan Wakes (The Expanse, #1)"
   },
+  "light-from-uncommon-stars-aoki-2022-novel": {
+    "goodreads_id": "56269476",
+    "isbn": "1250789087",
+    "isbn13": null,
+    "matched_author": "Ryka Aoki",
+    "matched_title": "Light From Uncommon Stars",
+    "source": "open_library"
+  },
+  "light-music-goonan-2004-novel": {
+    "goodreads_id": "2924771",
+    "isbn": "0380803518",
+    "isbn13": null,
+    "matched_author": "Kathleen Ann Goonan",
+    "matched_title": "Light Music",
+    "source": "open_library"
+  },
+  "little-big-crowley-1982-novel": {
+    "goodreads_id": "2850874",
+    "isbn": "0061120057",
+    "isbn13": null,
+    "matched_author": "John Crowley",
+    "matched_title": "Little, Big",
+    "source": "open_library"
+  },
+  "little-brother-doctorow-2009-novel": {
+    "goodreads_id": "954674",
+    "isbn": "1429972874",
+    "isbn13": null,
+    "matched_author": "Cory Doctorow",
+    "matched_title": "Little Brother",
+    "source": "open_library"
+  },
+  "little-fuzzy-piper-1963-novel": {
+    "goodreads_id": "3167619",
+    "isbn": "9781973826163",
+    "isbn13": null,
+    "matched_author": "H. Beam Piper",
+    "matched_title": "Little Fuzzy",
+    "source": "open_library"
+  },
+  "lord-of-light-zelazny-1968-novel": {
+    "goodreads_id": "1393101",
+    "isbn": "9780739416884",
+    "isbn13": null,
+    "matched_author": "Roger Zelazny",
+    "matched_title": "Lord of Light",
+    "source": "open_library"
+  },
+  "lord-valentine-s-castle-silverberg-1981-novel": {
+    "goodreads_id": "4117087",
+    "isbn": "0330264621",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "Lord Valentine's Castle",
+    "source": "open_library"
+  },
+  "lost-dorsai-dickson-1981-novella": {
+    "goodreads_id": "2172985",
+    "isbn": "9780441493005",
+    "isbn13": null,
+    "matched_author": "Gordon R. Dickson",
+    "matched_title": "Lost Dorsai",
+    "source": "open_library"
+  },
+  "lucifer-s-hammer-niven-1978-novel": {
+    "goodreads_id": "1841999",
+    "isbn": "0449204294",
+    "isbn13": null,
+    "matched_author": "Larry Niven",
+    "matched_title": "Lucifer's Hammer",
+    "source": "open_library"
+  },
+  "lyonesse-vance-1984-novel": {
+    "goodreads_id": "40877",
+    "isbn": "9780425095959",
+    "isbn13": null,
+    "matched_author": "Jack Vance",
+    "matched_title": "Lyonesse",
+    "source": "open_library"
+  },
+  "macroscope-anthony-1970-novel": {
+    "goodreads_id": "2131166",
+    "isbn": "0722111762",
+    "isbn13": null,
+    "matched_author": "Piers Anthony",
+    "matched_title": "Macroscope",
+    "source": "open_library"
+  },
+  "making-money-pratchett-2009-novel": {
+    "goodreads_id": "13620092",
+    "isbn": "9788499899657",
+    "isbn13": null,
+    "matched_author": "Terry Pratchett",
+    "matched_title": "Making Money",
+    "source": "open_library"
+  },
+  "man-plus-pohl-1977-novel": {
+    "goodreads_id": "6505921",
+    "isbn": "055324809x295",
+    "isbn13": null,
+    "matched_author": "Frederik Pohl",
+    "matched_title": "Man Plus",
+    "source": "open_library"
+  },
+  "margaret-and-i-wilhelm-1972-novel": {
+    "goodreads_id": "890479",
+    "isbn": "0671834304",
+    "isbn13": null,
+    "matched_author": "Kate Wilhelm",
+    "matched_title": "Margaret and I",
+    "source": "open_library"
+  },
+  "marooned-in-realtime-vinge-1987-novel": {
+    "goodreads_id": "459737",
+    "isbn": "9780312942953",
+    "isbn13": null,
+    "matched_author": "Vernor Vinge",
+    "matched_title": "Marooned in Realtime",
+    "source": "open_library"
+  },
+  "mary-reilly-martin-1991-novel": {
+    "goodreads_id": "1143442",
+    "isbn": "0375725997",
+    "isbn13": null,
+    "matched_author": "Valerie Martin",
+    "matched_title": "Mary Reilly",
+    "source": "open_library"
+  },
+  "memory-bujold-1997-novel": {
+    "goodreads_id": "1141958",
+    "isbn": "4488698131",
+    "isbn13": null,
+    "matched_author": "Lois McMaster Bujold",
+    "matched_title": "Memory",
+    "source": "open_library"
+  },
+  "metropolitan-williams-1996-novel": {
+    "goodreads_id": "3070690",
+    "isbn": "0061052124",
+    "isbn13": null,
+    "matched_author": "Walter Jon Williams",
+    "matched_title": "Metropolitan",
+    "source": "open_library"
+  },
+  "mexican-gothic-moreno-garcia-2021-novel": {
+    "goodreads_id": "60722528",
+    "isbn": "9780525620808",
+    "isbn13": null,
+    "matched_author": "Silvia Moreno-Garcia",
+    "matched_title": "Mexican Gothic",
+    "source": "open_library"
+  },
+  "midnight-robber-hopkinson-2001-novel": {
+    "goodreads_id": "71409",
+    "isbn": "9780613279765",
+    "isbn13": null,
+    "matched_author": "Nalo Hopkinson",
+    "matched_title": "Midnight Robber",
+    "source": "open_library"
+  },
+  "millennium-varley-1984-novel": {
+    "goodreads_id": "1872344",
+    "isbn": "0441006779",
+    "isbn13": null,
+    "matched_author": "John Varley",
+    "matched_title": "Millennium",
+    "source": "open_library"
+  },
+  "mindbridge-haldeman-1977-novel": {
+    "goodreads_id": "1875563",
+    "isbn": "9783442232833",
+    "isbn13": null,
+    "matched_author": "Joe Haldeman",
+    "matched_title": "Mindbridge",
+    "source": "open_library"
+  },
+  "mirror-dance-bujold-1995-novel": {
+    "goodreads_id": "296144",
+    "isbn": "9781441701886",
+    "isbn13": null,
+    "matched_author": "Lois McMaster Bujold",
+    "matched_title": "Mirror Dance",
+    "source": "open_library"
+  },
+  "missing-man-maclean-1976-novel": {
+    "goodreads_id": "3311260",
+    "isbn": "9780399114748",
+    "isbn13": null,
+    "matched_author": "Katherine MacLean",
+    "matched_title": "Missing Man",
+    "source": "open_library"
+  },
+  "mission-child-mchugh-2000-novel": {
+    "goodreads_id": "1744634",
+    "isbn": "9781857238617",
+    "isbn13": null,
+    "matched_author": "Maureen F. McHugh",
+    "matched_title": "Mission Child",
+    "source": "open_library"
+  },
+  "mission-of-gravity-clement-1954-novel": {
+    "goodreads_id": "909485",
+    "isbn": "0899683363",
+    "isbn13": null,
+    "matched_author": "Hal Clement",
+    "matched_title": "Mission of Gravity",
+    "source": "open_library"
+  },
+  "mockingbird-stewart-2000-novel": {
+    "goodreads_id": "383106",
+    "isbn": "1306908566",
+    "isbn13": null,
+    "matched_author": "Sean Stewart",
+    "matched_title": "Mockingbird",
+    "source": "open_library"
+  },
+  "mockingbird-tevis-1981-novel": {
+    "goodreads_id": "836714",
+    "isbn": "9780340251935",
+    "isbn13": null,
+    "matched_author": "Walter Tevis",
+    "matched_title": "Mockingbird",
+    "source": "open_library"
+  },
+  "mona-lisa-overdrive-gibson-1989-novel": {
+    "goodreads_id": "169264",
+    "isbn": "345303886X",
+    "isbn13": null,
+    "matched_author": "William Gibson",
+    "matched_title": "Mona Lisa Overdrive",
+    "source": "open_library"
+  },
+  "moonfall-mcdevitt-1999-novel": {
+    "goodreads_id": "337134",
+    "isbn": "9780061946288",
+    "isbn13": null,
+    "matched_author": "Jack McDevitt",
+    "matched_title": "Moonfall",
+    "source": "open_library"
+  },
+  "moonstar-odyssey-gerrold-1978-novel": {
+    "goodreads_id": "991414",
+    "isbn": "9780451073723",
+    "isbn13": null,
+    "matched_author": "David Gerrold",
+    "matched_title": "Moonstar Odyssey",
+    "source": "open_library"
+  },
+  "more-than-human-sturgeon-1954-novel": {
+    "goodreads_id": "1003122",
+    "isbn": "0575038217",
+    "isbn13": null,
+    "matched_author": "Theodore Sturgeon",
+    "matched_title": "More Than Human",
+    "source": "open_library"
+  },
+  "moreta-dragonlady-of-pern-mccaffrey-1984-novel": {
+    "goodreads_id": "2490197",
+    "isbn": "0739451928",
+    "isbn13": null,
+    "matched_author": "Anne McCaffrey",
+    "matched_title": "Moreta: Dragonlady of Pern",
+    "source": "open_library"
+  },
+  "mother-of-storms-barnes-1995-novel": {
+    "goodreads_id": "3628900",
+    "isbn": "0765332515",
+    "isbn13": null,
+    "matched_author": "John Barnes",
+    "matched_title": "Mother of Storms",
+    "source": "open_library"
+  },
+  "moving-mars-bear-1994-novel": {
+    "goodreads_id": "2555271",
+    "isbn": "9780099263111",
+    "isbn13": null,
+    "matched_author": "Greg Bear",
+    "matched_title": "Moving Mars",
+    "source": "open_library"
+  },
   "network-effect-wells-2021-novel": {
     "goodreads_id": "52680842",
     "isbn": null,
     "isbn13": null,
     "matched_author": "Martha Wells",
     "matched_title": "Network Effect (The Murderbot Diaries, #5)"
+  },
+  "neuromancer-gibson-1985-novel": {
+    "goodreads_id": "95571",
+    "isbn": "9788758804118",
+    "isbn13": null,
+    "matched_author": "William Gibson",
+    "matched_title": "Neuromancer",
+    "source": "open_library"
+  },
+  "nightside-the-long-sun-wolfe-1994-novel": {
+    "goodreads_id": "6766893",
+    "isbn": "031285207X",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "Nightside the Long Sun",
+    "source": "open_library"
+  },
+  "nightwings-silverberg-1969-novella": {
+    "goodreads_id": "449261",
+    "isbn": "9780283978401",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "Nightwings",
+    "source": "open_library"
+  },
+  "no-enemy-but-time-bishop-1983-novel": {
+    "goodreads_id": "924452",
+    "isbn": "0553281879",
+    "isbn13": null,
+    "matched_author": "Michael Bishop",
+    "matched_title": "No Enemy But Time",
+    "source": "open_library"
+  },
+  "nona-the-ninth-muir-2023-novel": {
+    "goodreads_id": "61319822",
+    "isbn": "9781250891730",
+    "isbn13": null,
+    "matched_author": "Tamsyn Muir",
+    "matched_title": "Nona the Ninth",
+    "source": "open_library"
+  },
+  "not-this-august-kornbluth-1956-novel": {
+    "goodreads_id": "953468",
+    "isbn": "9780899683461",
+    "isbn13": null,
+    "matched_author": "Cyril M. Kornbluth",
+    "matched_title": "Not This August",
+    "source": "open_library"
+  },
+  "nova-delany-1969-novel": {
+    "goodreads_id": "445225",
+    "isbn": "0375706704",
+    "isbn13": null,
+    "matched_author": "Samuel R. Delany",
+    "matched_title": "Nova",
+    "source": "open_library"
+  },
+  "nova-express-burroughs-1966-novel": {
+    "goodreads_id": "2188820",
+    "isbn": "0802133304",
+    "isbn13": null,
+    "matched_author": "William S. Burroughs",
+    "matched_title": "Nova Express",
+    "source": "open_library"
+  },
+  "odyssey-mcdevitt-2008-novel": {
+    "goodreads_id": "1281227",
+    "isbn": "0441015409",
+    "isbn13": null,
+    "matched_author": "Jack McDevitt",
+    "matched_title": "Odyssey",
+    "source": "open_library"
   },
   "old-man-s-war-scalzi-2006-novel": {
     "goodreads_id": "36510196",
@@ -90,12 +2178,260 @@
     "matched_author": "John Scalzi",
     "matched_title": "Old Man's War (Old Man's War, #1)"
   },
+  "omega-mcdevitt-2005-novel": {
+    "goodreads_id": "336999",
+    "isbn": "9780441010462",
+    "isbn13": null,
+    "matched_author": "Jack McDevitt",
+    "matched_title": "Omega",
+    "source": "open_library"
+  },
+  "on-wings-of-song-disch-1980-novel": {
+    "goodreads_id": "845561",
+    "isbn": "9780553250763",
+    "isbn13": null,
+    "matched_author": "Thomas M. Disch",
+    "matched_title": "On Wings of Song",
+    "source": "open_library"
+  },
+  "orbital-resonance-barnes-1992-novel": {
+    "goodreads_id": "1494940",
+    "isbn": "8777247523",
+    "isbn13": null,
+    "matched_author": "John Barnes",
+    "matched_title": "Orbital Resonance",
+    "source": "open_library"
+  },
+  "orphans-of-chaos-wright-2006-novel": {
+    "goodreads_id": "1406404",
+    "isbn": "9780765311313",
+    "isbn13": null,
+    "matched_author": "John C. Wright",
+    "matched_title": "Orphans of Chaos",
+    "source": "open_library"
+  },
+  "out-of-the-silent-planet-lewis-1939-novel": {
+    "goodreads_id": "3333745",
+    "isbn": "0606297766",
+    "isbn13": null,
+    "matched_author": "C. S. Lewis",
+    "matched_title": "Out of the Silent Planet",
+    "source": "open_library"
+  },
+  "paladin-of-souls-bujold-2004-novel": {
+    "goodreads_id": "365705",
+    "isbn": "9781599125657",
+    "isbn13": null,
+    "matched_author": "Lois McMaster Bujold",
+    "matched_title": "Paladin of Souls",
+    "source": "open_library"
+  },
+  "palimpsest-valente-2010-novel": {
+    "goodreads_id": "3973532",
+    "isbn": "9780553385762",
+    "isbn13": null,
+    "matched_author": "Catherynne M. Valente",
+    "matched_title": "Palimpsest",
+    "source": "open_library"
+  },
+  "parable-of-the-talents-butler-2000-novel": {
+    "goodreads_id": "256933",
+    "isbn": "9780446675789",
+    "isbn13": null,
+    "matched_author": "Octavia E. Butler",
+    "matched_title": "Parable of the Talents",
+    "source": "open_library"
+  },
+  "passage-willis-2002-novel": {
+    "goodreads_id": "1062217",
+    "isbn": "9780613683722",
+    "isbn13": null,
+    "matched_author": "Connie Willis",
+    "matched_title": "Passage",
+    "source": "open_library"
+  },
+  "past-master-lafferty-1969-novel": {
+    "goodreads_id": "4739051",
+    "isbn": "9780441653034",
+    "isbn13": null,
+    "matched_author": "R. A. Lafferty",
+    "matched_title": "Past Master",
+    "source": "open_library"
+  },
+  "pebble-in-the-sky-asimov-1951-novel": {
+    "goodreads_id": "383990",
+    "isbn": "0586069526",
+    "isbn13": null,
+    "matched_author": "Isaac Asimov",
+    "matched_title": "Pebble in the Sky",
+    "source": "open_library"
+  },
+  "perdido-street-station-mieville-2002-novel": {
+    "goodreads_id": "216334701",
+    "isbn": "9788489746305",
+    "isbn13": null,
+    "matched_author": "China Mi\u00e9ville",
+    "matched_title": "Perdido Street Station",
+    "source": "open_library"
+  },
+  "perelandra-lewis-1944-novel": {
+    "goodreads_id": "100929",
+    "isbn": "0025708406",
+    "isbn13": null,
+    "matched_author": "C. S. Lewis",
+    "matched_title": "Perelandra",
+    "source": "open_library"
+  },
+  "perfect-circle-stewart-2005-novel": {
+    "goodreads_id": "1793681",
+    "isbn": "9781931520072",
+    "isbn13": null,
+    "matched_author": "Sean Stewart",
+    "matched_title": "Perfect Circle",
+    "source": "open_library"
+  },
+  "picnic-on-paradise-russ-1969-novel": {
+    "goodreads_id": "2927086",
+    "isbn": "0352398655",
+    "isbn13": null,
+    "matched_author": "Joanna Russ",
+    "matched_title": "Picnic on Paradise",
+    "source": "open_library"
+  },
+  "piranesi-clarke-2021-novel": {
+    "goodreads_id": "55342799",
+    "isbn": "9786586015317",
+    "isbn13": null,
+    "matched_author": "Susanna Clarke",
+    "matched_title": "Piranesi",
+    "source": "open_library"
+  },
+  "plague-birds-sanford-2022-novel": {
+    "goodreads_id": "58756294",
+    "isbn": "1937009955",
+    "isbn13": null,
+    "matched_author": "Jason Sanford",
+    "matched_title": "Plague Birds",
+    "source": "open_library"
+  },
+  "powers-guin-2009-novel": {
+    "goodreads_id": "68020",
+    "isbn": "9780547544014",
+    "isbn13": null,
+    "matched_author": "Ursula K. Le Guin",
+    "matched_title": "Powers",
+    "source": "open_library"
+  },
+  "prentice-alvin-card-1990-novel": {
+    "goodreads_id": "479788",
+    "isbn": "1433202387",
+    "isbn13": null,
+    "matched_author": "Orson Scott Card",
+    "matched_title": "Prentice Alvin",
+    "source": "open_library"
+  },
+  "press-enter-varley-1985-novella": {
+    "goodreads_id": "317966",
+    "isbn": "9781568652795",
+    "isbn13": null,
+    "matched_author": "John Varley",
+    "matched_title": "Press Enter",
+    "source": "open_library"
+  },
   "project-hail-mary-weir-2022-novel": {
     "goodreads_id": "54906250",
     "isbn": null,
     "isbn13": null,
     "matched_author": "Andy Weir",
     "matched_title": "Project Hail Mary"
+  },
+  "project-pope-simak-1982-novel": {
+    "goodreads_id": "2393497",
+    "isbn": "0345291387",
+    "isbn13": null,
+    "matched_author": "Clifford D. Simak",
+    "matched_title": "Project Pope",
+    "source": "open_library"
+  },
+  "protector-niven-1974-novel": {
+    "goodreads_id": "6108982",
+    "isbn": "9780345337757",
+    "isbn13": null,
+    "matched_author": "Larry Niven",
+    "matched_title": "Protector",
+    "source": "open_library"
+  },
+  "provenance-leckie-2018-novel": {
+    "goodreads_id": "36311319",
+    "isbn": "0356506967",
+    "isbn13": null,
+    "matched_author": "Ann Leckie",
+    "matched_title": "Provenance",
+    "source": "open_library"
+  },
+  "queen-of-angels-bear-1991-novel": {
+    "goodreads_id": "410766",
+    "isbn": "9781497608900",
+    "isbn13": null,
+    "matched_author": "Greg Bear",
+    "matched_title": "Queen of Angels",
+    "source": "open_library"
+  },
+  "radix-attanasio-1982-novel": {
+    "goodreads_id": "552285",
+    "isbn": "2221009231",
+    "isbn13": null,
+    "matched_author": "A. A. Attanasio",
+    "matched_title": "Radix",
+    "source": "open_library"
+  },
+  "ragamuffin-buckell-2008-novel": {
+    "goodreads_id": "499534",
+    "isbn": "9780765315076",
+    "isbn13": null,
+    "matched_author": "Tobias S. Buckell",
+    "matched_title": "Ragamuffin",
+    "source": "open_library"
+  },
+  "ragtime-doctorow-1976-novel": {
+    "goodreads_id": "10743",
+    "isbn": "5936360040",
+    "isbn13": null,
+    "matched_author": "E. L. Doctorow",
+    "matched_title": "Ragtime",
+    "source": "open_library"
+  },
+  "rainbows-end-vinge-2007-novel": {
+    "goodreads_id": "102439",
+    "isbn": "9781250841506",
+    "isbn13": null,
+    "matched_author": "Vernor Vinge",
+    "matched_title": "Rainbows End",
+    "source": "open_library"
+  },
+  "red-mars-robinson-1993-novel": {
+    "goodreads_id": "6607231",
+    "isbn": "9780553371345",
+    "isbn13": null,
+    "matched_author": "Kim Stanley Robinson",
+    "matched_title": "Red Mars",
+    "source": "open_library"
+  },
+  "red-prophet-card-1989-novel": {
+    "goodreads_id": "307986",
+    "isbn": "1574534866",
+    "isbn13": null,
+    "matched_author": "Orson Scott Card",
+    "matched_title": "Red Prophet",
+    "source": "open_library"
+  },
+  "redshift-rendezvous-stith-1991-novel": {
+    "goodreads_id": "724481",
+    "isbn": "1880448580",
+    "isbn13": null,
+    "matched_author": "John E. Stith",
+    "matched_title": "Redshift Rendezvous",
+    "source": "open_library"
   },
   "redshirts-scalzi-2013-novel": {
     "goodreads_id": "13055592",
@@ -104,12 +2440,268 @@
     "matched_author": "John Scalzi",
     "matched_title": "Redshirts"
   },
+  "remake-willis-1996-novel": {
+    "goodreads_id": "776378",
+    "isbn": "9780929480480",
+    "isbn13": null,
+    "matched_author": "Connie Willis",
+    "matched_title": "Remake",
+    "source": "open_library"
+  },
+  "remnant-population-moon-1997-novel": {
+    "goodreads_id": "96284",
+    "isbn": "0671877704",
+    "isbn13": null,
+    "matched_author": "Elizabeth Moon",
+    "matched_title": "Remnant Population",
+    "source": "open_library"
+  },
+  "rendezvous-with-rama-clarke-1974-novel": {
+    "goodreads_id": "422494",
+    "isbn": "3404243714",
+    "isbn13": null,
+    "matched_author": "Arthur C. Clarke",
+    "matched_title": "Rendezvous with Rama",
+    "source": "open_library"
+  },
+  "riddley-walker-hoban-1982-novel": {
+    "goodreads_id": "941150",
+    "isbn": "0671607774",
+    "isbn13": null,
+    "matched_author": "Russell Hoban",
+    "matched_title": "Riddley Walker",
+    "source": "open_library"
+  },
+  "riders-of-the-purple-wage-farmer-1968-novella": {
+    "goodreads_id": "722531",
+    "isbn": "0812519051",
+    "isbn13": null,
+    "matched_author": "Philip Jos\u00e9 Farmer",
+    "matched_title": "Riders of the Purple Wage",
+    "source": "open_library"
+  },
+  "ringworld-niven-1971-novel": {
+    "goodreads_id": "2535094",
+    "isbn": "9780345247957",
+    "isbn13": null,
+    "matched_author": "Larry Niven",
+    "matched_title": "Ringworld",
+    "source": "open_library"
+  },
+  "rite-of-passage-panshin-1969-novel": {
+    "goodreads_id": "1875915",
+    "isbn": "0671440683",
+    "isbn13": null,
+    "matched_author": "Alexei Panshin",
+    "matched_title": "Rite of Passage",
+    "source": "open_library"
+  },
+  "river-of-gods-mcdonald-2005-novel": {
+    "goodreads_id": "2439367",
+    "isbn": "9780743256698",
+    "isbn13": null,
+    "matched_author": "Ian McDonald",
+    "matched_title": "River of Gods",
+    "source": "open_library"
+  },
+  "rogue-dragon-davidson-1966-novel": {
+    "goodreads_id": "869080",
+    "isbn": "1587151375",
+    "isbn13": null,
+    "matched_author": "Avram Davidson",
+    "matched_title": "Rogue Dragon",
+    "source": "open_library"
+  },
+  "rogue-moon-budrys-1961-novel": {
+    "goodreads_id": "939707",
+    "isbn": "9780340044551",
+    "isbn13": null,
+    "matched_author": "Algis Budrys",
+    "matched_title": "Rogue Moon",
+    "source": "open_library"
+  },
+  "rollback-sawyer-2008-novel": {
+    "goodreads_id": "1800853",
+    "isbn": "076533240X",
+    "isbn13": null,
+    "matched_author": "Robert J. Sawyer",
+    "matched_title": "Rollback",
+    "source": "open_library"
+  },
+  "sandkings-martin-1980-novelette": {
+    "goodreads_id": "6006107",
+    "isbn": "2290356190",
+    "isbn13": null,
+    "matched_author": "George R. R. Martin",
+    "matched_title": "Sandkings",
+    "source": "open_library"
+  },
+  "saturn-s-children-stross-2009-novel": {
+    "goodreads_id": "2278387",
+    "isbn": "9780739499344",
+    "isbn13": null,
+    "matched_author": "Charles Stross",
+    "matched_title": "Saturn's Children",
+    "source": "open_library"
+  },
+  "schismatrix-sterling-1986-novel": {
+    "goodreads_id": "383380",
+    "isbn": "9782207304266",
+    "isbn13": null,
+    "matched_author": "Bruce Sterling",
+    "matched_title": "Schismatrix",
+    "source": "open_library"
+  },
+  "schrodinger-s-kitten-effinger-1989-novelette": {
+    "goodreads_id": "1689744",
+    "isbn": "1561465429",
+    "isbn13": null,
+    "matched_author": "George Alec Effinger",
+    "matched_title": "Schr\u00f6dinger's Kitten",
+    "source": "open_library"
+  },
+  "second-stage-lensmen-smith-1943-novel": {
+    "goodreads_id": "826520",
+    "isbn": "1882968131",
+    "isbn13": null,
+    "matched_author": "E. E. Smith",
+    "matched_title": "Second Stage Lensmen",
+    "source": "open_library"
+  },
+  "seeker-mcdevitt-2007-novel": {
+    "goodreads_id": "1148514",
+    "isbn": "2070780465",
+    "isbn13": null,
+    "matched_author": "Jack McDevitt",
+    "matched_title": "Seeker",
+    "source": "open_library"
+  },
+  "seveneves-stephenson-2016-novel": {
+    "goodreads_id": "53349056",
+    "isbn": "9780008132521",
+    "isbn13": null,
+    "matched_author": "Neal Stephenson",
+    "matched_title": "Seveneves",
+    "source": "open_library"
+  },
+  "seventh-son-card-1988-novel": {
+    "goodreads_id": "68508",
+    "isbn": "0312930194",
+    "isbn13": null,
+    "matched_author": "Orson Scott Card",
+    "matched_title": "Seventh Son",
+    "source": "open_library"
+  },
+  "shadrach-in-the-furnace-silverberg-1977-novel": {
+    "goodreads_id": "872794",
+    "isbn": "0672519933",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "Shadrach in the Furnace",
+    "source": "open_library"
+  },
+  "ship-of-shadows-leiber-1970-novella": {
+    "goodreads_id": "3151911",
+    "isbn": "9780575027091",
+    "isbn13": null,
+    "matched_author": "Fritz Leiber",
+    "matched_title": "Ship of Shadows",
+    "source": "open_library"
+  },
+  "singularity-sky-stross-2004-novel": {
+    "goodreads_id": "945647",
+    "isbn": "0748107452",
+    "isbn13": null,
+    "matched_author": "Charles Stross",
+    "matched_title": "Singularity Sky",
+    "source": "open_library"
+  },
+  "sirius-a-fantasy-of-love-and-discord-stapledon-1945-novel": {
+    "goodreads_id": "953788",
+    "isbn": "9798823925655",
+    "isbn13": null,
+    "matched_author": "Olaf Stapledon",
+    "matched_title": "Sirius: A Fantasy of Love and Discord",
+    "source": "open_library"
+  },
+  "sister-light-sister-dark-yolen-1990-novel": {
+    "goodreads_id": "6754306",
+    "isbn": "0606298037",
+    "isbn13": null,
+    "matched_author": "Jane Yolen",
+    "matched_title": "Sister Light, Sister Dark",
+    "source": "open_library"
+  },
   "skin-game-butcher-2015-novel": {
     "goodreads_id": "20572455",
     "isbn": "0698157893",
     "isbn13": "9780698157897",
     "matched_author": "Jim  Butcher",
     "matched_title": "Skin Game (The Dresden Files, #15)"
+  },
+  "skylark-duquesne-smith-1966-novel": {
+    "goodreads_id": "5642067",
+    "isbn": "9780425068342",
+    "isbn13": null,
+    "matched_author": "Edward E. Smith",
+    "matched_title": "Skylark DuQuesne",
+    "source": "open_library"
+  },
+  "slan-vogt-1941-novel": {
+    "goodreads_id": "6177408",
+    "isbn": "9780792748946",
+    "isbn13": null,
+    "matched_author": "A. E. van Vogt",
+    "matched_title": "Slan",
+    "source": "open_library"
+  },
+  "slaughterhouse-five-vonnegut-1970-novel": {
+    "goodreads_id": "5989090",
+    "isbn": "9780099268796",
+    "isbn13": null,
+    "matched_author": "Kurt Vonnegut",
+    "matched_title": "Slaughterhouse-Five",
+    "source": "open_library"
+  },
+  "soldier-of-the-mist-wolfe-1988-novel": {
+    "goodreads_id": "2878705",
+    "isbn": "9780575039285",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "Soldier of the Mist",
+    "source": "open_library"
+  },
+  "solitaire-eskridge-2003-novel": {
+    "goodreads_id": "214618",
+    "isbn": "9781306908535",
+    "isbn13": null,
+    "matched_author": "Kelley Eskridge",
+    "matched_title": "Solitaire",
+    "source": "open_library"
+  },
+  "some-desperate-glory-tesh-2024-novel": {
+    "goodreads_id": "58388343",
+    "isbn": "9780356521831",
+    "isbn13": null,
+    "matched_author": "Emily Tesh",
+    "matched_title": "Some Desperate Glory",
+    "source": "open_library"
+  },
+  "souls-russ-1983-novella": {
+    "goodreads_id": "91055",
+    "isbn": "0812559622",
+    "isbn13": null,
+    "matched_author": "Joanna Russ",
+    "matched_title": "Souls",
+    "source": "open_library"
+  },
+  "space-opera-valente-2019-novel": {
+    "goodreads_id": "24100285",
+    "isbn": "1681689162",
+    "isbn13": null,
+    "matched_author": "Catherynne M. Valente",
+    "matched_title": "Space Opera",
+    "source": "open_library"
   },
   "speaker-for-the-dead-card-1987-novel": {
     "goodreads_id": "7967",
@@ -118,12 +2710,364 @@
     "matched_author": "Orson Scott Card",
     "matched_title": "Speaker for the Dead (Ender's Saga, #2)"
   },
+  "spin-wilson-2006-novel": {
+    "goodreads_id": "48618",
+    "isbn": "9780765348258",
+    "isbn13": null,
+    "matched_author": "Robert Charles Wilson",
+    "matched_title": "Spin",
+    "source": "open_library"
+  },
+  "stand-on-zanzibar-brunner-1969-novel": {
+    "goodreads_id": "1058869",
+    "isbn": "1857988361",
+    "isbn13": null,
+    "matched_author": "John Brunner",
+    "matched_title": "Stand on Zanzibar",
+    "source": "open_library"
+  },
+  "star-light-clement-1971-novel": {
+    "goodreads_id": "6319692",
+    "isbn": "9780345023612",
+    "isbn13": null,
+    "matched_author": "Hal Clement",
+    "matched_title": "Star Light",
+    "source": "open_library"
+  },
+  "stardance-robinson-1978-novella": {
+    "goodreads_id": "3024419",
+    "isbn": "0440183677",
+    "isbn13": null,
+    "matched_author": "Spider Robinson",
+    "matched_title": "Stardance",
+    "source": "open_library"
+  },
+  "starplex-sawyer-1997-novel": {
+    "goodreads_id": "46257",
+    "isbn": "9782290053669",
+    "isbn13": null,
+    "matched_author": "Robert J. Sawyer",
+    "matched_title": "Starplex",
+    "source": "open_library"
+  },
+  "starship-troopers-heinlein-1960-novel": {
+    "goodreads_id": "1911989",
+    "isbn": "9780425029459",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "Starship Troopers",
+    "source": "open_library"
+  },
   "starter-villain-scalzi-2024-novel": {
     "goodreads_id": "61885029",
     "isbn": null,
     "isbn13": null,
     "matched_author": "John Scalzi",
     "matched_title": "Starter Villain"
+  },
+  "startide-rising-brin-1984-novel": {
+    "goodreads_id": "121638",
+    "isbn": "055327418X",
+    "isbn13": null,
+    "matched_author": "David Brin",
+    "matched_title": "Startide Rising",
+    "source": "open_library"
+  },
+  "stations-of-the-tide-swanwick-1992-novel": {
+    "goodreads_id": "243859",
+    "isbn": "9788427017566",
+    "isbn13": null,
+    "matched_author": "Michael Swanwick",
+    "matched_title": "Stations of the Tide",
+    "source": "open_library"
+  },
+  "steel-beach-varley-1993-novel": {
+    "goodreads_id": "2008805",
+    "isbn": "9780006477266",
+    "isbn13": null,
+    "matched_author": "John Varley",
+    "matched_title": "Steel Beach",
+    "source": "open_library"
+  },
+  "stranger-in-a-strange-land-heinlein-1962-novel": {
+    "goodreads_id": "91492",
+    "isbn": "9780786109524",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "Stranger in a Strange Land",
+    "source": "open_library"
+  },
+  "strangers-dozois-1979-novel": {
+    "goodreads_id": "410192",
+    "isbn": "0600383822",
+    "isbn13": null,
+    "matched_author": "Gardner Dozois",
+    "matched_title": "Strangers",
+    "source": "open_library"
+  },
+  "superpowers-schwartz-2009-novel": {
+    "goodreads_id": "1991184",
+    "isbn": "9781407013404",
+    "isbn13": null,
+    "matched_author": "David J. Schwartz",
+    "matched_title": "Superpowers",
+    "source": "open_library"
+  },
+  "sword-of-the-demon-lupoff-1978-novel": {
+    "goodreads_id": "2562562",
+    "isbn": "0380019426",
+    "isbn13": null,
+    "matched_author": "Richard A. Lupoff",
+    "matched_title": "Sword of the Demon",
+    "source": "open_library"
+  },
+  "synners-cadigan-1992-novel": {
+    "goodreads_id": "7084195",
+    "isbn": "0575119543",
+    "isbn13": null,
+    "matched_author": "Pat Cadigan",
+    "matched_title": "Synners",
+    "source": "open_library"
+  },
+  "tau-zero-anderson-1971-novel": {
+    "goodreads_id": "1363978",
+    "isbn": "0575088044",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "Tau Zero",
+    "source": "open_library"
+  },
+  "tea-with-the-black-dragon-macavoy-1984-novel": {
+    "goodreads_id": "1718205",
+    "isbn": "1585861952",
+    "isbn13": null,
+    "matched_author": "R. A. MacAvoy",
+    "matched_title": "Tea with the Black Dragon",
+    "source": "open_library"
+  },
+  "tehanu-the-last-book-of-earthsea-guin-1991-novel": {
+    "goodreads_id": "68038",
+    "isbn": "0241138280",
+    "isbn13": null,
+    "matched_author": "Ursula K. Le Guin",
+    "matched_title": "Tehanu: The Last Book of Earthsea",
+    "source": "open_library"
+  },
+  "temporary-agency-pollack-1995-novel": {
+    "goodreads_id": "1744673",
+    "isbn": "9780312110772",
+    "isbn13": null,
+    "matched_author": "Rachel Pollack",
+    "matched_title": "Temporary Agency",
+    "source": "open_library"
+  },
+  "the-accidental-time-machine-haldeman-2008-novel": {
+    "goodreads_id": "21608",
+    "isbn": "0441014992",
+    "isbn13": null,
+    "matched_author": "Joe Haldeman",
+    "matched_title": "The Accidental Time Machine",
+    "source": "open_library"
+  },
+  "the-adventures-of-amina-al-sirafi-chakraborty-2024-novel": {
+    "goodreads_id": "61319728",
+    "isbn": "0062963503",
+    "isbn13": null,
+    "matched_author": "Shannon Chakraborty",
+    "matched_title": "The Adventures of Amina al-Sirafi",
+    "source": "open_library"
+  },
+  "the-algebraist-banks-2005-novel": {
+    "goodreads_id": "567798",
+    "isbn": "1841492396",
+    "isbn13": null,
+    "matched_author": "Iain M. Banks",
+    "matched_title": "The Algebraist",
+    "source": "open_library"
+  },
+  "the-bicentennial-man-asimov-1977-novelette": {
+    "goodreads_id": "1289898",
+    "isbn": "9780575061279",
+    "isbn13": null,
+    "matched_author": "Isaac Asimov",
+    "matched_title": "The Bicentennial Man",
+    "source": "open_library"
+  },
+  "the-big-time-leiber-1958-novel": {
+    "goodreads_id": "952408",
+    "isbn": "9798721381263",
+    "isbn13": null,
+    "matched_author": "Fritz Leiber",
+    "matched_title": "The Big Time",
+    "source": "open_library"
+  },
+  "the-birthgrave-lee-1976-novel": {
+    "goodreads_id": "974190",
+    "isbn": "1607620790",
+    "isbn13": null,
+    "matched_author": "Tanith Lee",
+    "matched_title": "The Birthgrave",
+    "source": "open_library"
+  },
+  "the-boat-of-a-million-years-anderson-1990-novel": {
+    "goodreads_id": "1813831",
+    "isbn": "9781857231045",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "The Boat of a Million Years",
+    "source": "open_library"
+  },
+  "the-book-of-skulls-silverberg-1973-novel": {
+    "goodreads_id": "3034209",
+    "isbn": "0684125900",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "The Book of Skulls",
+    "source": "open_library"
+  },
+  "the-byworlder-anderson-1972-novel": {
+    "goodreads_id": "5751393",
+    "isbn": "9780575015746",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "The Byworlder",
+    "source": "open_library"
+  },
+  "the-cassini-division-macleod-2000-novel": {
+    "goodreads_id": "1266022",
+    "isbn": "9781405519427",
+    "isbn13": null,
+    "matched_author": "Ken MacLeod",
+    "matched_title": "The Cassini Division",
+    "source": "open_library"
+  },
+  "the-caves-of-steel-asimov-1954-novel": {
+    "goodreads_id": "1785107",
+    "isbn": "9780449024973",
+    "isbn13": null,
+    "matched_author": "Isaac Asimov",
+    "matched_title": "The Caves of Steel",
+    "source": "open_library"
+  },
+  "the-chronoliths-wilson-2002-novel": {
+    "goodreads_id": "174960",
+    "isbn": "9780812545241",
+    "isbn13": null,
+    "matched_author": "Robert Charles Wilson",
+    "matched_title": "The Chronoliths",
+    "source": "open_library"
+  },
+  "the-citadel-of-the-autarch-wolfe-1984-novel": {
+    "goodreads_id": "466861",
+    "isbn": "2070429180",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "The Citadel of the Autarch",
+    "source": "open_library"
+  },
+  "the-city-in-the-middle-of-the-night-anders-2020-novel": {
+    "goodreads_id": "40793594",
+    "isbn": "1789091616",
+    "isbn13": null,
+    "matched_author": "Charlie Jane Anders",
+    "matched_title": "The City in the Middle of the Night",
+    "source": "open_library"
+  },
+  "the-city-the-city-mieville-2010-novel": {
+    "goodreads_id": "48706481",
+    "isbn": "0345497511",
+    "isbn13": null,
+    "matched_author": "China Mi\u00e9ville",
+    "matched_title": "The City & the City",
+    "source": "open_library"
+  },
+  "the-claw-of-the-conciliator-wolfe-1982-novel": {
+    "goodreads_id": "2878698",
+    "isbn": "0099274701",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "The Claw of the Conciliator",
+    "source": "open_library"
+  },
+  "the-clone-thomas-1966-novel": {
+    "goodreads_id": "4520815",
+    "isbn": "9780709103219",
+    "isbn13": null,
+    "matched_author": "Theodore L. Thomas",
+    "matched_title": "The Clone",
+    "source": "open_library"
+  },
+  "the-collapsium-mccarthy-2002-novel": {
+    "goodreads_id": "2569782",
+    "isbn": "055358443X",
+    "isbn13": null,
+    "matched_author": "Wil McCarthy",
+    "matched_title": "The Collapsium",
+    "source": "open_library"
+  },
+  "the-computer-connection-bester-1976-novel": {
+    "goodreads_id": "953436",
+    "isbn": "0425030393",
+    "isbn13": null,
+    "matched_author": "Alfred Bester",
+    "matched_title": "The Computer Connection",
+    "source": "open_library"
+  },
+  "the-curse-of-chalion-bujold-2002-novel": {
+    "goodreads_id": "1118388",
+    "isbn": "9783404204861",
+    "isbn13": null,
+    "matched_author": "Lois McMaster Bujold",
+    "matched_title": "The Curse of Chalion",
+    "source": "open_library"
+  },
+  "the-darfsteller-miller-1955-novelette": {
+    "goodreads_id": "1613382",
+    "isbn": "0552119504",
+    "isbn13": null,
+    "matched_author": "Walter M. Miller",
+    "matched_title": "The Darfsteller",
+    "source": "open_library"
+  },
+  "the-death-of-the-necromancer-wells-1999-novel": {
+    "goodreads_id": "2502858",
+    "isbn": "0380788144",
+    "isbn13": null,
+    "matched_author": "Martha Wells",
+    "matched_title": "The Death of the Necromancer",
+    "source": "open_library"
+  },
+  "the-demolished-man-bester-1953-novel": {
+    "goodreads_id": "1258749",
+    "isbn": "1857988221",
+    "isbn13": null,
+    "matched_author": "Alfred Bester",
+    "matched_title": "The Demolished Man",
+    "source": "open_library"
+  },
+  "the-devil-is-dead-lafferty-1972-novel": {
+    "goodreads_id": "4738945",
+    "isbn": "9781880448953",
+    "isbn13": null,
+    "matched_author": "R. A. Lafferty",
+    "matched_title": "The Devil is Dead",
+    "source": "open_library"
+  },
+  "the-diamond-age-stephenson-1996-novel": {
+    "goodreads_id": "251604",
+    "isbn": "8466617248",
+    "isbn13": null,
+    "matched_author": "Neal Stephenson",
+    "matched_title": "The Diamond Age",
+    "source": "open_library"
+  },
+  "the-difference-engine-sterling-1992-novel": {
+    "goodreads_id": "337116",
+    "isbn": "2221082494",
+    "isbn13": null,
+    "matched_author": "Bruce Sterling",
+    "matched_title": "The Difference Engine",
+    "source": "open_library"
   },
   "the-dispossessed-guin-1975-novel": {
     "goodreads_id": "54297097",
@@ -132,12 +3076,92 @@
     "matched_author": "Ursula K. Le Guin",
     "matched_title": "The Dispossessed (Hainish Cycle, #6)"
   },
+  "the-dying-earth-vance-1951-novel": {
+    "goodreads_id": "757040",
+    "isbn": "1857989945",
+    "isbn13": null,
+    "matched_author": "Jack Vance",
+    "matched_title": "The Dying Earth",
+    "source": "open_library"
+  },
+  "the-einstein-intersection-delany-1968-novel": {
+    "goodreads_id": "2002335",
+    "isbn": "8445071041",
+    "isbn13": null,
+    "matched_author": "Samuel R. Delany",
+    "matched_title": "The Einstein Intersection",
+    "source": "open_library"
+  },
+  "the-embedding-watson-1976-novel": {
+    "goodreads_id": "183911",
+    "isbn": "088184554X",
+    "isbn13": null,
+    "matched_author": "Ian Watson",
+    "matched_title": "The Embedding",
+    "source": "open_library"
+  },
+  "the-emperor-s-soul-sanderson-2013-novella": {
+    "goodreads_id": "20825295",
+    "isbn": "1616960922",
+    "isbn13": null,
+    "matched_author": "Brandon Sanderson",
+    "matched_title": "The Emperor's Soul",
+    "source": "open_library"
+  },
+  "the-end-of-eternity-asimov-1956-novel": {
+    "goodreads_id": "144529",
+    "isbn": "848896692X",
+    "isbn13": null,
+    "matched_author": "Isaac Asimov",
+    "matched_title": "The End of Eternity",
+    "source": "open_library"
+  },
+  "the-escape-orbit-white-1966-novel": {
+    "goodreads_id": "1405207",
+    "isbn": "9780441215904",
+    "isbn13": null,
+    "matched_author": "James White",
+    "matched_title": "The Escape Orbit",
+    "source": "open_library"
+  },
+  "the-exile-waiting-mcintyre-1976-novel": {
+    "goodreads_id": "6933690",
+    "isbn": "033025295X",
+    "isbn13": null,
+    "matched_author": "Vonda N. McIntyre",
+    "matched_title": "The Exile Waiting",
+    "source": "open_library"
+  },
+  "the-faded-sun-kesrith-cherryh-1979-novel": {
+    "goodreads_id": "531131",
+    "isbn": "0879976926",
+    "isbn13": null,
+    "matched_author": "C. J. Cherryh",
+    "matched_title": "The Faded Sun: Kesrith",
+    "source": "open_library"
+  },
   "the-fall-of-hyperion-simmons-1991-novel": {
     "goodreads_id": "10429950",
     "isbn": null,
     "isbn13": null,
     "matched_author": "Dan Simmons",
     "matched_title": "The Fall of Hyperion (Hyperion Cantos, #2)"
+  },
+  "the-falling-woman-murphy-1988-novel": {
+    "goodreads_id": "593791",
+    "isbn": "0312932308",
+    "isbn13": null,
+    "matched_author": "Pat Murphy",
+    "matched_title": "The Falling Woman",
+    "source": "open_library"
+  },
+  "the-female-man-russ-1976-novel": {
+    "goodreads_id": "6879638",
+    "isbn": "3426007096",
+    "isbn13": null,
+    "matched_author": "Joanna Russ",
+    "matched_title": "The Female Man",
+    "source": "open_library"
   },
   "the-fifth-season-jemisin-2016-novel": {
     "goodreads_id": "38213103",
@@ -146,12 +3170,692 @@
     "matched_author": "N.K. Jemisin",
     "matched_title": "The Fifth Season (The Broken Earth, #1)"
   },
+  "the-forbidden-tower-bradley-1978-novel": {
+    "goodreads_id": "2242050",
+    "isbn": "9781664466050",
+    "isbn13": null,
+    "matched_author": "Marion Zimmer Bradley",
+    "matched_title": "The Forbidden Tower",
+    "source": "open_library"
+  },
+  "the-forever-war-haldeman-1976-novel": {
+    "goodreads_id": "423101",
+    "isbn": "3453304675",
+    "isbn13": null,
+    "matched_author": "Joe Haldeman",
+    "matched_title": "The Forever War",
+    "source": "open_library"
+  },
+  "the-forge-of-god-bear-1988-novel": {
+    "goodreads_id": "2433635",
+    "isbn": "0575096837",
+    "isbn13": null,
+    "matched_author": "Greg Bear",
+    "matched_title": "The Forge of God",
+    "source": "open_library"
+  },
+  "the-fountains-of-paradise-clarke-1980-novel": {
+    "goodreads_id": "995863",
+    "isbn": "9780575025202",
+    "isbn13": null,
+    "matched_author": "Arthur C. Clarke",
+    "matched_title": "The Fountains of Paradise",
+    "source": "open_library"
+  },
+  "the-galaxy-and-the-ground-within-chambers-2022-novel": {
+    "goodreads_id": "56968243",
+    "isbn": "1799957209",
+    "isbn13": null,
+    "matched_author": "Becky Chambers",
+    "matched_title": "The Galaxy, and the Ground Within",
+    "source": "open_library"
+  },
+  "the-genocides-disch-1966-novel": {
+    "goodreads_id": "939273",
+    "isbn": "9780375705465",
+    "isbn13": null,
+    "matched_author": "Thomas M. Disch",
+    "matched_title": "The Genocides",
+    "source": "open_library"
+  },
+  "the-goblin-reservation-simak-1969-novel": {
+    "goodreads_id": "2985886",
+    "isbn": "9780425033999",
+    "isbn13": null,
+    "matched_author": "Clifford D. Simak",
+    "matched_title": "The Goblin Reservation",
+    "source": "open_library"
+  },
+  "the-gods-themselves-asimov-1973-novel": {
+    "goodreads_id": "1289894",
+    "isbn": "0575129050",
+    "isbn13": null,
+    "matched_author": "Isaac Asimov",
+    "matched_title": "The Gods Themselves",
+    "source": "open_library"
+  },
+  "the-godwhale-bass-1975-novel": {
+    "goodreads_id": "2431798",
+    "isbn": "9780345310958",
+    "isbn13": null,
+    "matched_author": "T. J. Bass",
+    "matched_title": "The Godwhale",
+    "source": "open_library"
+  },
+  "the-golden-fleece-graves-1945-novel": {
+    "goodreads_id": "5231211",
+    "isbn": "0318Y38518",
+    "isbn13": null,
+    "matched_author": "Robert Graves",
+    "matched_title": "The Golden Fleece",
+    "source": "open_library"
+  },
+  "the-golem-and-the-jinni-wecker-2014-novel": {
+    "goodreads_id": "15819028",
+    "isbn": "0062269410",
+    "isbn13": null,
+    "matched_author": "Helene Wecker",
+    "matched_title": "The Golem and the Jinni",
+    "source": "open_library"
+  },
+  "the-graveyard-book-gaiman-2009-novel": {
+    "goodreads_id": "2337265",
+    "isbn": "9780062364463",
+    "isbn13": null,
+    "matched_author": "Neil Gaiman",
+    "matched_title": "The Graveyard Book",
+    "source": "open_library"
+  },
+  "the-handmaid-s-tale-atwood-1987-novel": {
+    "goodreads_id": "40057759",
+    "isbn": "9783492303279",
+    "isbn13": null,
+    "matched_author": "Margaret Atwood",
+    "matched_title": "The Handmaid's Tale",
+    "source": "open_library"
+  },
+  "the-healer-s-war-scarborough-1990-novel": {
+    "goodreads_id": "491093",
+    "isbn": "0385248288",
+    "isbn13": null,
+    "matched_author": "Elizabeth Ann Scarborough",
+    "matched_title": "The Healer's War",
+    "source": "open_library"
+  },
+  "the-hemingway-hoax-haldeman-1991-novella": {
+    "goodreads_id": "1811871",
+    "isbn": "9781612423487",
+    "isbn13": null,
+    "matched_author": "Joe Haldeman",
+    "matched_title": "The Hemingway Hoax",
+    "source": "open_library"
+  },
+  "the-heritage-of-hastur-bradley-1976-novel": {
+    "goodreads_id": "6136927",
+    "isbn": "0879979674",
+    "isbn13": null,
+    "matched_author": "Marion Zimmer Bradley",
+    "matched_title": "The Heritage of Hastur",
+    "source": "open_library"
+  },
+  "the-high-crusade-anderson-1961-novel": {
+    "goodreads_id": "939690",
+    "isbn": "9781439133774",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "The High Crusade",
+    "source": "open_library"
+  },
+  "the-hundred-thousand-kingdoms-jemisin-2011-novel": {
+    "goodreads_id": "6437061",
+    "isbn": "0748115900",
+    "isbn13": null,
+    "matched_author": "N. K. Jemisin",
+    "matched_title": "The Hundred Thousand Kingdoms",
+    "source": "open_library"
+  },
+  "the-ill-made-knight-white-1941-novel": {
+    "goodreads_id": "688768",
+    "isbn": "9798508348007",
+    "isbn13": null,
+    "matched_author": "T. H. White",
+    "matched_title": "The Ill-Made Knight",
+    "source": "open_library"
+  },
+  "the-integral-trees-niven-1985-novel": {
+    "goodreads_id": "418923",
+    "isbn": "1857232879",
+    "isbn13": null,
+    "matched_author": "Larry Niven",
+    "matched_title": "The Integral Trees",
+    "source": "open_library"
+  },
+  "the-iron-dream-spinrad-1973-novel": {
+    "goodreads_id": "633177",
+    "isbn": "9780553252897",
+    "isbn13": null,
+    "matched_author": "Norman Spinrad",
+    "matched_title": "The Iron Dream",
+    "source": "open_library"
+  },
+  "the-jagged-orbit-brunner-1970-novel": {
+    "goodreads_id": "7535999",
+    "isbn": "0099058405",
+    "isbn13": null,
+    "matched_author": "John Brunner",
+    "matched_title": "The Jagged Orbit",
+    "source": "open_library"
+  },
+  "the-journal-of-nicholas-the-american-kennedy-1987-novel": {
+    "goodreads_id": "3437268",
+    "isbn": "9781903468111",
+    "isbn13": null,
+    "matched_author": "Leigh Kennedy",
+    "matched_title": "The Journal of Nicholas the American",
+    "source": "open_library"
+  },
+  "the-kaiju-preservation-society-scalzi-2023-novel": {
+    "goodreads_id": "59604880",
+    "isbn": "3986662111",
+    "isbn13": null,
+    "matched_author": "John Scalzi",
+    "matched_title": "The Kaiju Preservation Society",
+    "source": "open_library"
+  },
+  "the-knight-wolfe-2005-novel": {
+    "goodreads_id": "1054140",
+    "isbn": "9780575080331",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "The Knight",
+    "source": "open_library"
+  },
+  "the-last-castle-vance-1967-novelette": {
+    "goodreads_id": "40891",
+    "isbn": "9780934438353",
+    "isbn13": null,
+    "matched_author": "Jack Vance",
+    "matched_title": "The Last Castle",
+    "source": "open_library"
+  },
+  "the-last-colony-scalzi-2008-novel": {
+    "goodreads_id": "3077004",
+    "isbn": "8576574470",
+    "isbn13": null,
+    "matched_author": "John Scalzi",
+    "matched_title": "The Last Colony",
+    "source": "open_library"
+  },
+  "the-last-hawk-asaro-1999-novel": {
+    "goodreads_id": "672962",
+    "isbn": "9780786120215",
+    "isbn13": null,
+    "matched_author": "Catherine Asaro",
+    "matched_title": "The Last Hawk",
+    "source": "open_library"
+  },
+  "the-lathe-of-heaven-guin-1972-novel": {
+    "goodreads_id": "2555218",
+    "isbn": "9789722331562",
+    "isbn13": null,
+    "matched_author": "Ursula K. Le Guin",
+    "matched_title": "The Lathe of Heaven",
+    "source": "open_library"
+  },
+  "the-left-hand-of-darkness-guin-1970-novel": {
+    "goodreads_id": "6956433",
+    "isbn": "0441478026",
+    "isbn13": null,
+    "matched_author": "Ursula K. Le Guin",
+    "matched_title": "The Left Hand of Darkness",
+    "source": "open_library"
+  },
+  "the-legion-of-time-williamson-1939-novel": {
+    "goodreads_id": "898049",
+    "isbn": "9780786246632",
+    "isbn13": null,
+    "matched_author": "Jack Williamson",
+    "matched_title": "The Legion of Time",
+    "source": "open_library"
+  },
+  "the-lion-the-witch-and-the-wardrobe-lewis-1951-novel": {
+    "goodreads_id": "275938",
+    "isbn": "2070546438",
+    "isbn13": null,
+    "matched_author": "C. S. Lewis",
+    "matched_title": "The Lion, the Witch and the Wardrobe",
+    "source": "open_library"
+  },
+  "the-long-tomorrow-brackett-1956-novel": {
+    "goodreads_id": "91106",
+    "isbn": "0345248333",
+    "isbn13": null,
+    "matched_author": "Leigh Brackett",
+    "matched_title": "The Long Tomorrow",
+    "source": "open_library"
+  },
+  "the-love-we-share-without-knowing-barzak-2010-novel": {
+    "goodreads_id": "4717491",
+    "isbn": "055338564X",
+    "isbn13": null,
+    "matched_author": "Christopher Barzak",
+    "matched_title": "The Love We Share Without Knowing",
+    "source": "open_library"
+  },
+  "the-man-in-the-high-castle-dick-1963-novel": {
+    "goodreads_id": "895520",
+    "isbn": "8375105686",
+    "isbn13": null,
+    "matched_author": "Philip K. Dick",
+    "matched_title": "The Man in the High Castle",
+    "source": "open_library"
+  },
+  "the-man-who-folded-himself-gerrold-1974-novel": {
+    "goodreads_id": "921006",
+    "isbn": "1932100040",
+    "isbn13": null,
+    "matched_author": "David Gerrold",
+    "matched_title": "The Man Who Folded Himself",
+    "source": "open_library"
+  },
+  "the-man-who-melted-dann-1985-novel": {
+    "goodreads_id": "4540179",
+    "isbn": "0312942931",
+    "isbn13": null,
+    "matched_author": "Jack Dann",
+    "matched_title": "The Man Who Melted",
+    "source": "open_library"
+  },
+  "the-man-who-sold-the-moon-heinlein-1951-novella": {
+    "goodreads_id": "686644",
+    "isbn": "9781480523401",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "The Man Who Sold the Moon",
+    "source": "open_library"
+  },
+  "the-many-colored-land-may-1982-novel": {
+    "goodreads_id": "2876747",
+    "isbn": "9780330266567",
+    "isbn13": null,
+    "matched_author": "Julian May",
+    "matched_title": "The Many-Colored Land",
+    "source": "open_library"
+  },
+  "the-martian-child-gerrold-1995-novelette": {
+    "goodreads_id": "709750",
+    "isbn": "9780765320032",
+    "isbn13": null,
+    "matched_author": "David Gerrold",
+    "matched_title": "The Martian Child",
+    "source": "open_library"
+  },
+  "the-masks-of-time-silverberg-1969-novel": {
+    "goodreads_id": "2480452",
+    "isbn": "9780575072183",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "The Masks of Time",
+    "source": "open_library"
+  },
+  "the-merchant-and-the-alchemist-s-gate-chiang-2008-novelette": {
+    "goodreads_id": "223379",
+    "isbn": "9781596061002",
+    "isbn13": null,
+    "matched_author": "Ted Chiang",
+    "matched_title": "The Merchant and the Alchemist's Gate",
+    "source": "open_library"
+  },
+  "the-moon-and-the-sun-mcintyre-1998-novel": {
+    "goodreads_id": "805772",
+    "isbn": "9780671567651",
+    "isbn13": null,
+    "matched_author": "Vonda N. McIntyre",
+    "matched_title": "The Moon and the Sun",
+    "source": "open_library"
+  },
+  "the-moon-is-a-harsh-mistress-heinlein-1967-novel": {
+    "goodreads_id": "1035533",
+    "isbn": "9788470021787",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "The Moon Is a Harsh Mistress",
+    "source": "open_library"
+  },
+  "the-mote-in-god-s-eye-niven-1975-novel": {
+    "goodreads_id": "425165",
+    "isbn": "9780671491758",
+    "isbn13": null,
+    "matched_author": "Larry Niven",
+    "matched_title": "The Mote in God's Eye",
+    "source": "open_library"
+  },
+  "the-mount-emshwiller-2004-novel": {
+    "goodreads_id": "1637349",
+    "isbn": "9781931520034",
+    "isbn13": null,
+    "matched_author": "Carol Emshwiller",
+    "matched_title": "The Mount",
+    "source": "open_library"
+  },
+  "the-new-moon-s-arms-hopkinson-2008-novel": {
+    "goodreads_id": "49047",
+    "isbn": "9780792747352",
+    "isbn13": null,
+    "matched_author": "Nalo Hopkinson",
+    "matched_title": "The New Moon's Arms",
+    "source": "open_library"
+  },
   "the-obelisk-gate-jemisin-2017-novel": {
     "goodreads_id": "28147302",
     "isbn": null,
     "isbn13": null,
     "matched_author": "N.K. Jemisin",
     "matched_title": "The Obelisk Gate (The Broken Earth, #2)"
+  },
+  "the-ocean-at-the-end-of-the-lane-gaiman-2014-novel": {
+    "goodreads_id": "15783514",
+    "isbn": "0062255657",
+    "isbn13": null,
+    "matched_author": "Neil Gaiman",
+    "matched_title": "The Ocean at the End of the Lane",
+    "source": "open_library"
+  },
+  "the-orphan-stallman-1981-novel": {
+    "goodreads_id": "362637",
+    "isbn": "0583134750",
+    "isbn13": null,
+    "matched_author": "Robert Stallman",
+    "matched_title": "The Orphan",
+    "source": "open_library"
+  },
+  "the-other-wind-guin-2003-novel": {
+    "goodreads_id": "92631",
+    "isbn": "1417819855",
+    "isbn13": null,
+    "matched_author": "Ursula K. Le Guin",
+    "matched_title": "The Other Wind",
+    "source": "open_library"
+  },
+  "the-peace-war-vinge-1985-novel": {
+    "goodreads_id": "1280979",
+    "isbn": "9780765308832",
+    "isbn13": null,
+    "matched_author": "Vernor Vinge",
+    "matched_title": "The Peace War",
+    "source": "open_library"
+  },
+  "the-people-of-the-wind-anderson-1974-novel": {
+    "goodreads_id": "5799170",
+    "isbn": "0839823533",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "The People of the Wind",
+    "source": "open_library"
+  },
+  "the-persistence-of-vision-varley-1979-novella": {
+    "goodreads_id": "1275804",
+    "isbn": "9780803768666",
+    "isbn13": null,
+    "matched_author": "John Varley",
+    "matched_title": "The Persistence of Vision",
+    "source": "open_library"
+  },
+  "the-poppy-war-kuang-2019-novel": {
+    "goodreads_id": "240701228",
+    "isbn": "9780063371781",
+    "isbn13": null,
+    "matched_author": "R. F. Kuang",
+    "matched_title": "The Poppy War",
+    "source": "open_library"
+  },
+  "the-postman-brin-1986-novel": {
+    "goodreads_id": "255828",
+    "isbn": "0307575012",
+    "isbn13": null,
+    "matched_author": "David Brin",
+    "matched_title": "The Postman",
+    "source": "open_library"
+  },
+  "the-pride-of-chanur-cherryh-1983-novel": {
+    "goodreads_id": "711002",
+    "isbn": "9780886772925",
+    "isbn13": null,
+    "matched_author": "C. J. Cherryh",
+    "matched_title": "The Pride of Chanur",
+    "source": "open_library"
+  },
+  "the-privilege-of-the-sword-kushner-2007-novel": {
+    "goodreads_id": "632800",
+    "isbn": "9781931520201",
+    "isbn13": null,
+    "matched_author": "Ellen Kushner",
+    "matched_title": "The Privilege of the Sword",
+    "source": "open_library"
+  },
+  "the-quantum-rose-asaro-2002-novel": {
+    "goodreads_id": "598099",
+    "isbn": "0765374439",
+    "isbn13": null,
+    "matched_author": "Catherine Asaro",
+    "matched_title": "The Quantum Rose",
+    "source": "open_library"
+  },
+  "the-queen-of-air-and-darkness-anderson-1972-novella": {
+    "goodreads_id": "5029593",
+    "isbn": "0451057139",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "The Queen of Air and Darkness",
+    "source": "open_library"
+  },
+  "the-quiet-pools-kube-mcdowell-1991-novel": {
+    "goodreads_id": "1585239",
+    "isbn": "9780441699117",
+    "isbn13": null,
+    "matched_author": "Michael P. Kube-McDowell",
+    "matched_title": "The Quiet Pools",
+    "source": "open_library"
+  },
+  "the-ragged-astronauts-shaw-1987-novel": {
+    "goodreads_id": "854067",
+    "isbn": "0708882277",
+    "isbn13": null,
+    "matched_author": "Bob Shaw",
+    "matched_title": "The Ragged Astronauts",
+    "source": "open_library"
+  },
+  "the-reign-of-wizardry-williamson-1941-novel": {
+    "goodreads_id": "898069",
+    "isbn": "9780932096012",
+    "isbn13": null,
+    "matched_author": "Jack Williamson",
+    "matched_title": "The Reign of Wizardry",
+    "source": "open_library"
+  },
+  "the-remaking-of-sigmund-freud-malzberg-1986-novel": {
+    "goodreads_id": "132453",
+    "isbn": "9780345318619",
+    "isbn13": null,
+    "matched_author": "Barry N. Malzberg",
+    "matched_title": "The Remaking of Sigmund Freud",
+    "source": "open_library"
+  },
+  "the-ringworld-engineers-niven-1981-novel": {
+    "goodreads_id": "4669635",
+    "isbn": "1455126608",
+    "isbn13": null,
+    "matched_author": "Larry Niven",
+    "matched_title": "The Ringworld Engineers",
+    "source": "open_library"
+  },
+  "the-rise-of-endymion-simmons-1998-novel": {
+    "goodreads_id": "553381",
+    "isbn": "226608397X",
+    "isbn13": null,
+    "matched_author": "Dan Simmons",
+    "matched_title": "The Rise of Endymion",
+    "source": "open_library"
+  },
+  "the-road-to-corlay-cowper-1980-novel": {
+    "goodreads_id": "2519961",
+    "isbn": "0708881955",
+    "isbn13": null,
+    "matched_author": "Richard Cowper",
+    "matched_title": "The Road to Corlay",
+    "source": "open_library"
+  },
+  "the-robots-of-dawn-asimov-1984-novel": {
+    "goodreads_id": "122281",
+    "isbn": "0246123044",
+    "isbn13": null,
+    "matched_author": "Isaac Asimov",
+    "matched_title": "The Robots of Dawn",
+    "source": "open_library"
+  },
+  "the-salt-roads-hopkinson-2004-novel": {
+    "goodreads_id": "1108901",
+    "isbn": "9780446533027",
+    "isbn13": null,
+    "matched_author": "Nalo Hopkinson",
+    "matched_title": "The Salt Roads",
+    "source": "open_library"
+  },
+  "the-saturn-game-anderson-1982-novella": {
+    "goodreads_id": "338332",
+    "isbn": "9780812502770",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "The Saturn Game",
+    "source": "open_library"
+  },
+  "the-scar-mieville-2003-novel": {
+    "goodreads_id": "5965976",
+    "isbn": "9780330466998",
+    "isbn13": null,
+    "matched_author": "China Mi\u00e9ville",
+    "matched_title": "The Scar",
+    "source": "open_library"
+  },
+  "the-shadow-of-the-torturer-wolfe-1981-novel": {
+    "goodreads_id": "1230663",
+    "isbn": "9782207303214",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "The Shadow of the Torturer",
+    "source": "open_library"
+  },
+  "the-sheep-look-up-brunner-1973-novel": {
+    "goodreads_id": "941657",
+    "isbn": "9781497617803",
+    "isbn13": null,
+    "matched_author": "John Brunner",
+    "matched_title": "The Sheep Look Up",
+    "source": "open_library"
+  },
+  "the-ship-that-sailed-the-time-stream-edmondson-1966-novel": {
+    "goodreads_id": "1258132",
+    "isbn": "0090048903",
+    "isbn13": null,
+    "matched_author": "G. C. Edmondson",
+    "matched_title": "The Ship That Sailed the Time Stream",
+    "source": "open_library"
+  },
+  "the-silent-strength-of-stones-hoffman-1997-novel": {
+    "goodreads_id": "473867",
+    "isbn": "0380777606",
+    "isbn13": null,
+    "matched_author": "Nina Kiriki Hoffman",
+    "matched_title": "The Silent Strength of Stones",
+    "source": "open_library"
+  },
+  "the-sirens-of-titan-vonnegut-1960-novel": {
+    "goodreads_id": "304752",
+    "isbn": "9780385294218",
+    "isbn13": null,
+    "matched_author": "Kurt Vonnegut",
+    "matched_title": "The Sirens of Titan",
+    "source": "open_library"
+  },
+  "the-sky-road-macleod-2001-novel": {
+    "goodreads_id": "1885986",
+    "isbn": "9780099240426",
+    "isbn13": null,
+    "matched_author": "Ken MacLeod",
+    "matched_title": "The Sky Road",
+    "source": "open_library"
+  },
+  "the-snow-queen-vinge-1981-novel": {
+    "goodreads_id": "2272378",
+    "isbn": "076538177X",
+    "isbn13": null,
+    "matched_author": "Joan D. Vinge",
+    "matched_title": "The Snow Queen",
+    "source": "open_library"
+  },
+  "the-speed-of-dark-moon-2004-novel": {
+    "goodreads_id": "1140949",
+    "isbn": "1841491411",
+    "isbn13": null,
+    "matched_author": "Elizabeth Moon",
+    "matched_title": "The Speed of Dark",
+    "source": "open_library"
+  },
+  "the-squares-of-the-city-brunner-1966-novel": {
+    "goodreads_id": "1407130",
+    "isbn": "9780345218865",
+    "isbn13": null,
+    "matched_author": "John Brunner",
+    "matched_title": "The Squares of the City",
+    "source": "open_library"
+  },
+  "the-star-fox-anderson-1966-novel": {
+    "goodreads_id": "2414843",
+    "isbn": "0451029208",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "The Star Fox",
+    "source": "open_library"
+  },
+  "the-stochastic-man-silverberg-1976-novel": {
+    "goodreads_id": "1934034",
+    "isbn": "9780446345071",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "The Stochastic Man",
+    "source": "open_library"
+  },
+  "the-summer-queen-vinge-1992-novel": {
+    "goodreads_id": "139981",
+    "isbn": "9780446513975",
+    "isbn13": null,
+    "matched_author": "Joan D. Vinge",
+    "matched_title": "The Summer Queen",
+    "source": "open_library"
+  },
+  "the-sword-in-the-stone-white-1939-novel": {
+    "goodreads_id": "688765",
+    "isbn": "9798710117200",
+    "isbn13": null,
+    "matched_author": "T. H. White",
+    "matched_title": "The Sword in the Stone",
+    "source": "open_library"
+  },
+  "the-sword-of-aldones-bradley-1963-novel": {
+    "goodreads_id": "4759371",
+    "isbn": "0441670210",
+    "isbn13": null,
+    "matched_author": "Marion Zimmer Bradley",
+    "matched_title": "The Sword of Aldones",
+    "source": "open_library"
+  },
+  "the-sword-of-the-lictor-wolfe-1983-novel": {
+    "goodreads_id": "2377075",
+    "isbn": "9780099295402",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "The Sword of the Lictor",
+    "source": "open_library"
   },
   "the-tainted-cup-bennett-2025-novel": {
     "goodreads_id": "150247395",
@@ -160,6 +3864,222 @@
     "matched_author": "Robert Jackson Bennett",
     "matched_title": "The Tainted Cup (Shadow of the Leviathan, #1)"
   },
+  "the-terminal-experiment-sawyer-1996-novel": {
+    "goodreads_id": "2110651",
+    "isbn": "1402540167",
+    "isbn13": null,
+    "matched_author": "Robert J. Sawyer",
+    "matched_title": "The Terminal Experiment",
+    "source": "open_library"
+  },
+  "the-three-stigmata-of-palmer-eldritch-dick-1966-novel": {
+    "goodreads_id": "102659",
+    "isbn": "3453217292",
+    "isbn13": null,
+    "matched_author": "Philip K. Dick",
+    "matched_title": "The Three Stigmata of Palmer Eldritch",
+    "source": "open_library"
+  },
+  "the-time-ships-baxter-1996-novel": {
+    "goodreads_id": "62992",
+    "isbn": "9780002246095",
+    "isbn13": null,
+    "matched_author": "Stephen Baxter",
+    "matched_title": "The Time Ships",
+    "source": "open_library"
+  },
+  "the-tower-at-stony-wood-mckillip-2002-novel": {
+    "goodreads_id": "1118814",
+    "isbn": "9781473205567",
+    "isbn13": null,
+    "matched_author": "Patricia A. McKillip",
+    "matched_title": "The Tower at Stony Wood",
+    "source": "open_library"
+  },
+  "the-transmigration-of-timothy-archer-dick-1983-novel": {
+    "goodreads_id": "106585",
+    "isbn": "0679734449",
+    "isbn13": null,
+    "matched_author": "Philip K. Dick",
+    "matched_title": "The Transmigration of Timothy Archer",
+    "source": "open_library"
+  },
+  "the-uninvited-macardle-1943-novel": {
+    "goodreads_id": "3800070",
+    "isbn": "9780892440689",
+    "isbn13": null,
+    "matched_author": "Dorothy Macardle",
+    "matched_title": "The Uninvited",
+    "source": "open_library"
+  },
+  "the-uplift-war-brin-1988-novel": {
+    "goodreads_id": "1266492",
+    "isbn": "1405514450",
+    "isbn13": null,
+    "matched_author": "David Brin",
+    "matched_title": "The Uplift War",
+    "source": "open_library"
+  },
+  "the-urth-of-the-new-sun-wolfe-1988-novel": {
+    "goodreads_id": "2930325",
+    "isbn": "9780312863944",
+    "isbn13": null,
+    "matched_author": "Gene Wolfe",
+    "matched_title": "The Urth of the New Sun",
+    "source": "open_library"
+  },
+  "the-vampire-tapestry-charnas-1982-novel": {
+    "goodreads_id": "517318",
+    "isbn": "0586056823",
+    "isbn13": null,
+    "matched_author": "Suzy McKee Charnas",
+    "matched_title": "The Vampire Tapestry",
+    "source": "open_library"
+  },
+  "the-void-captain-s-tale-spinrad-1984-novel": {
+    "goodreads_id": "756568",
+    "isbn": "9780671434830",
+    "isbn13": null,
+    "matched_author": "Norman Spinrad",
+    "matched_title": "The Void Captain's Tale",
+    "source": "open_library"
+  },
+  "the-vor-game-bujold-1991-novel": {
+    "goodreads_id": "68483",
+    "isbn": "1441718346",
+    "isbn13": null,
+    "matched_author": "Lois McMaster Bujold",
+    "matched_title": "The Vor Game",
+    "source": "open_library"
+  },
+  "the-wanderer-leiber-1965-novel": {
+    "goodreads_id": "102278",
+    "isbn": "1497642205",
+    "isbn13": null,
+    "matched_author": "Fritz Leiber",
+    "matched_title": "The Wanderer",
+    "source": "open_library"
+  },
+  "the-weapon-makers-vogt-1944-novel": {
+    "goodreads_id": "3651080",
+    "isbn": "9780671822675",
+    "isbn13": null,
+    "matched_author": "A. E. van Vogt",
+    "matched_title": "The Weapon Makers",
+    "source": "open_library"
+  },
+  "the-wheel-of-time-jordan-2014-novel": {
+    "goodreads_id": "601411",
+    "isbn": "9781593974336",
+    "isbn13": null,
+    "matched_author": "Robert Jordan",
+    "matched_title": "The Wheel of Time",
+    "source": "open_library"
+  },
+  "the-white-dragon-mccaffrey-1979-novel": {
+    "goodreads_id": "548826",
+    "isbn": "9780345341679",
+    "isbn13": null,
+    "matched_author": "Anne McCaffrey",
+    "matched_title": "The White Dragon",
+    "source": "open_library"
+  },
+  "the-whole-man-brunner-1965-novel": {
+    "goodreads_id": "5397706",
+    "isbn": "9780345234377",
+    "isbn13": null,
+    "matched_author": "John Brunner",
+    "matched_title": "The Whole Man",
+    "source": "open_library"
+  },
+  "the-wild-shore-robinson-1985-novel": {
+    "goodreads_id": "1409774",
+    "isbn": "0441888704",
+    "isbn13": null,
+    "matched_author": "Kim Stanley Robinson",
+    "matched_title": "The Wild Shore",
+    "source": "open_library"
+  },
+  "the-wind-on-the-moon-linklater-1945-novel": {
+    "goodreads_id": "49048",
+    "isbn": "0140305432",
+    "isbn13": null,
+    "matched_author": "Eric Linklater",
+    "matched_title": "The Wind on the Moon",
+    "source": "open_library"
+  },
+  "the-winds-of-marble-arch-willis-2000-novella": {
+    "goodreads_id": "68010",
+    "isbn": "9781596061101",
+    "isbn13": null,
+    "matched_author": "Connie Willis",
+    "matched_title": "The Winds of Marble Arch",
+    "source": "open_library"
+  },
+  "the-winged-man-vogt-1945-novel": {
+    "goodreads_id": "2728983",
+    "isbn": "0722187319",
+    "isbn13": null,
+    "matched_author": "A. E. van Vogt",
+    "matched_title": "The Winged Man",
+    "source": "open_library"
+  },
+  "the-witches-of-karres-schmitz-1967-novel": {
+    "goodreads_id": "958830",
+    "isbn": "9789029068871",
+    "isbn13": null,
+    "matched_author": "James H. Schmitz",
+    "matched_title": "The Witches of Karres",
+    "source": "open_library"
+  },
+  "the-word-for-world-is-forest-guin-1973-novella": {
+    "goodreads_id": "477299",
+    "isbn": "9786586015096",
+    "isbn13": null,
+    "matched_author": "Ursula K. Le Guin",
+    "matched_title": "The Word for World Is Forest",
+    "source": "open_library"
+  },
+  "the-year-of-the-quiet-sun-tucker-1971-novel": {
+    "goodreads_id": "973772",
+    "isbn": "9780099060406",
+    "isbn13": null,
+    "matched_author": "Wilson Tucker",
+    "matched_title": "The Year of the Quiet Sun",
+    "source": "open_library"
+  },
+  "the-years-of-rice-and-salt-robinson-2003-novel": {
+    "goodreads_id": "251482",
+    "isbn": "9782266147590",
+    "isbn13": null,
+    "matched_author": "Kim Stanley Robinson",
+    "matched_title": "The Years of Rice and Salt",
+    "source": "open_library"
+  },
+  "the-yiddish-policemen-s-union-chabon-2008-novel": {
+    "goodreads_id": "5981593",
+    "isbn": "9780007150397",
+    "isbn13": null,
+    "matched_author": "Michael Chabon",
+    "matched_title": "The Yiddish Policemen's Union",
+    "source": "open_library"
+  },
+  "there-will-be-time-anderson-1973-novel": {
+    "goodreads_id": "3200230",
+    "isbn": "9780722111482",
+    "isbn13": null,
+    "matched_author": "Poul Anderson",
+    "matched_title": "There Will Be Time",
+    "source": "open_library"
+  },
+  "think-like-a-dinosaur-kelly-1996-novelette": {
+    "goodreads_id": "219349",
+    "isbn": "9781930846203",
+    "isbn13": null,
+    "matched_author": "James Patrick Kelly",
+    "matched_title": "Think Like a Dinosaur",
+    "source": "open_library"
+  },
   "this-is-how-you-lose-the-time-war-el-mohtar-2020-novella": {
     "goodreads_id": "43352954",
     "isbn": null,
@@ -167,11 +4087,251 @@
     "matched_author": "Amal El-Mohtar",
     "matched_title": "This Is How You Lose the Time War"
   },
+  "thorns-silverberg-1968-novel": {
+    "goodreads_id": "2373901",
+    "isbn": "9780345234476",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "Thorns",
+    "source": "open_library"
+  },
+  "time-enough-for-love-heinlein-1974-novel": {
+    "goodreads_id": "2527432",
+    "isbn": "9780425034712",
+    "isbn13": null,
+    "matched_author": "Robert A. Heinlein",
+    "matched_title": "Time Enough for Love",
+    "source": "open_library"
+  },
+  "time-storm-dickson-1978-novel": {
+    "goodreads_id": "536951",
+    "isbn": "055313860X",
+    "isbn13": null,
+    "matched_author": "Gordon R. Dickson",
+    "matched_title": "Time Storm",
+    "source": "open_library"
+  },
+  "timescape-benford-1981-novel": {
+    "goodreads_id": "778990",
+    "isbn": "9781449842376",
+    "isbn13": null,
+    "matched_author": "Gregory Benford",
+    "matched_title": "Timescape",
+    "source": "open_library"
+  },
+  "titan-varley-1980-novel": {
+    "goodreads_id": "2327281",
+    "isbn": "0425057178",
+    "isbn13": null,
+    "matched_author": "John Varley",
+    "matched_title": "Titan",
+    "source": "open_library"
+  },
+  "to-crush-the-moon-mccarthy-2007-novel": {
+    "goodreads_id": "378929",
+    "isbn": "1982192003",
+    "isbn13": null,
+    "matched_author": "Wil McCarthy",
+    "matched_title": "To Crush the Moon",
+    "source": "open_library"
+  },
+  "to-say-nothing-of-the-dog-willis-1999-novel": {
+    "goodreads_id": "77773",
+    "isbn": "9781410476081",
+    "isbn13": null,
+    "matched_author": "Connie Willis",
+    "matched_title": "To Say Nothing of the Dog",
+    "source": "open_library"
+  },
+  "to-your-scattered-bodies-go-farmer-1972-novel": {
+    "goodreads_id": "229395",
+    "isbn": "9780425050262",
+    "isbn13": null,
+    "matched_author": "Philip Jos\u00e9 Farmer",
+    "matched_title": "To Your Scattered Bodies Go",
+    "source": "open_library"
+  },
+  "too-many-magicians-garrett-1967-novel": {
+    "goodreads_id": "1898794",
+    "isbn": "0441816975",
+    "isbn13": null,
+    "matched_author": "Randall Garrett",
+    "matched_title": "Too Many Magicians",
+    "source": "open_library"
+  },
+  "tower-of-glass-silverberg-1971-novel": {
+    "goodreads_id": "202172",
+    "isbn": "9780684105444",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "Tower of Glass",
+    "source": "open_library"
+  },
+  "triton-delany-1977-novel": {
+    "goodreads_id": "85893",
+    "isbn": "9780819562982",
+    "isbn13": null,
+    "matched_author": "Samuel R. Delany",
+    "matched_title": "Triton",
+    "source": "open_library"
+  },
+  "unicorn-variation-zelazny-1982-novelette": {
+    "goodreads_id": "1118539",
+    "isbn": "9780886467364",
+    "isbn13": null,
+    "matched_author": "Roger Zelazny",
+    "matched_title": "Unicorn Variation",
+    "source": "open_library"
+  },
+  "up-the-line-silverberg-1970-novel": {
+    "goodreads_id": "924301",
+    "isbn": "0722178352",
+    "isbn13": null,
+    "matched_author": "Robert Silverberg",
+    "matched_title": "Up the Line",
+    "source": "open_library"
+  },
+  "uprooted-novik-2016-novel": {
+    "goodreads_id": "30970695",
+    "isbn": "9780804179034",
+    "isbn13": null,
+    "matched_author": "Naomi Novik",
+    "matched_title": "Uprooted",
+    "source": "open_library"
+  },
+  "venus-plus-x-sturgeon-1961-novel": {
+    "goodreads_id": "5711593",
+    "isbn": "9781453295434",
+    "isbn13": null,
+    "matched_author": "Theodore Sturgeon",
+    "matched_title": "Venus Plus X",
+    "source": "open_library"
+  },
+  "vergil-in-averno-davidson-1988-novel": {
+    "goodreads_id": "318143",
+    "isbn": "9780385197076",
+    "isbn13": null,
+    "matched_author": "Avram Davidson",
+    "matched_title": "Vergil in Averno",
+    "source": "open_library"
+  },
+  "virtual-light-gibson-1994-novel": {
+    "goodreads_id": "22326",
+    "isbn": "9788445074077",
+    "isbn13": null,
+    "matched_author": "William Gibson",
+    "matched_title": "Virtual Light",
+    "source": "open_library"
+  },
+  "we-are-all-completely-beside-ourselves-fowler-2014-novel": {
+    "goodreads_id": "16176440",
+    "isbn": "1846689651",
+    "isbn13": null,
+    "matched_author": "Karen Joy Fowler",
+    "matched_title": "We Are All Completely Beside Ourselves",
+    "source": "open_library"
+  },
+  "weyr-search-mccaffrey-1968-novella": {
+    "goodreads_id": "6252835",
+    "isbn": "0202867102",
+    "isbn13": null,
+    "matched_author": "Anne McCaffrey",
+    "matched_title": "Weyr Search",
+    "source": "open_library"
+  },
+  "what-entropy-means-to-me-effinger-1973-novel": {
+    "goodreads_id": "305215",
+    "isbn": "0451055047",
+    "isbn13": null,
+    "matched_author": "George Alec Effinger",
+    "matched_title": "What Entropy Means to Me",
+    "source": "open_library"
+  },
+  "when-gravity-fails-effinger-1988-novel": {
+    "goodreads_id": "132694",
+    "isbn": "0877958513",
+    "isbn13": null,
+    "matched_author": "George Alec Effinger",
+    "matched_title": "When Gravity Fails",
+    "source": "open_library"
+  },
+  "when-harlie-was-one-gerrold-1973-novel": {
+    "goodreads_id": "3972981",
+    "isbn": "9780345028853",
+    "isbn13": null,
+    "matched_author": "David Gerrold",
+    "matched_title": "When HARLIE Was One",
+    "source": "open_library"
+  },
+  "where-late-the-sweet-birds-sang-wilhelm-1977-novel": {
+    "goodreads_id": "968831",
+    "isbn": "0671809121",
+    "isbn13": null,
+    "matched_author": "Kate Wilhelm",
+    "matched_title": "Where Late the Sweet Birds Sang",
+    "source": "open_library"
+  },
+  "where-the-drowned-girls-go-mcguire-2023-novella": {
+    "goodreads_id": "57771419",
+    "isbn": "1250213614",
+    "isbn13": null,
+    "matched_author": "Seanan McGuire",
+    "matched_title": "Where the Drowned Girls Go",
+    "source": "open_library"
+  },
+  "white-jenna-yolen-1991-novel": {
+    "goodreads_id": "122103",
+    "isbn": "9780312931957",
+    "isbn13": null,
+    "matched_author": "Jane Yolen",
+    "matched_title": "White Jenna",
+    "source": "open_library"
+  },
+  "who-budrys-1959-novel": {
+    "goodreads_id": "3976845",
+    "isbn": "9781587760105",
+    "isbn13": null,
+    "matched_author": "Algis Budrys",
+    "matched_title": "Who?",
+    "source": "open_library"
+  },
+  "winter-rose-mckillip-1997-novel": {
+    "goodreads_id": "77364",
+    "isbn": "1904233074",
+    "isbn13": null,
+    "matched_author": "Patricia A. McKillip",
+    "matched_title": "Winter Rose",
+    "source": "open_library"
+  },
+  "witch-world-norton-1964-novel": {
+    "goodreads_id": "1183881",
+    "isbn": "083892355X",
+    "isbn13": null,
+    "matched_author": "Andre Norton",
+    "matched_title": "Witch World",
+    "source": "open_library"
+  },
+  "wizard-varley-1981-novel": {
+    "goodreads_id": "2247140",
+    "isbn": "0425064271",
+    "isbn13": null,
+    "matched_author": "John Varley",
+    "matched_title": "Wizard",
+    "source": "open_library"
+  },
   "xenocide-card-1992-novel": {
     "goodreads_id": "8648",
     "isbn": "0312861877",
     "isbn13": "9780312861872",
     "matched_author": "Orson Scott Card",
     "matched_title": "Xenocide (Ender's Saga, #3)"
+  },
+  "zoe-s-tale-scalzi-2009-novel": {
+    "goodreads_id": "2102600",
+    "isbn": "8445000578",
+    "isbn13": null,
+    "matched_author": "John Scalzi",
+    "matched_title": "Zoe's Tale",
+    "source": "open_library"
   }
 }

@@ -61,6 +61,16 @@ def title_variants(title: str) -> list[str]:
     # Strip trailing series suffix like 'Foo (Bar, #1)'.
     push(re.sub(r"\s*\([^)]+\)\s*$", "", title))
 
+    # 'Foo: The Bar of Baz' → try 'Foo' (subtitle split). Some OL records
+    # index the work only under the short title.
+    if ":" in title:
+        push(title.split(":", 1)[0])
+
+    # 'Foo — The Bar' or 'Foo - The Bar' (em-dash / hyphen subtitles).
+    for sep in ["—", " - ", " – "]:
+        if sep in title:
+            push(title.split(sep, 1)[0])
+
     return out
 
 
