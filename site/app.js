@@ -1845,8 +1845,26 @@ function renderStats() {
   }).join('');
   const authorRows = renderAuthorRows(topAuthors, maxAppearances);
 
+  // Compare widget — suggest friends from the preloaded leaderboard
+  const dashMyHandle = window.MR_AUTH?.profile?.handle || null;
+  const dashFriendHandles = (window.MR_AUTH?.leaderboardOverall || [])
+    .map(r => r.handle)
+    .filter(h => h && h !== dashMyHandle);
+  const compareWidgetHtml = `<div class="dashboard-compare">
+    <input type="text" id="dashboard-compare-input" class="dashboard-compare-input"
+      placeholder="Compare with a friend by @handle…"
+      list="dashboard-compare-list"
+      autocomplete="off">
+    <datalist id="dashboard-compare-list">
+      ${dashFriendHandles.map(h => `<option value="${escapeHtml(h)}">`).join('')}
+    </datalist>
+    <button type="button" id="dashboard-compare-btn" class="mr-btn-primary">Compare →</button>
+  </div>`;
+
   root.innerHTML = `<div class="detail">
     <h1>Dashboard</h1>
+    <p class="dashboard-intro"><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
+    ${compareWidgetHtml}
     <div class="toggle-row">
       <div class="status-toggle" data-status="${STATUS}">
         <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
@@ -2114,6 +2132,18 @@ function renderStats() {
     </div>
 
   </div>`;
+
+  // Dashboard compare widget
+  const dashCompareInput = document.getElementById('dashboard-compare-input');
+  const dashCompareBtn = document.getElementById('dashboard-compare-btn');
+  const doCompare = () => {
+    const handle = (dashCompareInput?.value || '').trim().replace(/^@/, '');
+    if (!handle) return;
+    const me = window.MR_AUTH?.profile?.handle || 'me';
+    location.hash = `#/compare?u=${encodeURIComponent(me)}&u=${encodeURIComponent(handle)}`;
+  };
+  dashCompareBtn?.addEventListener('click', doCompare);
+  dashCompareInput?.addEventListener('keydown', e => { if (e.key === 'Enter') doCompare(); });
 
   $$('.recent-read, .swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
@@ -2957,13 +2987,9 @@ function discoverPeekBook(offset) {
   return null;
 }
 
-// SFF Readmore mission statement — sits at the top of the Discover tab.
-// The two award featured banners live on the Home page now (kept separate
-// from this CTA so anon visitors on Discover see the elevator pitch).
+// Mission statement moved to the Dashboard (renderStats). Discover no longer shows it.
 function discoverIntroHtml() {
-  return `<section class="home-cta">
-      <p><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
-    </section>`;
+  return '';
 }
 
 // "Read Free Online" spotlight banner — pinned featured book + strip of others.
@@ -3866,9 +3892,9 @@ async function renderProfile(handle) {
       const totalLabel = overall[0]?.total_books ?? 0;
       const onLeaderboard = window.MR_AUTH?.profile?.on_leaderboard;
       const rowHtml = overall.map(r => {
-        const isMeRow = r.user_id === myUserId;
+        const isMeRow = r.user_id === meId;
         const compareTag = !isMeRow
-          ? `<a class="lb-compare" href="#/compare?u=${encodeURIComponent(meHandle || 'me')}&u=${encodeURIComponent(r.handle)}">Compare →</a>`
+          ? `<a class="lb-compare" href="#/compare?u=${encodeURIComponent(myHandle || 'me')}&u=${encodeURIComponent(r.handle)}">Compare →</a>`
           : `<span class="lb-me">you</span>`;
         const hCount = hugoByUser[r.user_id] ?? 0;
         const nCount = nebulaByUser[r.user_id] ?? 0;
