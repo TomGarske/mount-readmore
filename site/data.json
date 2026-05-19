@@ -17157,6 +17157,7 @@
       "award_years": {
         "hugo": 1997
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/3202735-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -17197,6 +17198,7 @@
       "award_years": {
         "nebula": 1997
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/3910025-L.jpg",
       "author_genders": [
         "female"
       ],
@@ -18039,6 +18041,7 @@
         "hugo": 1995,
         "nebula": 1995
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/3942313-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -20436,6 +20439,7 @@
       "award_years": {
         "nebula": 1991
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/4086206-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -22723,6 +22727,7 @@
       "award_years": {
         "nebula": 1987
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/115176-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -31126,6 +31131,7 @@
       "award_years": {
         "nebula": 1971
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8579248-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -34793,6 +34799,7 @@
       "ol_key": "/works/OL5510957W",
       "first_pub_year": 1962,
       "pages": 100,
+      "cover_url": "https://covers.openlibrary.org/b/id/379953-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -35633,6 +35640,7 @@
       "genres": [
         "Science Fiction"
       ],
+      "cover_url": "https://covers.openlibrary.org/b/id/13148668-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -36870,6 +36878,7 @@
       "award_years": {
         "hugo": 1946
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9300695-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -40714,6 +40723,7 @@
       "award_years": {
         "hugo": 1997
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/12063529-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -46439,9 +46449,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novella": 78,
       "Novelette": 78,
-      "Novel": 638
+      "Novel": 638,
+      "Novella": 78
     }
   }
 }

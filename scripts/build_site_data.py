@@ -478,7 +478,7 @@ def main() -> None:
                 "by_category": {c: sum(1 for r in all_records if r["category"] == c) for c in set(r["category"] for r in all_records)},
             },
         }, f, indent=2, ensure_ascii=False)
-    print(f"\nWrote {args.out} with {len(all_records)} books ({covers} with covers)")
+    print(f"\nWrote {args.out} with {len(all_records)} books ({total_covers} with covers)")
 
 
 if __name__ == "__main__":
