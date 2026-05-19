@@ -1062,6 +1062,7 @@ function renderMagazines() {
 
   root.innerHTML = `<div class="detail magazines-page">
     <h1>Collections</h1>
+    <h2 class="collections-section-head collections-section-head-first">This Year's Nominees!</h2>
     ${awardFeaturedBannersHtml()}
     ${freeReadBannerHtml()}
     <h2 class="collections-section-head">Magazines</h2>
@@ -2439,7 +2440,7 @@ async function renderCompare(params) {
   // Bare /#/compare (no u= params) is now redirected to /#/friends in route().
   // If we somehow land here with less than 2 ids (malformed URL), bounce home.
   if (ids.length !== 2) {
-    location.hash = '#/friends';
+    location.hash = '#/';
     return;
   }
 
@@ -3901,6 +3902,52 @@ async function renderProfile(handle) {
       <p style="color: var(--muted); font-size: 13px;">Each axis = a decade. Distance from center = share of that decade's winners + finalists @${escapeHtml(profile.handle)} has read.</p>
       ${profEraRadarHtml}
     </section>` : ''}
+
+    ${isMe ? (() => {
+      const overall = window.MR_AUTH?.leaderboardOverall || [];
+      const byAward = window.MR_AUTH?.leaderboardByAward || [];
+      const hugoByUser = {};
+      const nebulaByUser = {};
+      for (const r of byAward) {
+        if (r.award === 'hugo') hugoByUser[r.user_id] = r.read_count;
+        else if (r.award === 'nebula') nebulaByUser[r.user_id] = r.read_count;
+      }
+      const totalLabel = overall[0]?.total_books ?? 0;
+      const onLeaderboard = window.MR_AUTH?.profile?.on_leaderboard;
+      const rowHtml = overall.map(r => {
+        const isMeRow = r.user_id === myUserId;
+        const compareTag = !isMeRow
+          ? `<a class="lb-compare" href="#/compare?u=${encodeURIComponent(meHandle || 'me')}&u=${encodeURIComponent(r.handle)}">Compare →</a>`
+          : `<span class="lb-me">you</span>`;
+        const hCount = hugoByUser[r.user_id] ?? 0;
+        const nCount = nebulaByUser[r.user_id] ?? 0;
+        return `<div class="lb-row${isMeRow ? ' lb-row-me' : ''}">
+          <div class="lb-rank">#${r.rank}</div>
+          <div class="lb-handle"><a href="#/u/${escapeHtml(r.handle)}">@${escapeHtml(r.handle)}</a></div>
+          <div class="lb-stat"><strong>${r.read_count}</strong> <span class="lb-of">/ ${r.total_books}</span></div>
+          <div class="lb-stat-sub" style="color:var(--sf)"><strong>${hCount}</strong> Hugo</div>
+          <div class="lb-stat-sub" style="color:var(--fantasy)"><strong>${nCount}</strong> Nebula</div>
+          <div class="lb-pct">${r.pct ?? 0}%</div>
+          <div class="lb-action">${compareTag}</div>
+        </div>`;
+      }).join('');
+      const noLeaderboardNote = !onLeaderboard
+        ? `<p style="color:var(--muted);font-size:13px;">You're not on the leaderboard yet. <a href="#/settings">Opt in from Settings</a>.</p>`
+        : '';
+      return `<section class="profile-section" id="profile-friends-section">
+        <h2>Friends</h2>
+        <p style="color:var(--muted);font-size:13px;">You and your friends, ranked by reads from the ${totalLabel} canonical books. Tap <strong>Compare</strong> to see a head-to-head.</p>
+        ${noLeaderboardNote}
+        <form id="profile-friends-add-form" class="friends-add-form">
+          <input type="text" id="profile-friends-add-handle" placeholder="@handle to add" autocomplete="off">
+          <button type="submit" class="mr-btn-primary">Add friend</button>
+          <span id="profile-friends-add-status" class="settings-inline-status"></span>
+        </form>
+        ${overall.length > 0
+          ? `<div class="lb-table">${rowHtml}</div>`
+          : `<p style="color:var(--muted);">No friends yet — add one above.</p>`}
+      </section>`;
+    })() : ''}
   </div>`;
 
   $('#profile-add-friend')?.addEventListener('click', async () => {
@@ -3912,6 +3959,27 @@ async function renderProfile(handle) {
     }
   });
   $('#profile-signin')?.addEventListener('click', () => window.MR_AUTH.showSignInModal());
+
+  // Friends add-form (isMe only)
+  const friendsAddForm = $('#profile-friends-add-form');
+  if (friendsAddForm) {
+    const addStatus = $('#profile-friends-add-status');
+    friendsAddForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = $('#profile-friends-add-handle');
+      const v = (input.value || '').trim();
+      if (!v) return;
+      if (addStatus) { addStatus.textContent = 'Adding…'; addStatus.className = 'settings-inline-status'; }
+      try {
+        const target = await window.MR_AUTH.addFriendByHandle(v);
+        if (addStatus) { addStatus.textContent = `✓ Added @${target.handle}`; addStatus.className = 'settings-inline-status success'; }
+        input.value = '';
+        setTimeout(() => renderProfile(handle), 200);
+      } catch (err) {
+        if (addStatus) { addStatus.textContent = err.message || String(err); addStatus.className = 'settings-inline-status error'; }
+      }
+    });
+  }
 }
 
 function showView(name) {
@@ -4131,7 +4199,7 @@ function _route() {
     // a friend-picker, which is now part of the Friends page — redirect.
     const hasPair = params.getAll('u').length + params.getAll('reader').length + params.getAll('readers').length >= 2;
     if (!hasPair) {
-      location.hash = '#/friends';
+      location.hash = '#/';
       return;
     }
     renderCompare(params);
@@ -4142,17 +4210,13 @@ function _route() {
   if (path === '#/leaderboard') {
     // Legacy URL — Friends absorbed the leaderboard. Rewrite so the address
     // bar reflects the canonical path.
-    location.hash = '#/friends';
+    location.hash = '#/';
     return;
   }
   if (path === '#/friends') {
-    showView('friends');
-    window.scrollTo(0, 0);
-    renderFriends().catch(err => {
-      console.error('renderFriends threw:', err);
-      const root = document.getElementById('view-friends');
-      if (root) root.innerHTML = `<div class="detail"><h1>Friends</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
-    });
+    // Friends has moved into the profile page — redirect to your own profile.
+    const myHandle = window.MR_AUTH?.profile?.handle;
+    location.hash = myHandle ? `#/u/${encodeURIComponent(myHandle)}` : '#/';
     return;
   }
   if (path === '#/discover') {
@@ -4340,9 +4404,7 @@ function renderAuthPill() {
   // sign-in-only and the route handlers redirect anon visitors to Home.
   const signedIn = !!window.MR_AUTH?.user;
   const navDiscover = document.getElementById('nav-discover');
-  const navFriends = document.getElementById('nav-friends');
   if (navDiscover) navDiscover.hidden = !signedIn;
-  if (navFriends) navFriends.hidden = !signedIn;
   if (!window.MR_AUTH) {
     slot.innerHTML = '';
     return;
