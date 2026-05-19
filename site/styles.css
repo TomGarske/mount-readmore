@@ -2261,6 +2261,17 @@ fieldset label input { margin-right: 8px; }
   font-weight: 600;
 }
 .detail-links .detail-link-read:hover { background: #eff6ff; border-color: #1d4ed8; }
+.detail-link-read-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.detail-link-read-label {
+  font-size: 11px;
+  color: var(--text-2);
+  line-height: 1.4;
+  max-width: 200px;
+}
 .detail-link-favicon {
   width: 16px;
   height: 16px;

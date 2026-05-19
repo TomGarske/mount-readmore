@@ -41243,6 +41243,7 @@
       "award_years": {
         "hugo": 1987
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/9217228-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -43796,6 +43797,7 @@
         "hugo": 2015
       },
       "description": "Thomas Olde Heuvelt's 2015 Hugo Novelette winner, translated from the Dutch (Lightspeed, April 2014). On the morning the woman the narrator loves dumps him, gravity reverses. Houses, lawns, dogs, oceans, everything except a few clinging humans fall into the sky. The narrator carries his goldfish in a bowl across the upside-down sky to give it back to his ex. A literal love-as-falling story, played painfully and absurdly straight.",
+      "cover_url": "https://covers.openlibrary.org/b/id/12964281-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -43977,6 +43979,7 @@
         "hugo": 2011
       },
       "description": "Allen Steele's 2011 Hugo Novelette winner (Asimov's, June 2010). On a small early Mars research base, a young scientist who has just learned his fiancée and family back on Earth have died begins, slowly and quietly, to believe he is the Emperor of Mars. The colony has to decide what to do about him while the supplies, and the next ship, are still a long way off.",
+      "cover_url": "https://covers.openlibrary.org/b/id/8422465-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -44328,6 +44331,7 @@
       "award_years": {
         "hugo": 2003
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/2096842-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -44412,6 +44416,7 @@
       "ol_key": "/works/OL39683628W",
       "first_pub_year": 2010,
       "isbn": "1458170039",
+      "cover_url": "https://covers.openlibrary.org/b/id/8247636-L.jpg",
       "author_genders": [
         "female"
       ],
@@ -44892,6 +44897,7 @@
       "award_years": {
         "hugo": 1991
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/8738810-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -45080,6 +45086,7 @@
       "award_years": {
         "hugo": 1987
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/6939443-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -45404,6 +45411,7 @@
       "award_years": {
         "hugo": 1981
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/13845896-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -45687,6 +45695,7 @@
       "award_years": {
         "hugo": 1975
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/4939559-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -46472,6 +46481,7 @@
       "award_years": {
         "hugo": 1939
       },
+      "cover_url": "https://covers.openlibrary.org/b/id/13780473-L.jpg",
       "author_genders": [
         "male"
       ],
@@ -46481,8 +46491,8 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novel": 638,
       "Novella": 78,
+      "Novel": 638,
       "Novelette": 78
     }
   }

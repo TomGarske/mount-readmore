@@ -562,7 +562,20 @@ function renderDetail(id) {
         ${renderUserStatusControls(book.id)}
         ${addToShelfBtn ? `<div style="margin-top: 16px;">${addToShelfBtn}</div>` : ''}
         <div class="detail-links">
-          ${(() => { const readUrl = book.publication_url || `https://bookshop.org/search?keywords=${searchQ}`; const host = new URL(readUrl).hostname.replace(/^www\./, ''); const favicon = `https://www.google.com/s2/favicons?domain=${host}&sz=32`; return `<a href="${escapeHtml(readUrl)}" target="_blank" rel="noopener" class="detail-link-read">Read Now <img src="${favicon}" alt="${escapeHtml(host)}" class="detail-link-favicon"></a>`; })()}
+          ${(() => {
+            const readUrl = book.publication_url || `https://bookshop.org/search?keywords=${searchQ}`;
+            const host = new URL(readUrl).hostname.replace(/^www\./, '');
+            const favicon = `https://www.google.com/s2/favicons?domain=${host}&sz=32`;
+            let label;
+            if (book.publication_url) {
+              label = book.publication_label
+                ? `Originally published in <strong>${escapeHtml(book.publication_label)}</strong> — read free online`
+                : 'Available to read free online';
+            } else {
+              label = 'Find or purchase this book on Bookshop.org';
+            }
+            return `<div class="detail-link-read-wrap"><a href="${escapeHtml(readUrl)}" target="_blank" rel="noopener" class="detail-link-read">Read Now <img src="${favicon}" alt="${escapeHtml(host)}" class="detail-link-favicon"></a><span class="detail-link-read-label">${label}</span></div>`;
+          })()}
           <a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a>
           <a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a>
         </div>
