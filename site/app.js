@@ -693,7 +693,7 @@ function renderDetail(id) {
             const magazine = book.publication_label || MAGAZINE_CANONICAL[book.publisher] || null;
             let cta, label;
             if (book.publication_url) {
-              cta = 'Read Free';
+              cta = 'Read Free Online';
               label = magazine
                 ? `Originally published in <strong>${escapeHtml(magazine)}</strong> — read free online`
                 : 'Available to read free online';
@@ -802,7 +802,7 @@ function renderAuthors() {
       const winBadge = a.wins ? `<span class="author-badge wins">${a.wins}W</span>` : '';
       const nomBadge = a.noms ? `<span class="author-badge noms">${a.noms}N</span>` : '';
       const bookCount = `<span class="author-book-count">${a.books.length} book${a.books.length !== 1 ? 's' : ''}</span>`;
-      return `<a class="author-card" href="#/books?search=${encodeURIComponent(a.name)}" data-author="${escapeHtml(a.name)}">
+      return `<a class="author-card" href="#/authors/${encodeURIComponent(a.name)}" data-author="${escapeHtml(a.name)}">
         <div class="author-card-photo-wrap">
           <div class="author-card-photo" id="author-photo-${escapeHtml(slug)}" data-name="${escapeHtml(a.name)}">
             <span class="author-card-initials">${escapeHtml(a.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase())}</span>
@@ -860,6 +860,88 @@ function renderAuthors() {
     renderGrid(e.target.value);
   });
 
+}
+
+// ─── Author detail page ────────────────────────────────────────────────────
+// Renders at #/authors/{encodeURIComponent(name)}.
+// Reuses the #view-authors div, so no extra HTML div needed.
+function renderAuthorDetail(name) {
+  const root = $('#view-authors');
+  if (!root) return;
+
+  // All books by this author, newest first.
+  const books = DATA.books
+    .filter(b => (b.authors || []).some(a => a.toLowerCase() === name.toLowerCase()))
+    .sort((a, b) => (b.year || 0) - (a.year || 0));
+
+  if (books.length === 0) {
+    root.innerHTML = `<div class="author-detail"><a href="#/authors" class="back">← all authors</a><h1>${escapeHtml(name)}</h1><p style="color:var(--muted)">No books found for this author.</p></div>`;
+    return;
+  }
+
+  // Stats
+  const wins = books.filter(b => Object.values(b.awards || {}).includes('winner')).length;
+  const noms = books.filter(b => !Object.values(b.awards || {}).includes('winner') && Object.keys(b.awards || {}).length > 0).length;
+  const statPills = [
+    wins  ? `<span class="ad-stat ad-stat-wins">${wins} win${wins !== 1 ? 's' : ''}</span>` : '',
+    noms  ? `<span class="ad-stat ad-stat-noms">${noms} nomination${noms !== 1 ? 's' : ''}</span>` : '',
+    `<span class="ad-stat ad-stat-books">${books.length} book${books.length !== 1 ? 's' : ''}</span>`,
+  ].filter(Boolean).join('');
+
+  const initials = name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase();
+
+  root.innerHTML = `<div class="author-detail">
+    <a href="#/authors" class="back">← all authors</a>
+    <div class="author-detail-header">
+      <div class="author-detail-photo" id="author-detail-photo" data-name="${escapeHtml(name)}">
+        <span class="author-detail-initials">${escapeHtml(initials)}</span>
+      </div>
+      <div class="author-detail-meta">
+        <h1 class="author-detail-name">${escapeHtml(name)}</h1>
+        <div class="author-detail-stats">${statPills}</div>
+        <div id="author-detail-bio" class="author-detail-bio">
+          <p class="author-detail-bio-loading" style="color:var(--muted);font-size:13px;">Loading bio…</p>
+        </div>
+      </div>
+    </div>
+    <div class="author-detail-books">
+      <h2>${books.length} book${books.length !== 1 ? 's' : ''} on the list</h2>
+      <div class="grid">${books.map(b => bookCard(b)).join('')}</div>
+    </div>
+  </div>`;
+
+  // Wire book card clicks
+  $$('.card', root).forEach(el =>
+    el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; })
+  );
+
+  // Async: Wikipedia photo + bio
+  fetchWikiAuthor(name).then(wiki => {
+    if (!wiki || wiki.type === 'disambiguation') {
+      const bioEl = $('#author-detail-bio');
+      if (bioEl) bioEl.innerHTML = '';
+      return;
+    }
+
+    // Replace initials with photo
+    if (wiki.thumbnail) {
+      const photoEl = $('#author-detail-photo');
+      if (photoEl) {
+        photoEl.innerHTML = `<img src="${escapeHtml(wiki.thumbnail.source)}" alt="${escapeHtml(name)}" loading="eager">`;
+        photoEl.classList.add('has-photo');
+      }
+    }
+
+    // Bio text + Wikipedia link
+    const bioEl = $('#author-detail-bio');
+    if (!bioEl) return;
+    const extract = wiki.extract || '';
+    const wikiUrl = wiki.content_urls?.desktop?.page || null;
+    const wikiLink = wikiUrl
+      ? `<a href="${escapeHtml(wikiUrl)}" target="_blank" rel="noopener" class="author-bio-wiki-link">Full article on Wikipedia →</a>`
+      : '';
+    bioEl.innerHTML = `<p class="author-detail-bio-text">${escapeHtml(extract)}</p>${wikiLink}`;
+  });
 }
 
 // Nightstand visual — books rendered as vertical spines stacked side by
@@ -3041,7 +3123,7 @@ function freeReadBannerHtml() {
         <div class="free-banner-author">by ${escapeHtml(featured.author_raw || (featured.authors || []).join(', '))}</div>
         <div class="free-banner-meta">${escapeHtml(metaParts)}</div>
         <div class="free-banner-ctas">
-          <a href="${escapeHtml(featured.publication_url)}" target="_blank" rel="noopener" class="free-banner-cta-primary">Read Free →</a>
+          <a href="${escapeHtml(featured.publication_url)}" target="_blank" rel="noopener" class="free-banner-cta-primary">Read Free Online →</a>
           <a href="#/books?readFree=1" class="free-banner-cta-secondary">Browse all ${allFree.length} free reads</a>
         </div>
       </div>
@@ -4060,6 +4142,13 @@ function _route() {
     window.scrollTo(0, 0);
     return;
   }
+  if (path.startsWith('#/authors/')) {
+    const authorName = decodeURIComponent(path.slice('#/authors/'.length));
+    renderAuthorDetail(authorName);
+    showView('authors');
+    window.scrollTo(0, 0);
+    return;
+  }
   if (path === '#/authors') {
     renderAuthors();
     showView('authors');
@@ -4265,13 +4354,13 @@ function wireFilters() {
 }
 
 function applySoloUI() {
-  // Default (just Tom) keeps the plain "Readmore" title. Solo modes hide
+  // Default keeps the plain "Mount Readmore" title. Solo modes hide
   // the other readers via body class; multi-reader keeps everything visible.
   if (SOLO) {
     document.body.classList.add(`solo-${SOLO}`);
-    document.title = SOLO === 'tom' ? "Readmore" : `Readmore · ${SOLO[0].toUpperCase()}${SOLO.slice(1)}`;
+    document.title = 'Mount Readmore';
   } else {
-    document.title = "Readmore · " + ACTIVE_READERS.map(r => r.label).join(' + ');
+    document.title = 'Mount Readmore';
   }
 }
 

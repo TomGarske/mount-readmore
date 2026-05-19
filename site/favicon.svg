@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 28">
+  <title>Mount Readmore</title>
+  <!-- Left page (red) -->
+  <path d="M 16 26 L 16 6 C 12 4 5 4 2 6 L 2 22 C 5 20 12 20 16 22 Z" fill="#c6444f"/>
+  <!-- Right page (blue) -->
+  <path d="M 16 26 L 16 6 C 20 4 27 4 30 6 L 30 22 C 27 20 20 20 16 22 Z" fill="#2c5d96"/>
+  <!-- Text lines on right page (light, drawn on top) -->
+  <path d="M 19 9.95 C 21.3 8.81 25.3 8.81 27 9.95 L 27 11.03 C 25.3 9.89 21.3 9.89 19 11.03 Z" fill="rgba(255,255,255,0.55)"/>
+  <path d="M 19 13.25 C 21.3 12.11 25.3 12.11 27 13.25 L 27 14.33 C 25.3 13.19 21.3 13.19 19 14.33 Z" fill="rgba(255,255,255,0.55)"/>
+  <path d="M 19 16.55 C 21.3 15.41 25.3 15.41 27 16.55 L 27 17.63 C 25.3 16.49 21.3 16.49 19 17.63 Z" fill="rgba(255,255,255,0.55)"/>
+</svg>
