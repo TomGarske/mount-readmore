@@ -43690,6 +43690,9 @@
         "hugo": 2017
       },
       "description": "Ursula Vernon's 2017 Hugo Novelette winner (Apex Magazine, January 2016). Grandma Harken — last seen in \"Jackalope Wives\" — notices that somebody has been stealing tomatoes from her garden. Not raccoons. Not the neighbor kids. Something with shapeshifting privileges. The investigation that follows pulls her down a Sonoran cosmology of trains, trapped goddesses, and the kind of deals you don't recover from.",
+      "cover_url": "https://www.apexbookcompany.com/a/blog/media/apexdigest.myshopify.com/Post/featured_img/cover_88fe05e9-4775-4558-b2b5-9907aaafa475.jpg",
+      "publication_url": "https://www.apexbookcompany.com/a/blog/apex-magazine/post/the-tomato-thief",
+      "publication_label": "Apex Magazine Issue 80",
       "author_genders": [
         "female"
       ],
@@ -46436,9 +46439,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novel": 638,
       "Novella": 78,
-      "Novelette": 78
+      "Novelette": 78,
+      "Novel": 638
     }
   }
 }

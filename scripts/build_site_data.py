@@ -362,6 +362,25 @@ def apply_cover_cache(records: list[dict], cache_path: Path, desc_path: Path | N
     return applied
 
 
+def apply_manual_overrides(records: list[dict], path: Path) -> int:
+    """Apply hand-curated field overrides from data/manual_overrides.json.
+    Keyed by canonical book id; any key in the override dict is set on the
+    matching record, overwriting whatever the pipeline produced."""
+    if not path.exists():
+        return 0
+    with path.open() as f:
+        overrides = json.load(f)
+    applied = 0
+    id_map = {r["id"]: r for r in records}
+    for book_id, fields in overrides.items():
+        rec = id_map.get(book_id)
+        if not rec:
+            continue
+        rec.update(fields)
+        applied += 1
+    return applied
+
+
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--data", type=Path, default=Path("data"))
@@ -442,6 +461,7 @@ def main() -> None:
     covers = apply_cover_cache(all_records, args.data / "openlib_cache.json", args.data / "openlib_descriptions.json")
     google_covers = apply_google_books_cache(all_records, args.data / "google_books_cache.json")
     gr_covers, gr_descs = apply_goodreads_metadata(all_records, args.data / "goodreads_metadata.json")
+    apply_manual_overrides(all_records, args.data / "manual_overrides.json")
     descs = sum(1 for r in all_records if r.get("description"))
     gend = apply_author_gender(all_records, args.data / "author_gender.json")
     gr_ids = apply_goodreads_ids(all_records, args.data / "goodreads_ids.json")

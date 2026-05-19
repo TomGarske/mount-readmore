@@ -560,6 +560,7 @@ function renderDetail(id) {
         ${renderUserStatusControls(book.id)}
         ${addToShelfBtn ? `<div style="margin-top: 16px;">${addToShelfBtn}</div>` : ''}
         <div class="detail-links">
+          ${book.publication_url ? `<a href="${escapeHtml(book.publication_url)}" target="_blank" rel="noopener">${escapeHtml(book.publication_label || 'Read online')}</a>` : ''}
           <a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a>
           <a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a>
         </div>
