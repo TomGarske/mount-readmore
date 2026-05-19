@@ -155,5 +155,41 @@
   },
   "rule-18-simak-1939-novelette": {
     "cover_url": "https://covers.openlibrary.org/b/id/13780473-L.jpg"
+  },
+  "six-months-three-days-anders-2012-novelette": {
+    "publication_url": "https://reactormag.com/six-months-three-days/",
+    "publication_label": "Reactor Magazine"
+  },
+  "the-lady-astronaut-of-mars-kowal-2014-novelette": {
+    "publication_url": "https://reactormag.com/the-lady-astronaut-of-mars/",
+    "publication_label": "Reactor Magazine"
+  },
+  "equoid-stross-2014-novella": {
+    "publication_url": "https://reactormag.com/equoid/",
+    "publication_label": "Reactor Magazine"
+  },
+  "two-truths-and-a-lie-pinsker-2021-novelette": {
+    "publication_url": "https://reactormag.com/two-truths-and-a-lie-sarah-pinsker/",
+    "publication_label": "Reactor Magazine"
+  },
+  "the-secret-life-of-bots-palmer-2018-novelette": {
+    "publication_url": "https://clarkesworldmagazine.com/palmer_09_17/",
+    "publication_label": "Clarkesworld Magazine"
+  },
+  "bots-of-the-lost-ark-palmer-2022-novelette": {
+    "publication_url": "https://clarkesworldmagazine.com/palmer_06_21/",
+    "publication_label": "Clarkesworld Magazine"
+  },
+  "never-eaten-vegetables-pak-2026-novelette": {
+    "publication_url": "https://clarkesworldmagazine.com/pak_01_25/",
+    "publication_label": "Clarkesworld Magazine"
+  },
+  "the-brotherhood-of-montague-st-video-ha-2025-novelette": {
+    "publication_url": "https://clarkesworldmagazine.com/ha_05_24/",
+    "publication_label": "Clarkesworld Magazine"
+  },
+  "the-day-the-world-turned-upside-down-dutch-2015-novelette": {
+    "publication_url": "https://www.lightspeedmagazine.com/fiction/the-day-the-world-turned-upside-down/",
+    "publication_label": "Lightspeed Magazine"
   }
 }
