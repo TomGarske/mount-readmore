@@ -717,7 +717,7 @@ function renderDetail(id) {
   root.innerHTML = `<div class="detail">
     <a href="#/search" class="back">← back to search</a>
     <h1>${escapeHtml(book.title)}</h1>
-    <div class="author-line">by ${escapeHtml(book.author_raw || book.authors.join(', '))}${book.series ? ` · <span class="series-inline">${escapeHtml(book.series)}</span>` : ''}</div>
+    <div class="author-line">by ${(book.authors || []).map(a => `<a href="#/authors/${encodeURIComponent(a)}" class="author-link">${escapeHtml(a)}</a>`).join(', ') || escapeHtml(book.author_raw || '')}${book.series ? ` · <span class="series-inline">${escapeHtml(book.series)}</span>` : ''}</div>
     <div class="detail-grid">
       <div class="detail-cover">${coverHtml}</div>
       <div class="detail-info">
@@ -786,10 +786,11 @@ function renderDetail(id) {
       const wikiLink = wikiUrl
         ? `<a href="${escapeHtml(wikiUrl)}" target="_blank" rel="noopener" class="author-bio-wiki-link">Full article on Wikipedia →</a>`
         : '';
+      const authorHref = `#/authors/${encodeURIComponent(book.authors[0])}`;
       bioEl.innerHTML = `
-        <h2>About ${escapeHtml(book.authors[0])}</h2>
+        <h2><a href="${authorHref}" class="author-link">About ${escapeHtml(book.authors[0])}</a></h2>
         <div class="author-bio-body">
-          ${photo}
+          ${photo ? `<a href="${authorHref}" class="author-bio-photo-link">${photo}</a>` : ''}
           <div class="author-bio-text"><p>${extract}</p>${wikiLink}</div>
         </div>`;
     });
@@ -3382,25 +3383,43 @@ function drawDiscover() {
     const s = auth.statusFor(b.id);
     return s === 'nightstand' || s === 'started';
   }).length;
-  const labeledCount = DATA.books.filter(b => auth.statusFor(b.id) !== null).length;
-  const remaining = total - labeledCount;
-  const completionPct = total > 0 ? Math.round((readCount / total) * 100) : 0;
-  const labeledPct = total > 0 ? Math.round((labeledCount / total) * 100) : 0;
+  // 'unread' = explicit "Not read" click (new status that lives in user_books).
+  // 'skipped' is a legacy alias accepted for the same bucket.
+  const unreadCount = DATA.books.filter(b => {
+    const s = auth.statusFor(b.id);
+    return s === 'unread' || s === 'skipped';
+  }).length;
+  const sortedCount = readCount + nightstandCount + unreadCount;
+  const unsortedCount = total - sortedCount;
+  const sortedPct = total > 0 ? Math.round((sortedCount / total) * 100) : 0;
 
   const book = discoverNextBook();
 
-  const statsRow = `<div class="discover-stats">
-    <div class="discover-stat">
-      <div class="discover-stat-value">${completionPct}%</div>
-      <div class="discover-stat-label">Read · ${readCount} of ${total}</div>
+  const statsRow = `<div class="discover-stats-card">
+    <div class="discover-stats-row">
+      <div class="discover-stat">
+        <div class="discover-stat-value">${readCount}</div>
+        <div class="discover-stat-label">Read</div>
+      </div>
+      <div class="discover-stat">
+        <div class="discover-stat-value">${nightstandCount}</div>
+        <div class="discover-stat-label">Nightstand</div>
+      </div>
+      <div class="discover-stat">
+        <div class="discover-stat-value">${unreadCount}</div>
+        <div class="discover-stat-label">Unread</div>
+      </div>
+      <div class="discover-stat">
+        <div class="discover-stat-value">${unsortedCount}</div>
+        <div class="discover-stat-label">Unsorted</div>
+      </div>
     </div>
-    <div class="discover-stat">
-      <div class="discover-stat-value">${nightstandCount}</div>
-      <div class="discover-stat-label">On nightstand</div>
-    </div>
-    <div class="discover-stat">
-      <div class="discover-stat-value">${labeledPct}%</div>
-      <div class="discover-stat-label">Labeled · ${remaining} left</div>
+    <div class="discover-progress-row">
+      <div class="discover-progress-label">
+        <span>Sorted</span>
+        <span class="discover-progress-count">${sortedCount} of ${total} · ${sortedPct}%</span>
+      </div>
+      <div class="discover-progress-bar"><div class="discover-progress-fill" style="width:${sortedPct}%"></div></div>
     </div>
   </div>`;
 
@@ -3458,30 +3477,19 @@ function drawDiscover() {
         return `<li><a href="#/book/${escapeHtml(b.id)}">${escapeHtml(b.title)}</a> <span style="color: var(--muted);">· ${b.year || ''} · ${escapeHtml(b.category)}</span> ${tag}</li>`;
       }).join('')}</ul>`;
 
-  const tabBody = tab === 'cover'
-    ? `<div class="discover-tabbody discover-tabbody-cover">${coverImg}</div>`
-    : tab === 'desc'
-      ? `<div class="discover-tabbody discover-tabbody-desc">
-          ${awardPills ? `<div class="discover-pills">${awardPills}</div>` : ''}
-          ${descBody}
-        </div>`
-      : `<div class="discover-tabbody discover-tabbody-author">
-          <h3>${escapeHtml(author)}</h3>
-          <p style="color: var(--muted); font-size: 13px; margin: -4px 0 14px;">Other Hugo/Nebula appearances</p>
-          ${authorList}
-        </div>`;
-
+  // Combined card content: cover + title + author/year/category + awards + description.
+  // No tabs — everything visible in one scrollable card.
   const peekCard = (b, idx) => {
     if (!b) return '';
     const img = b.cover_url
       ? `<img src="${escapeHtml(b.cover_url)}" alt="" draggable="false" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
       : `<span class="discover-cover-placeholder">📖</span>`;
-    return `<div class="discover-card discover-card-peek" data-peek="${idx}"><div class="discover-cardbody"><div class="discover-tabbody discover-tabbody-cover">${img}</div></div></div>`;
+    return `<div class="discover-card discover-card-peek" data-peek="${idx}"><div class="discover-card-combined"><div class="discover-cover-wrap">${img}</div></div></div>`;
   };
 
   root.innerHTML = `<div class="detail discover-page">
     <h1>Sort</h1>
-    <p class="discover-instructions">Rapidly label every book on the list. <strong>Swipe left</strong> (or ✓ Read) to mark as Read · <strong>Swipe right</strong> (or ○ Not read) to skip · <strong>Swipe up</strong> (or 📖 Nightstand) to queue it. Tap Cover / About / Author to learn more before deciding.</p>
+    <p class="discover-instructions">Rapidly label every book on the list. <strong>Swipe left</strong> (or ✓ Read) to mark as Read · <strong>Swipe right</strong> (or ○ Not read) to mark Unread · <strong>Swipe up</strong> (or 📖 Nightstand) to queue it.</p>
     ${(() => {
       const dStatus = __discoverState.status || 'winner';
       const dAward  = __discoverState.award  || 'both';
@@ -3506,7 +3514,6 @@ function drawDiscover() {
     ${statsRow}
     <div class="discover-stage">
       <div class="discover-side-controls">
-        <button type="button" class="discover-side-btn discover-skip" title="Skip — show again later" aria-label="Skip">⤼ Skip</button>
         <button type="button" class="discover-side-btn discover-undo" title="Undo last decision" aria-label="Undo" ${__discoverState.history.length === 0 ? 'disabled' : ''}>↶ Undo</button>
       </div>
       <div class="discover-cardstack">
@@ -3514,17 +3521,16 @@ function drawDiscover() {
         ${peekCard(peek1, 1)}
         <div class="discover-card discover-card-top" id="discover-top-card" data-book-id="${escapeHtml(book.id)}">
           <div class="discover-swipe-hint discover-swipe-hint-left">Read</div>
-          <div class="discover-swipe-hint discover-swipe-hint-right">Neither</div>
+          <div class="discover-swipe-hint discover-swipe-hint-right">Unread</div>
           <div class="discover-swipe-hint discover-swipe-hint-up">Nightstand</div>
-          <div class="discover-tabs">
-            <button type="button" class="discover-tab${tab === 'cover' ? ' active' : ''}" data-tab="cover">Cover</button>
-            <button type="button" class="discover-tab${tab === 'desc' ? ' active' : ''}" data-tab="desc">About</button>
-            <button type="button" class="discover-tab${tab === 'author' ? ' active' : ''}" data-tab="author">Author</button>
-          </div>
-          <div class="discover-cardbody">${tabBody}</div>
-          <div class="discover-cardfoot">
-            <div class="discover-title"><a href="#/book/${escapeHtml(book.id)}">${escapeHtml(book.title)}</a></div>
-            <div class="discover-meta">${escapeHtml(author)} · ${book.year || ''} · ${escapeHtml(book.category)}</div>
+          <div class="discover-card-combined">
+            <div class="discover-cover-wrap">${coverImg}</div>
+            <div class="discover-card-info">
+              <div class="discover-title"><a href="#/books/${escapeHtml(book.id)}">${escapeHtml(book.title)}</a></div>
+              <div class="discover-meta">${author ? `<a href="#/authors/${encodeURIComponent(author)}" class="author-link">${escapeHtml(author)}</a>` : ''}${book.year ? ` · ${book.year}` : ''}${book.category ? ` · ${escapeHtml(book.category)}` : ''}</div>
+              ${awardPills ? `<div class="discover-pills">${awardPills}</div>` : ''}
+              <div class="discover-desc">${descBody}</div>
+            </div>
           </div>
         </div>
       </div>
@@ -3534,7 +3540,7 @@ function drawDiscover() {
       <button type="button" class="discover-action discover-action-night" data-action="nightstand">📖 Nightstand</button>
       <button type="button" class="discover-action discover-action-neither" data-action="neither">○ Not read</button>
     </div>
-    <p class="discover-hint">Swipe <strong>left</strong> for Read · <strong>right</strong> for Not read · <strong>up</strong> for Nightstand</p>
+    <p class="discover-hint">Swipe <strong>left</strong> for Read · <strong>right</strong> for Unread · <strong>up</strong> for Nightstand</p>
   </div>`;
 
   wireDiscover();
@@ -3566,34 +3572,19 @@ function wireDiscover() {
     });
   });
 
-  // Card tabs (Cover / About / Author)
-  root.querySelectorAll('.discover-tab').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      __discoverState.tab = btn.dataset.tab;
-      drawDiscover();
-    });
-  });
-
-  // Action buttons
+  // Action buttons. "Not read" = explicit Unread (status='unread' in DB) so
+  // the book never reappears in the queue and counts in the Unread stat.
   root.querySelectorAll('.discover-action').forEach(btn => {
     btn.addEventListener('click', () => {
       const action = btn.dataset.action;
-      const status = action === 'neither' ? null : action;
+      const status = action === 'neither' ? 'unread' : action;
       const card = $('#discover-top-card');
       const dir = action === 'read' ? 'left' : action === 'nightstand' ? 'up' : 'right';
       animateAndCommit(card, dir, status);
     });
   });
 
-  // Side buttons
-  root.querySelector('.discover-skip')?.addEventListener('click', () => {
-    const card = $('#discover-top-card');
-    const bookId = card?.dataset.bookId;
-    if (!bookId) return;
-    __discoverState.skipped.add(bookId);
-    drawDiscover();
-  });
+  // Undo button — Skip button removed in the redesign.
   root.querySelector('.discover-undo')?.addEventListener('click', async () => {
     const last = __discoverState.history.pop();
     if (!last) return;
@@ -3613,7 +3604,7 @@ function wireDiscover() {
   if (!card) return;
   let startX = 0, startY = 0, dx = 0, dy = 0, dragging = false, pointerId = null;
   const onDown = (e) => {
-    if (e.target.closest('.discover-tab') || e.target.closest('a')) return;
+    if (e.target.closest('a') || e.target.closest('button')) return;
     dragging = true;
     pointerId = e.pointerId;
     startX = e.clientX;
@@ -3652,7 +3643,7 @@ function wireDiscover() {
     let dir, status;
     if (absY >= absX && dy < 0) { dir = 'up'; status = 'nightstand'; }
     else if (dx < 0) { dir = 'left'; status = 'read'; }
-    else { dir = 'right'; status = null; }
+    else { dir = 'right'; status = 'unread'; }
     animateAndCommit(card, dir, status);
   };
   card.addEventListener('pointerdown', onDown);

@@ -3303,6 +3303,8 @@ fieldset label input { margin-right: 8px; }
 }
 .dashboard-sort-cta a { color: var(--accent); }
 .featured-category-count { color: var(--muted); font-weight: 500; }
+/* Legacy 3-column .discover-stats kept for any other callers; the redesigned
+   Sort tab uses .discover-stats-card below. */
 .discover-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -3310,10 +3312,6 @@ fieldset label input { margin-right: 8px; }
   margin: 16px 0 24px;
 }
 .discover-stat {
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
   text-align: center;
 }
 .discover-stat-value {
@@ -3325,6 +3323,51 @@ fieldset label input { margin-right: 8px; }
   margin-top: 4px;
   font-size: 12px;
   color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.discover-stats-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin: 16px 0 24px;
+}
+.discover-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.discover-progress-row {
+  margin-top: 18px;
+}
+.discover-progress-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.discover-progress-count {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.discover-progress-bar {
+  height: 8px;
+  background: rgba(0,0,0,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.discover-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-3, var(--accent)));
+  border-radius: 999px;
+  transition: width 0.3s ease-out;
 }
 .discover-stage {
   display: grid;
@@ -3384,25 +3427,80 @@ fieldset label input { margin-right: 8px; }
   transition: transform 0.18s ease-out;
 }
 .discover-card-top.dragging { transition: none; cursor: grabbing; }
-.discover-tabs {
+/* Combined card layout (no tabs): cover on top, info below */
+.discover-card-combined {
   display: flex;
-  border-bottom: 1px solid var(--border);
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.discover-cover-wrap {
   flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  max-height: 50%;
+  background: #0a0f1c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 }
-.discover-tab {
+.discover-cover-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.discover-card-info {
   flex: 1;
-  background: transparent;
-  border: 0;
-  padding: 11px 0;
+  overflow-y: auto;
+  padding: 14px 18px 18px;
   font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
+  line-height: 1.5;
+  color: var(--text);
 }
-.discover-tab.active {
+.discover-card-info .discover-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  line-height: 1.25;
+}
+.discover-card-info .discover-title a {
+  color: var(--text);
+  text-decoration: none;
+}
+.discover-card-info .discover-title a:hover {
   color: var(--accent);
-  border-bottom-color: var(--accent);
+}
+.discover-card-info .discover-meta {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.discover-card-info .discover-meta .author-link {
+  color: var(--accent);
+  text-decoration: none;
+}
+.discover-card-info .discover-meta .author-link:hover {
+  text-decoration: underline;
+}
+.discover-card-info .discover-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 0 0 10px;
+}
+.discover-card-info .discover-desc {
+  font-size: 13px;
+  line-height: 1.55;
+}
+.discover-card-info .discover-desc p { margin: 0 0 8px; }
+/* Peek cards (no info section) — just the cover wrap */
+.discover-card-peek .discover-cover-wrap {
+  max-height: 100%;
+  height: 100%;
+  aspect-ratio: auto;
 }
 .discover-cardbody {
   flex: 1;
