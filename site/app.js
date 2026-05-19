@@ -190,9 +190,11 @@ function matchesFilters(book) {
   if (state.missingFilter && state.missingFilter.size > 0) {
     const missingDesc = !book.description || !book.description.trim();
     const missingCover = !book.cover_url || !book.cover_url.trim();
+    const missingLink = !book.publication_url || !book.publication_url.trim();
     const wantsDesc = state.missingFilter.has('desc');
     const wantsCover = state.missingFilter.has('cover');
-    const matches = (wantsDesc && missingDesc) || (wantsCover && missingCover);
+    const wantsLink = state.missingFilter.has('link');
+    const matches = (wantsDesc && missingDesc) || (wantsCover && missingCover) || (wantsLink && missingLink);
     if (!matches) return false;
   }
   return true;
@@ -416,7 +418,7 @@ function renderList() {
     activeFilters.push({ label, clear: 'gender' });
   }
   if (state.missingFilter && state.missingFilter.size > 0) {
-    const names = { desc: 'Missing description', cover: 'Missing cover' };
+    const names = { desc: 'Missing description', cover: 'Missing cover', link: 'Missing read link' };
     const label = [...state.missingFilter].map(k => names[k]).join(' or ');
     activeFilters.push({ label, clear: 'missing' });
   }
