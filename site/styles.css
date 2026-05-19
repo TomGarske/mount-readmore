@@ -2240,10 +2240,15 @@ fieldset label input { margin-right: 8px; }
 .detail-links {
   margin-top: 20px;
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.detail-links-buttons {
+  display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
-.detail-links a {
+.detail-links-buttons a {
   padding: 7px 14px;
   background: var(--bg-3);
   border: 1px solid var(--border);
@@ -2251,8 +2256,8 @@ fieldset label input { margin-right: 8px; }
   font-size: 13px;
   color: var(--text);
 }
-.detail-links a:hover { border-color: var(--accent); text-decoration: none; }
-.detail-links .detail-link-read {
+.detail-links-buttons a:hover { border-color: var(--accent); text-decoration: none; }
+.detail-links-buttons .detail-link-read {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -2260,17 +2265,11 @@ fieldset label input { margin-right: 8px; }
   color: #1d4ed8;
   font-weight: 600;
 }
-.detail-links .detail-link-read:hover { background: #eff6ff; border-color: #1d4ed8; }
-.detail-link-read-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
+.detail-links-buttons .detail-link-read:hover { background: #eff6ff; border-color: #1d4ed8; }
 .detail-link-read-label {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--text-2);
   line-height: 1.4;
-  max-width: 200px;
 }
 .detail-link-favicon {
   width: 16px;

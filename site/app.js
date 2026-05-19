@@ -576,10 +576,8 @@ function renderDetail(id) {
               cta = 'Find on Bookshop';
               label = 'Find or purchase this book on Bookshop.org';
             }
-            return `<div class="detail-link-read-wrap"><a href="${escapeHtml(readUrl)}" target="_blank" rel="noopener" class="detail-link-read">${cta} <img src="${favicon}" alt="${escapeHtml(host)}" class="detail-link-favicon"></a><span class="detail-link-read-label">${label}</span></div>`;
+            return `<div class="detail-link-read-label">${label}</div><div class="detail-links-buttons"><a href="${escapeHtml(readUrl)}" target="_blank" rel="noopener" class="detail-link-read">${cta} <img src="${favicon}" alt="${escapeHtml(host)}" class="detail-link-favicon"></a><a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a><a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a></div>`;
           })()}
-          <a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a>
-          <a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a>
         </div>
       </div>
     </div>
