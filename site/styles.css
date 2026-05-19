@@ -2252,6 +2252,13 @@ fieldset label input { margin-right: 8px; }
   color: var(--text);
 }
 .detail-links a:hover { border-color: var(--accent); text-decoration: none; }
+.detail-links .detail-link-read {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.detail-links .detail-link-read:hover { background: var(--accent-dark, #1a3a7c); border-color: var(--accent-dark, #1a3a7c); }
 .series-inline { color: var(--accent-2); font-weight: 500; }
 .book-section { margin-top: 36px; max-width: 720px; }
 .book-section h2 { font-size: 18px; margin-bottom: 12px; }
