@@ -3566,7 +3566,7 @@ function applyFilterParams(params) {
   if (missing) {
     const set = new Set();
     for (const v of missing.split(',').map(s => s.trim())) {
-      if (v === 'desc' || v === 'cover') set.add(v);
+      if (v === 'desc' || v === 'cover' || v === 'link') set.add(v);
       else if (v === 'either') { set.add('desc'); set.add('cover'); }
     }
     if (set.size > 0) state.missingFilter = set;
