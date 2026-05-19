@@ -4030,7 +4030,6 @@ async function init() {
     return;
   }
   wireFilters();
-  renderList();
   renderAuthPill();
   window.addEventListener('hashchange', () => { applySoloUI(); route(); });
   // Re-render on auth change: ACTIVE_READERS flips, then re-route.
