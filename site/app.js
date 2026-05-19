@@ -2588,6 +2588,10 @@ async function renderCompare(params) {
   const eraAxes = eraDecades.map(eraAxisLabel);
   const eraValsA = eraReaderValues(eraDecades, decadeBuckets, (b) => aSide.statusMap[b.id]?.status === 'read');
   const eraValsB = eraReaderValues(eraDecades, decadeBuckets, (b) => bSide.statusMap[b.id]?.status === 'read');
+  // Shared keys for both era radar and per-side subgenre radar below — must
+  // be declared before either object literal references them (TDZ).
+  const aKey = 'compare_a';
+  const bKey = 'compare_b';
   const eraRadarConfig = {
     [aKey]: { label: '@' + aSide.label, colorVar: aSide.colorVar, colorRgb: aSide.colorRgb },
     [bKey]: { label: '@' + bSide.label, colorVar: bSide.colorVar, colorRgb: bSide.colorRgb },
@@ -2607,8 +2611,6 @@ async function renderCompare(params) {
     const bucket = subBuckets[g];
     return bucket.total > 0 ? bucket[side] / bucket.total : 0;
   });
-  const aKey = 'compare_a';
-  const bKey = 'compare_b';
   const radarConfig = {
     [aKey]: { label: '@' + aSide.label, colorVar: aSide.colorVar, colorRgb: aSide.colorRgb },
     [bKey]: { label: '@' + bSide.label, colorVar: bSide.colorVar, colorRgb: bSide.colorRgb },
