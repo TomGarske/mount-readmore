@@ -5,6 +5,24 @@ const AWARD_LABELS = {
   nebula: 'Nebula',
 };
 
+// Canonical magazine names — maps publisher field variants to a display name.
+// Only magazines appear here; book publishers are absent so no swimlane shows.
+const MAGAZINE_CANONICAL = {
+  "Asimov's Science Fiction": "Asimov's Science Fiction",
+  "Analog Science Fact & Fiction": "Analog / Astounding",
+  "Analog Science Fiction and Fact": "Analog / Astounding",
+  "Astounding Science-Fiction": "Analog / Astounding",
+  "Astounding Science Fiction": "Analog / Astounding",
+  "The Magazine of Fantasy & Science Fiction": "The Magazine of Fantasy & Science Fiction",
+  "Galaxy Science Fiction": "Galaxy Science Fiction",
+  "Tor.com Publishing": "Tor.com",
+  "Tor.com": "Tor.com",
+  "Clarkesworld": "Clarkesworld",
+  "Strange Horizons": "Strange Horizons",
+  "Lightspeed Magazine": "Lightspeed Magazine",
+  "Fantasy & Science Fiction": "The Magazine of Fantasy & Science Fiction",
+};
+
 let DATA = { books: [], meta: {} };
 
 // Canonical reader config. `me` is the signed-in user (Supabase user_books);
@@ -98,6 +116,8 @@ let state = {
   // Books page: author-gender multi-filter. Set of {'female','male','unknown'}.
   // Full set (size 3) = no filter; smaller set = restrict to those gender(s).
   authorGender: new Set(['female', 'male', 'unknown']),
+  // Books page: show only books with a free read link (publication_url set).
+  readFree: false,
   // Books page: missing-data debug filter. Set of {'desc','cover'}.
   // Empty = no filter; any checked = books missing at least one selected.
   missingFilter: new Set(),
@@ -185,6 +205,8 @@ function matchesFilters(book) {
       : 'neither';
     if (!state.meStatus.has(bucket)) return false;
   }
+  // Read-free filter: only show books with a direct publication_url.
+  if (state.readFree && !book.publication_url) return false;
   // Missing-data filter: any checked → book must be missing at least one of
   // the checked criteria. Empty set = no filter.
   if (state.missingFilter && state.missingFilter.size > 0) {
@@ -417,6 +439,9 @@ function renderList() {
     const label = [...state.authorGender].map(g => names[g]).join(' + ');
     activeFilters.push({ label, clear: 'gender' });
   }
+  if (state.readFree) {
+    activeFilters.push({ label: 'Read free online', clear: 'readFree' });
+  }
   if (state.missingFilter && state.missingFilter.size > 0) {
     const names = { desc: 'Missing description', cover: 'Missing cover', link: 'Missing read link' };
     const label = [...state.missingFilter].map(k => names[k]).join(' or ');
@@ -436,6 +461,10 @@ function renderList() {
     if (w === 'gender') {
       state.authorGender = new Set(['female', 'male', 'unknown']);
       $$('input[name="author-gender"]').forEach(el => el.checked = true);
+    }
+    if (w === 'readFree') {
+      state.readFree = false;
+      const el = $('#filter-read-free'); if (el) el.checked = false;
     }
     if (w === 'missing') {
       state.missingFilter = new Set();
@@ -538,6 +567,33 @@ function renderDetail(id) {
       }).join('')}</div>
     </div>`;
 
+  // Same-publication swimlane — only for magazine-published works.
+  const pubCanonical = MAGAZINE_CANONICAL[book.publisher];
+  const fromSamePub = pubCanonical
+    ? DATA.books
+        .filter(b => b.id !== book.id && MAGAZINE_CANONICAL[b.publisher] === pubCanonical)
+        .sort((a, b) => (b.year || 0) - (a.year || 0))
+    : [];
+  const fromSamePubHtml = fromSamePub.length === 0 ? '' : `
+    <div class="book-section">
+      <h2>Also from ${escapeHtml(pubCanonical)} <span class="more-by-count">${fromSamePub.length}</span></h2>
+      <div class="swimlane-strip">${fromSamePub.map(b => {
+        const cover = b.cover_url
+          ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
+          : `<span class="swimlane-placeholder">📖</span>`;
+        const isWinner = Object.values(b.awards || {}).includes('winner');
+        const awardLabels = Object.entries(b.awards || {}).map(([a, s]) =>
+          `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+        ).join('');
+        return `<div class="swimlane-card" data-id="${escapeHtml(b.id)}">
+          <div class="swimlane-cover${isWinner ? ' is-winner' : ''}">${cover}</div>
+          <div class="swimlane-title">${escapeHtml(b.title)}</div>
+          <div class="swimlane-meta">${b.year || ''} · ${escapeHtml(b.category)}</div>
+          ${awardLabels ? `<div class="swimlane-pills">${awardLabels}</div>` : ''}
+        </div>`;
+      }).join('')}</div>
+    </div>`;
+
   root.innerHTML = `<div class="detail">
     <a href="#/books" class="back">← back to books</a>
     <h1>${escapeHtml(book.title)}</h1>
@@ -584,6 +640,7 @@ function renderDetail(id) {
     ${descHtml ? `<div class="book-section"><h2>Description</h2>${descHtml}</div>` : ''}
     ${subjectsHtml ? `<div class="book-section">${subjectsHtml}</div>` : ''}
     ${moreByAuthorHtml}
+    ${fromSamePubHtml}
     ${book.authors && book.authors.length > 0 ? `<div id="detail-author-bio" class="book-section author-bio-section"></div>` : ''}
   </div>`;
   wireUserStatusControls();
@@ -3717,6 +3774,7 @@ function applyFilterParams(params) {
     const valid = meStatus.split(',').map(s => s.trim()).filter(s => ['read', 'nightstand', 'neither'].includes(s));
     if (valid.length > 0) state.meStatus = new Set(valid);
   }
+  if (params.get('readFree') === '1') state.readFree = true;
   syncFiltersToDom();
 }
 
@@ -3734,6 +3792,7 @@ function syncFiltersToDom() {
   $$('input[name="author-gender"]').forEach(el => { el.checked = state.authorGender.has(el.value); });
   $$('input[name="missing"]').forEach(el => { el.checked = state.missingFilter.has(el.value); });
   $$('input[name="me-status"]').forEach(el => { el.checked = state.meStatus.has(el.value); });
+  const rfEl = $('#filter-read-free'); if (rfEl) rfEl.checked = !!state.readFree;
   // Hide the "Your status" fieldset when nobody's signed in — the filter
   // only makes sense for the logged-in user's own user_books data.
   const meFs = $('#me-status-fieldset');
@@ -3764,6 +3823,7 @@ function pushFiltersToUrl() {
   if (state.authorGender.size > 0 && state.authorGender.size < 3) {
     p.set('gender', [...state.authorGender].join(','));
   }
+  if (state.readFree) p.set('readFree', '1');
   if (state.missingFilter.size > 0) {
     p.set('missing', [...state.missingFilter].join(','));
   }
@@ -3977,6 +4037,8 @@ function wireFilters() {
     else state.authorGender.delete(e.target.value);
     renderList();
   }));
+  const rfEl2 = $('#filter-read-free');
+  if (rfEl2) rfEl2.addEventListener('change', e => { state.readFree = e.target.checked; renderList(); });
   $$('input[name="missing"]').forEach(el => el.addEventListener('change', e => {
     if (e.target.checked) state.missingFilter.add(e.target.value);
     else state.missingFilter.delete(e.target.value);
@@ -4004,6 +4066,7 @@ function wireFilters() {
       authorWindow: state.authorWindow,
       genderFilter: null,
       authorGender: new Set(['female', 'male', 'unknown']),
+      readFree: false,
       missingFilter: new Set(),
       meStatus: new Set(['read', 'nightstand', 'neither']),
     };
@@ -4019,6 +4082,7 @@ function wireFilters() {
     $$('input[name="author-gender"]').forEach(el => el.checked = true);
     $$('input[name="missing"]').forEach(el => el.checked = false);
     $$('input[name="me-status"]').forEach(el => el.checked = true);
+    const rfReset = $('#filter-read-free'); if (rfReset) rfReset.checked = false;
     $('#sort').value = 'year-desc';
     renderList();
   });
