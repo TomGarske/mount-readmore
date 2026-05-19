@@ -1157,11 +1157,26 @@ function renderMagazines() {
     </div>`;
   }).join('');
 
+  // Super winners — books that took BOTH the Hugo AND the Nebula. The rare
+  // double-crown. Computed inline so it stays in sync with DATA.books.
+  const superWinners = DATA.books
+    .filter(b => (b.awards || {}).hugo === 'winner' && (b.awards || {}).nebula === 'winner')
+    .sort((a, b) => (b.year || 0) - (a.year || 0));
+  const superWinnersHtml = superWinners.length === 0 ? '' : `
+    <div class="progress-section collections-superwinners-section">
+      <h2 class="collections-section-head">Super Winners <span class="collections-section-count">${superWinners.length}</span></h2>
+      <p style="color: var(--muted); font-size: 13px;">Books that won <strong>both</strong> the Hugo and the Nebula — the rare double crown.</p>
+      <div class="swimlane">
+        <div class="swimlane-strip">${superWinners.map(b => makeSwimlaneCard(b)).join('')}</div>
+      </div>
+    </div>`;
+
   root.innerHTML = `<div class="detail magazines-page">
     <h1>Collections</h1>
     <h2 class="collections-section-head collections-section-head-first">This Year's Nominees!</h2>
     ${awardFeaturedBannersHtml()}
     ${freeReadBannerHtml()}
+    ${superWinnersHtml}
     <h2 class="collections-section-head">Magazines</h2>
     <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet.</p>
     <div class="mag-grid">${magBlocksHtml}</div>
@@ -4759,11 +4774,18 @@ function renderUserStatusControls(bookId) {
       <button type="button" class="user-status-signin">Sign in to track your reads</button>
     </div>`;
   }
-  // Three-state status: Read, Nightstand, Neither. Neither = no user_books
-  // row (status removed). Legacy 'started' rows render as Nightstand
-  // active for display, since they live in the same bucket now.
+  // Four-state status: Read, Nightstand, Unread, Unknown.
+  //   Read       = status='read' in user_books
+  //   Nightstand = status='nightstand' (also covers legacy 'started')
+  //   Unread     = status='unread' (explicit "I won't read this")
+  //   Unknown    = no row at all in user_books (default for every book)
+  // For the Sort queue, only Unknown books appear. For stats, Unread and
+  // Unknown collapse into the same bucket everywhere else.
   const rawStatus = auth.statusFor(bookId);
-  const current = rawStatus === 'started' ? 'nightstand' : rawStatus;
+  const current =
+      rawStatus === 'started' ? 'nightstand'
+    : rawStatus === 'skipped' ? 'unread'
+    : rawStatus || 'unknown';
   const btn = (status, label) =>
     `<button type="button" class="user-status-btn ${current === status ? 'active' : ''}" data-status="${status}">${label}</button>`;
   return `<div class="user-status user-status-signed-in" data-book-id="${escapeHtml(bookId)}">
@@ -4771,7 +4793,8 @@ function renderUserStatusControls(bookId) {
     <div class="user-status-buttons">
       ${btn('read', '✓ Read')}
       ${btn('nightstand', '📖 Nightstand')}
-      <button type="button" class="user-status-btn ${!current ? 'active' : ''} user-status-clear" data-status="neither">○ Neither</button>
+      ${btn('unread', '○ Unread')}
+      ${btn('unknown', '— Unknown')}
     </div>
     <div class="user-status-msg" id="user-status-msg-${escapeHtml(bookId)}"></div>
   </div>`;
@@ -4790,8 +4813,10 @@ function wireUserStatusControls() {
     container.querySelectorAll('.user-status-btn').forEach(btn => {
       btn.addEventListener('click', async () => {
         const ds = btn.dataset.status;
-        // "Neither" and the legacy "clear" both map to null (delete the row).
-        const status = (ds === 'neither' || ds === 'clear') ? null : ds;
+        // "Unknown" (and legacy "neither" / "clear") map to null — that
+        // deletes the row, returning the book to the "never touched" state.
+        // "Unread" writes status='unread' (explicit pass).
+        const status = (ds === 'unknown' || ds === 'neither' || ds === 'clear') ? null : ds;
         const msg = $(`#user-status-msg-${CSS.escape(bookId)}`);
         // Optimistic — flip active classes immediately. Neither button
         // keeps its own .active state too so the user sees the choice.

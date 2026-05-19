@@ -105,7 +105,18 @@ def parse_authors(raw: str) -> list[str]:
         return []
     # Common separators: ' and ', ', ', '/' (e.g. 'Robert Jordan/Brandon Sanderson')
     parts = re.split(r"\s+and\s+|,\s*|/", raw)
-    return [p.strip() for p in parts if p.strip()]
+    parts = [p.strip() for p in parts if p.strip()]
+    # Rejoin name suffixes that the comma-split accidentally separated.
+    # "James Tiptree, Jr." -> ["James Tiptree", "Jr."] should become
+    # ["James Tiptree, Jr."] — same for Sr., II, III, IV, MD, PhD, Esq.
+    suffix_re = re.compile(r"^(jr|sr|ii|iii|iv|v|md|phd|esq)\.?$", re.IGNORECASE)
+    merged: list[str] = []
+    for p in parts:
+        if merged and suffix_re.match(p):
+            merged[-1] = f"{merged[-1]}, {p}"
+        else:
+            merged.append(p)
+    return merged
 
 
 def parse_year(raw: str) -> int | None:

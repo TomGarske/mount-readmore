@@ -2644,14 +2644,19 @@ fieldset label input { margin-right: 8px; }
 .book-description p { margin: 0 0 12px; }
 .book-subjects { display: flex; flex-direction: column; }
 .book-subjects > div { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Use the same pill shape/size as .rr-pill (Hugo/Nebula etc.) so OL subject
+   tags visually match the rest of the site's tag system. Neutral coloring
+   because these aren't award-specific. */
 .subject-tag {
   display: inline-block;
-  padding: 3px 9px;
-  font-size: 12px;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
   border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
   color: var(--muted);
+  letter-spacing: 0.02em;
   margin: 0 4px 4px 0;
 }
 /* ── About the Author (detail page) ───────────────────────────────────── */
