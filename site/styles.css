@@ -2196,10 +2196,49 @@ fieldset label input { margin-right: 8px; }
 }
 #reset:hover { color: var(--text); }
 
+/* ── Search view: Books / Authors toggle tabs ──────────────────────────── */
+.search-mode-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px;
+}
+.search-mode-tab {
+  background: transparent;
+  border: none;
+  padding: 4px 14px;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  line-height: 1.4;
+}
+.search-mode-tab:hover { color: var(--text); }
+.search-mode-tab.active {
+  background: var(--bg);
+  color: var(--text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+/* When in authors mode: collapse the filter sidebar */
+#view-list.mode-authors .filters { display: none; }
+#view-list.mode-authors .results { flex: 1; }
+/* Authors-page rendered inside #grid needs to span the full grid width */
+.grid > .authors-page {
+  grid-column: 1 / -1;
+  padding: 0;
+  margin: 0;
+}
+
 .results-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
+  gap: 10px;
   margin-bottom: 16px;
 }
 #result-count { color: var(--muted); font-size: 13px; }

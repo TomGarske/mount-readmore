@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mount Readmore</title>
-<link rel="stylesheet" href="styles.css?v=20260519ab">
+<link rel="stylesheet" href="styles.css?v=20260519ac">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 </head>
 <body>
@@ -16,8 +16,7 @@
   <nav class="nav">
     <a href="#/discover" data-route="discover" id="nav-discover">Discover</a>
     <a href="#/" data-route="stats">Dashboard</a>
-    <a href="#/books" data-route="list">Books</a>
-    <a href="#/authors" data-route="authors">Authors</a>
+    <a href="#/search" data-route="list">Search</a>
     <a href="#/magazines" data-route="magazines">Collections</a>
     <span id="auth-slot" class="auth-slot"></span>
   </nav>
@@ -124,6 +123,10 @@
 
     <section class="results">
       <div class="results-header">
+        <div class="search-mode-tabs">
+          <button class="search-mode-tab active" id="search-tab-books" data-mode="books">Books</button>
+          <button class="search-mode-tab" id="search-tab-authors" data-mode="authors">Authors</button>
+        </div>
         <span id="result-count"></span>
         <select id="sort">
           <option value="year-desc">Year ↓</option>
@@ -156,8 +159,8 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260519ab"></script>
-<script src="auth.js?v=20260519ab"></script>
-<script src="app.js?v=20260519ab"></script>
+<script src="config.js?v=20260519ac"></script>
+<script src="auth.js?v=20260519ac"></script>
+<script src="app.js?v=20260519ac"></script>
 </body>
 </html>

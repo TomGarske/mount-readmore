@@ -242,6 +242,8 @@ let state = {
   // {'read','nightstand','neither'}. Full set (size 3) = no filter.
   // 'neither' matches books the user hasn't marked at all.
   meStatus: new Set(['read', 'nightstand', 'neither']),
+  // Search view: which sub-tab is active. 'books' | 'authors'.
+  searchMode: 'books',
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
@@ -547,6 +549,30 @@ function bookCard(book) {
 }
 
 function renderList() {
+  // Update Books/Authors toggle active state
+  const booksTab = document.getElementById('search-tab-books');
+  const authorsTab = document.getElementById('search-tab-authors');
+  if (booksTab) booksTab.classList.toggle('active', state.searchMode !== 'authors');
+  if (authorsTab) authorsTab.classList.toggle('active', state.searchMode === 'authors');
+  // Toggle sidebar visibility via class on the view container
+  const listView = document.getElementById('view-list');
+  if (listView) listView.classList.toggle('mode-authors', state.searchMode === 'authors');
+  if (state.searchMode === 'authors') {
+    // Hide book-specific result controls
+    const rcEl = document.getElementById('result-count');
+    const sortEl = document.getElementById('sort');
+    if (rcEl) rcEl.style.display = 'none';
+    if (sortEl) sortEl.style.display = 'none';
+    // Render authors content into the grid container
+    renderAuthors(document.getElementById('grid'));
+    return;
+  }
+  // Restore book controls (in case we switched back from authors mode)
+  const rcEl = document.getElementById('result-count');
+  const sortEl = document.getElementById('sort');
+  if (rcEl) rcEl.style.display = '';
+  if (sortEl) sortEl.style.display = '';
+
   pushFiltersToUrl();
   const filtered = DATA.books.filter(matchesFilters);
   const sorted = sortBooks(filtered);
@@ -684,7 +710,7 @@ function renderDetail(id) {
     </div>`;
 
   root.innerHTML = `<div class="detail">
-    <a href="#/books" class="back">← back to books</a>
+    <a href="#/search" class="back">← back to search</a>
     <h1>${escapeHtml(book.title)}</h1>
     <div class="author-line">by ${escapeHtml(book.author_raw || book.authors.join(', '))}${book.series ? ` · <span class="series-inline">${escapeHtml(book.series)}</span>` : ''}</div>
     <div class="detail-grid">
@@ -782,8 +808,11 @@ async function fetchWikiAuthor(name) {
 }
 
 // ─── Authors view ──────────────────────────────────────────────────────────
-function renderAuthors() {
-  const root = $('#view-authors');
+// When called without a root, renders into #view-authors (standalone authors tab).
+// When called with a DOM element (e.g. #grid), renders authors into that container
+// so the Search view can show authors inline without a separate full-page view.
+function renderAuthors(root = null) {
+  root = root || $('#view-authors');
   if (!root) return;
 
   // Build per-author stats from DATA.books
@@ -3117,7 +3146,7 @@ function drawDiscover() {
       ${statsRow}
       <div class="discover-empty">
         <p style="font-size: 18px;"><strong>You've labeled every book.</strong></p>
-        <p style="color: var(--muted);">Nice work. Hit <a href="#/books">Books</a> to browse, or <a href="#/">Home</a> to see your progress.</p>
+        <p style="color: var(--muted);">Nice work. Hit <a href="#/search">Search</a> to browse, or <a href="#/">Home</a> to see your progress.</p>
         ${__discoverState && __discoverState.skipped.size > 0
           ? `<p style="margin-top: 18px;"><button type="button" id="discover-replay" class="user-status-btn">Replay ${__discoverState.skipped.size} skipped</button></p>`
           : ''}
@@ -4010,9 +4039,9 @@ function syncFiltersToDom() {
 // shareable. Only emit params for non-default values to keep URLs short.
 // Uses replaceState so checkbox flicks don't pollute history.
 function pushFiltersToUrl() {
-  // Only sync the URL while we're on the Books page — other routes have
-  // their own URL semantics we shouldn't clobber.
-  if (!location.hash.startsWith('#/books')) return;
+  // Only sync the URL while we're on the Search page (books mode) — other
+  // routes have their own URL semantics we shouldn't clobber.
+  if (!location.hash.startsWith('#/search') && !location.hash.startsWith('#/books')) return;
   const p = new URLSearchParams();
   if (state.search) p.set('search', state.search);
   if (state.awards.size && state.awards.size < Object.keys(AWARD_LABELS).length) {
@@ -4037,7 +4066,7 @@ function pushFiltersToUrl() {
     p.set('meStatus', [...state.meStatus].join(','));
   }
   const qs = p.toString();
-  const target = '#/books' + (qs ? '?' + qs : '');
+  const target = '#/search' + (qs ? '?' + qs : '');
   if (location.hash !== target) {
     history.replaceState(null, '', target);
   }
@@ -4076,12 +4105,19 @@ function _route() {
     window.scrollTo(0, 0);
     return;
   }
-  if (path === '#/books') {
+  // #/search is the canonical Search route (books + authors toggle)
+  if (path === '#/search') {
     const params = new URLSearchParams(qs || '');
     if (qs) applyFilterParams(params);
     renderList();
     showView('list');
     window.scrollTo(0, 0);
+    return;
+  }
+  // #/books redirects to #/search (backward compat)
+  if (path === '#/books') {
+    state.searchMode = 'books';
+    location.hash = '#/search' + (qs ? '?' + qs : '');
     return;
   }
   if (path.startsWith('#/authors/')) {
@@ -4091,10 +4127,10 @@ function _route() {
     window.scrollTo(0, 0);
     return;
   }
+  // #/authors redirects to #/search in authors mode (backward compat)
   if (path === '#/authors') {
-    renderAuthors();
-    showView('authors');
-    window.scrollTo(0, 0);
+    state.searchMode = 'authors';
+    location.hash = '#/search';
     return;
   }
   if (path === '#/magazines') {
@@ -4246,6 +4282,16 @@ function wireFilters() {
     else state.meStatus.delete(e.target.value);
     renderList();
   }));
+  // Books / Authors toggle tabs
+  document.getElementById('search-tab-books')?.addEventListener('click', () => {
+    state.searchMode = 'books';
+    renderList();
+  });
+  document.getElementById('search-tab-authors')?.addEventListener('click', () => {
+    state.searchMode = 'authors';
+    renderList();
+  });
+
   $('#reset').addEventListener('click', () => {
     state = {
       search: '',
@@ -4266,6 +4312,7 @@ function wireFilters() {
       readFree: false,
       missingFilter: new Set(),
       meStatus: new Set(['read', 'nightstand', 'neither']),
+      searchMode: 'books',
     };
     $('#search').value = '';
     $('#year-min').value = '';
