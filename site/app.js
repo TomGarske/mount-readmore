@@ -222,10 +222,14 @@ let state = {
   yearMin: null,
   yearMax: null,
   sort: 'year-desc',
-  // Progress-page filter: 'winner' | 'nominee' | 'both'
-  progressStatus: 'winner',
-  // Progress-page award scope: 'both' | 'hugo' | 'nebula'
-  progressAward: 'both',
+  // Progress-page status filter (multi-select): subset of {'winner','nominee'}.
+  progressStatuses: new Set(['winner']),
+  // Progress-page award scope (multi-select): subset of {'hugo','nebula'}.
+  progressAwards: new Set(['hugo', 'nebula']),
+  // Progress-page category scope (multi-select).
+  progressCategories: new Set(['Novel', 'Novella', 'Novelette']),
+  // Single switch: include nightstand books in stats projections everywhere.
+  includeNightstand: false,
   // Home page: time-window for most-awarded authors (years back)
   authorWindow: 30,
   // Home page: which gender slice is currently selected (null = all)
@@ -1382,17 +1386,27 @@ function renderStats() {
   // Per-reader loops inside this function must include 'me' so signed-in
   // users (whose reader id is 'me') don't crash on map lookups.
   const READER_KEYS = [...ALL_READER_IDS, 'me'];
-  // Status filter for everything on this page
-  const STATUS = state.progressStatus;  // 'winner' | 'nominee' | 'both'
-  const AWARD = state.progressAward;    // 'both' | 'hugo' | 'nebula'
+  // Multi-select filters: each is a Set. Empty set = no books in scope.
+  // For backwards-compat with derived flags below (winners-only, both, etc.)
+  // we recompute simple bools from the sets.
+  const STATUSES = state.progressStatuses;            // Set<'winner','nominee'>
+  const AWARDS = state.progressAwards;                // Set<'hugo','nebula'>
+  const CATEGORIES = state.progressCategories;        // Set<'Novel','Novella','Novelette'>
+  const STATUS_BOTH = STATUSES.has('winner') && STATUSES.has('nominee');
+  const STATUS = STATUS_BOTH ? 'both' : (STATUSES.has('winner') ? 'winner' : (STATUSES.has('nominee') ? 'nominee' : 'none'));
+  const AWARD_BOTH = AWARDS.has('hugo') && AWARDS.has('nebula');
+  const AWARD = AWARD_BOTH ? 'both' : (AWARDS.has('hugo') ? 'hugo' : (AWARDS.has('nebula') ? 'nebula' : 'none'));
 
-  // Award scope: when AWARD == specific, only books that carry that award
-  // (counting either winner or nominee status for it). When AWARD == 'both',
-  // every book on the list is in scope.
-  const inAwardScope = (b) => AWARD === 'both' || !!(b.awards || {})[AWARD];
+  // Award scope: a book is in scope if it carries at least one of the
+  // checked awards AND falls in one of the checked categories.
+  const inAwardScope = (b) => {
+    if (CATEGORIES.size && !CATEGORIES.has(b.category)) return false;
+    const aw = b.awards || {};
+    return [...AWARDS].some(a => aw[a]);
+  };
   const isWinnerInScope = (b) => {
-    if (AWARD === 'both') return Object.values(b.awards || {}).includes('winner');
-    return (b.awards || {})[AWARD] === 'winner';
+    const aw = b.awards || {};
+    return [...AWARDS].some(a => aw[a] === 'winner');
   };
   const scopedBooks = DATA.books.filter(inAwardScope);
   const winnersAll = scopedBooks.filter(isWinnerInScope);
@@ -1894,33 +1908,15 @@ function renderStats() {
   };
   const recentEitherHtml = recentEither.slice(0, 18).map(swimlaneTile).join('');
 
-  // Nightstand checklist — same swimlane card style as "Up next" but each
-  // card has a checkbox so the user can include/exclude individual books
-  // from the "if I read these" stats projection below.
-  if (!__nightstandUnplannedLoaded) loadNightPlan();
-  const nightPlanCard = (b) => {
-    const planned = !__nightstandUnplanned.has(b.id);
-    const coverHtml = b.cover_url
-      ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
-      : '📖';
+    // Nightstand swimlane — plain cards, no per-book checkboxes. A single
+  // "Include nightstand" toggle near the filter pills controls whether
+  // these books are folded into the projected stats.
+  const nightstandHtml = nightstandBooks.map(b => {
     const ws = Object.entries(b.awards || {}).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]);
     const ns = Object.entries(b.awards || {}).filter(([, s]) => s === 'nominee').map(([a]) => AWARD_LABELS[a]);
     const awardLabel = ws.length ? `${ws.join(' · ')} winner` : (ns.length ? `${ns.join(' · ')} nominee` : '');
-    const meta = `${escapeHtml(b.authors?.[0] || '')} · ${b.year || ''}${awardLabel ? ` · ${awardLabel}` : ''}`;
-    return `<div class="recent-read nightstand-plan-card${planned ? ' planned' : ' unplanned'}" data-id="${escapeHtml(b.id)}">
-      <label class="nightstand-plan-toggle" title="${planned ? 'In projection — uncheck to exclude' : 'Excluded from projection — check to include'}">
-        <input type="checkbox" data-night-plan="${escapeHtml(b.id)}" ${planned ? 'checked' : ''}>
-      </label>
-      <a class="nightstand-plan-link" href="#/books/${escapeHtml(b.id)}">
-        <div class="recent-read-cover">${coverHtml}</div>
-        <div class="recent-read-info">
-          <div class="rr-title">${escapeHtml(b.title)}</div>
-          <div class="rr-meta">${meta}</div>
-        </div>
-      </a>
-    </div>`;
-  };
-  const nightstandHtml = nightstandBooks.map(nightPlanCard).join('');
+    return tile(b, `${escapeHtml(b.authors?.[0] || '')} · ${b.year || ''}${awardLabel ? ` · ${awardLabel}` : ''}`.trim());
+  }).join('');
 
   const upNextHtml = upNext.map(b => {
     const ws = Object.entries(b.awards).filter(([, s]) => s === 'winner').map(([a]) => AWARD_LABELS[a]);
@@ -1996,20 +1992,30 @@ function renderStats() {
 
   root.innerHTML = `<div class="detail">
     ${titleHtml}
-    <p class="dashboard-intro"><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
+    <p class="dashboard-intro"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
     ${compareWidgetHtml}
     ${!HAS_READER ? `<p class="dashboard-sort-cta">New here? Use the <a href="#/discover"><strong>Sort</strong></a> tab to rapidly label every book as Read, Nightstand, or Skip — builds your reading list in minutes.</p>` : ''}
-    <div class="toggle-row">
-      <div class="status-toggle" data-status="${STATUS}">
-        <button class="status-tab${STATUS === 'winner' ? ' active' : ''}" data-status="winner">Winners <span class="status-count">${allWinnersCount}</span></button>
-        <button class="status-tab${STATUS === 'nominee' ? ' active' : ''}" data-status="nominee">Nominees <span class="status-count">${allNomineesCount}</span></button>
-        <button class="status-tab${STATUS === 'both' ? ' active' : ''}" data-status="both">Both <span class="status-count">${allBooksCount}</span></button>
-      </div>
-      <div class="status-toggle award-toggle" data-award="${AWARD}">
-        <button class="status-tab${AWARD === 'both' ? ' active' : ''}" data-award="both">Both <span class="status-count">${DATA.books.length}</span></button>
-        <button class="status-tab status-tab-hugo${AWARD === 'hugo' ? ' active' : ''}" data-award="hugo">Hugo <span class="status-count">${hugoCount}</span></button>
-        <button class="status-tab status-tab-nebula${AWARD === 'nebula' ? ' active' : ''}" data-award="nebula">Nebula <span class="status-count">${nebulaCount}</span></button>
-      </div>
+    <div class="stats-filter-row">
+      <fieldset class="stats-filter-group">
+        <legend>Status</legend>
+        <label><input type="checkbox" data-progress-status="winner" ${STATUSES.has('winner') ? 'checked' : ''}> Winners <span class="status-count">${allWinnersCount}</span></label>
+        <label><input type="checkbox" data-progress-status="nominee" ${STATUSES.has('nominee') ? 'checked' : ''}> Nominees <span class="status-count">${allNomineesCount}</span></label>
+      </fieldset>
+      <fieldset class="stats-filter-group">
+        <legend>Award</legend>
+        <label><input type="checkbox" data-progress-award="hugo" ${AWARDS.has('hugo') ? 'checked' : ''}> Hugo <span class="status-count">${hugoCount}</span></label>
+        <label><input type="checkbox" data-progress-award="nebula" ${AWARDS.has('nebula') ? 'checked' : ''}> Nebula <span class="status-count">${nebulaCount}</span></label>
+      </fieldset>
+      <fieldset class="stats-filter-group">
+        <legend>Category</legend>
+        <label><input type="checkbox" data-progress-category="Novel" ${CATEGORIES.has('Novel') ? 'checked' : ''}> Novel</label>
+        <label><input type="checkbox" data-progress-category="Novella" ${CATEGORIES.has('Novella') ? 'checked' : ''}> Novella</label>
+        <label><input type="checkbox" data-progress-category="Novelette" ${CATEGORIES.has('Novelette') ? 'checked' : ''}> Novelette</label>
+      </fieldset>
+      ${HAS_READER ? `<fieldset class="stats-filter-group stats-filter-projection">
+        <legend>Projection</legend>
+        <label><input type="checkbox" data-progress-incnight ${state.includeNightstand ? 'checked' : ''}> Include nightstand</label>
+      </fieldset>` : ''}
     </div>
 
     <div class="headline-grid">
@@ -2033,16 +2039,16 @@ function renderStats() {
             ? Math.round(yearedReads.reduce((s, b) => s + b.year, 0) / yearedReads.length)
             : null;
           const mrd = mostReadDecade(winners, (b) => readStatus(b, r) === 'read');
-          // ── Projection ──: include nightstand books the user has checked
-          // in the planner, so headline cards preview their post-read stats.
-          // Only counts books that are in the current STATUS subset (winners
-          // / nominees / both) and aren't already read.
-          if (!__nightstandUnplannedLoaded) loadNightPlan();
+          // ── Projection ──: if the user has flipped "Include nightstand"
+          // ON, fold every nightstand book in the current filter scope into
+          // the projected stats. The single global toggle replaces the
+          // per-book checklist.
           const readBookIds = new Set(readBooks.map(b => b.id));
           const winnerIds = new Set(winners.map(b => b.id));
-          const plannedInScope = (typeof nightstandBooks !== 'undefined' ? nightstandBooks : [])
-            .filter(b => !__nightstandUnplanned.has(b.id))
-            .filter(b => winnerIds.has(b.id) && !readBookIds.has(b.id));
+          const plannedInScope = state.includeNightstand
+            ? (typeof nightstandBooks !== 'undefined' ? nightstandBooks : [])
+                .filter(b => winnerIds.has(b.id) && !readBookIds.has(b.id))
+            : [];
           const hasProj = plannedInScope.length > 0;
           const projectedReadCount = readBooks.length + plannedInScope.length;
           const projectedYeared = [...yearedReads, ...plannedInScope.filter(b => b.year)];
@@ -2092,7 +2098,7 @@ function renderStats() {
       <div class="featured-shelf-head">
         <div>
           <h2>On the nightstand <span class="featured-shelf-count">${nightstandBooks.length}</span></h2>
-          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Books you have, but haven't finished yet. <strong>Check</strong> the ones you plan to read — the headline cards above project what your stats will look like once you do.</p>
+          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Books you have, but haven't finished yet. Toggle <strong>Include nightstand</strong> in the filter row above to project your stats as if you'd read them all.</p>
         </div>
       </div>
       <div class="recent-reads">${nightstandHtml}</div>
@@ -2417,37 +2423,42 @@ function renderStats() {
 
   $$('.recent-read, .swimlane-card', root).forEach(el => {
     el.addEventListener('click', (e) => {
-      // Ignore clicks on the plan checkbox / its label — those toggle
-      // projection state, they don't navigate.
-      if (e.target.closest('.nightstand-plan-toggle')) return;
       // If the click landed on an inner anchor, let that anchor handle it.
       if (e.target.closest('a')) return;
       location.hash = `#/books/${el.dataset.id}`;
     });
   });
-  // Nightstand plan checkboxes — toggle projection inclusion + re-render.
-  $$('[data-night-plan]', root).forEach(cb => {
+  // Multi-select progress filters: Status / Award / Category / Projection.
+  // Each checkbox flips a Set entry, then we re-render. Don't allow the
+  // user to uncheck the LAST item in Status, Award, or Category (would
+  // empty the page) — we revert the checkbox in that case.
+  function toggleSet(set, key, cb) {
+    if (cb.checked) { set.add(key); }
+    else {
+      if (set.size <= 1) { cb.checked = true; return false; }
+      set.delete(key);
+    }
+    return true;
+  }
+  $$('[data-progress-status]', root).forEach(cb => {
     cb.addEventListener('change', () => {
-      const id = cb.dataset.nightPlan;
-      if (cb.checked) __nightstandUnplanned.delete(id);
-      else __nightstandUnplanned.add(id);
-      saveNightPlan();
-      renderStats();
+      if (toggleSet(state.progressStatuses, cb.dataset.progressStatus, cb)) renderStats();
     });
   });
-  $$('.status-tab', root).forEach(btn => {
-    btn.addEventListener('click', () => {
-      const newStatus = btn.dataset.status;
-      const newAward = btn.dataset.award;
-      if (newStatus && state.progressStatus !== newStatus) {
-        state.progressStatus = newStatus;
-        renderStats();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (newAward && state.progressAward !== newAward) {
-        state.progressAward = newAward;
-        renderStats();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+  $$('[data-progress-award]', root).forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (toggleSet(state.progressAwards, cb.dataset.progressAward, cb)) renderStats();
+    });
+  });
+  $$('[data-progress-category]', root).forEach(cb => {
+    cb.addEventListener('change', () => {
+      if (toggleSet(state.progressCategories, cb.dataset.progressCategory, cb)) renderStats();
+    });
+  });
+  $$('[data-progress-incnight]', root).forEach(cb => {
+    cb.addEventListener('change', () => {
+      state.includeNightstand = cb.checked;
+      renderStats();
     });
   });
 
@@ -4758,8 +4769,10 @@ function wireFilters() {
       statuses: new Set(['winner', 'nominee']),
       categories: new Set(['Novel', 'Novella', 'Novelette']),
       yearMin: null, yearMax: null, sort: 'year-desc',
-      progressStatus: state.progressStatus,
-      progressAward: state.progressAward,
+      progressStatuses: new Set(state.progressStatuses),
+      progressAwards: new Set(state.progressAwards),
+      progressCategories: new Set(state.progressCategories),
+      includeNightstand: state.includeNightstand,
       authorWindow: state.authorWindow,
       genderFilter: null,
       authorGender: new Set(['female', 'male', 'unknown']),
@@ -4787,13 +4800,13 @@ function wireFilters() {
 }
 
 function applySoloUI() {
-  // Default keeps the plain "Mount Readmore" title. Solo modes hide
+  // Default keeps the plain "Readmore SFF" title. Solo modes hide
   // the other readers via body class; multi-reader keeps everything visible.
   if (SOLO) {
     document.body.classList.add(`solo-${SOLO}`);
-    document.title = 'Mount Readmore';
+    document.title = 'Readmore SFF';
   } else {
-    document.title = 'Mount Readmore';
+    document.title = 'Readmore SFF';
   }
 }
 

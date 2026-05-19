@@ -1158,7 +1158,56 @@ a:hover { text-decoration: underline; }
 .author-bar-schupp  { background: var(--accent-5); }
 .author-count { color: var(--muted); font-size: 12px; }
 
-/* Toggle row on Progress page — status (Winners/Nominees/Both) and award scope (Both/Hugo/Nebula) side by side */
+/* Stats filter row — multi-select checkboxes for Status / Award / Category
+   plus an "Include nightstand" projection toggle, all in one row. */
+.stats-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin: 8px 0 24px;
+  align-items: stretch;
+}
+.stats-filter-group {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 8px 14px 10px;
+  background: var(--bg-2);
+  min-width: 0;
+}
+.stats-filter-group legend {
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+.stats-filter-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.stats-filter-group label:last-child { margin-right: 0; }
+.stats-filter-group input[type="checkbox"] {
+  width: 15px; height: 15px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.stats-filter-group .status-count {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 1px 6px;
+  background: var(--bg-3, rgba(0,0,0,0.06));
+  border-radius: 999px;
+}
+.stats-filter-projection legend { color: var(--accent); }
+
+/* Legacy toggle-row kept for any other callers, but the Stats page now
+   uses .stats-filter-row above. */
 .toggle-row {
   display: flex;
   flex-wrap: wrap;
