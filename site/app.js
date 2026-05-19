@@ -1142,6 +1142,49 @@ function buildNightstandShelf(books) {
   </div>`;
 }
 
+// Two-up nightstand: horizontal "books laying on their side" stack on the
+// left, swimlane of book covers on the right. Same data, two renderings.
+function buildNightstandTwoUp(books) {
+  if (!books || books.length === 0) return '';
+  const hueFor = (id) => {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) & 0xffffffff;
+    return Math.abs(h) % 360;
+  };
+  // Horizontal "lay-flat" spines, stacked vertically — feels like a pile of
+  // books sitting on a nightstand, viewed from above.
+  const flatRows = books.map(b => {
+    const hue = hueFor(b.id);
+    const bodyHsl = `hsl(${hue}, 38%, 32%)`;
+    const bandHsl = `hsl(${hue}, 42%, 22%)`;
+    const textHsl = `hsl(${hue}, 35%, 92%)`;
+    const author = (b.authors && b.authors[0]) || '';
+    return `<a class="spine-flat" data-id="${escapeHtml(b.id)}" href="#/book/${escapeHtml(b.id)}"
+        style="--body: ${bodyHsl}; --band: ${bandHsl}; --ink: ${textHsl};"
+        title="${escapeHtml(b.title)} — ${escapeHtml(author)}">
+      <span class="spine-flat-band"></span>
+      <span class="spine-flat-title">${escapeHtml(b.title)}</span>
+      <span class="spine-flat-author">${escapeHtml(author)}</span>
+    </a>`;
+  }).join('');
+  // Swimlane covers — same dataset as the spines.
+  const swimTiles = books.map(b => {
+    const cover = b.cover_url
+      ? `<img src="${escapeHtml(b.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
+      : `<span class="swimlane-placeholder">📖</span>`;
+    const author = (b.authors && b.authors[0]) || '';
+    return `<a class="swimlane-card" href="#/book/${escapeHtml(b.id)}">
+      <div class="swimlane-cover">${cover}</div>
+      <div class="swimlane-title">${escapeHtml(b.title)}</div>
+      <div class="swimlane-meta">${escapeHtml(author)} · ${b.year || ''}</div>
+    </a>`;
+  }).join('');
+  return `<div class="nightstand-twoup">
+    <div class="nightstand-flat" role="list">${flatRows}</div>
+    <div class="nightstand-swim"><div class="swimlane-strip">${swimTiles}</div></div>
+  </div>`;
+}
+
 // SVG donut chart via explicit arc paths. Earlier stroke-dasharray
 // approach rendered segments at the wrong arc length under some browser
 // quirks (visible coverage didn't match the expected percentages).
@@ -1795,14 +1838,7 @@ function renderStats() {
       <div class="swimlane-meta">${escapeHtml(b.authors[0] || '')} · ${b.year || ''}</div>
     </a>`;
   };
-  const recentEitherHtml = recentEither.slice(0, 18).map(swimlaneTile).join('')
-    + (recentEither.length > 0
-        ? `<a class="swimlane-card swimlane-view-all" href="#/books?meStatus=read">
-            <div class="swimlane-cover swimlane-view-all-cover"><span>View all <br>→</span></div>
-            <div class="swimlane-title">${recentEither.length} books</div>
-            <div class="swimlane-meta">in /books</div>
-          </a>`
-        : '');
+  const recentEitherHtml = recentEither.slice(0, 18).map(swimlaneTile).join('');
 
   const nightstandHtml = nightstandBooks.map(b =>
     tile(b, `${escapeHtml(b.authors[0] || '')} · ${b.year} ${Object.entries(b.awards).map(([a, s]) => `${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}`).join(' · ')}`, readerPills(b, 'shelf'))
@@ -1868,8 +1904,20 @@ function renderStats() {
     <button type="button" id="dashboard-compare-btn" class="mr-btn-primary">Compare →</button>
   </div>`;
 
+  // Profile header — show whose stats you're viewing.
+  // SOLO is set by the #/stats?u= router for hardcoded readers; 'me' or null
+  // means own stats (use the signed-in handle if available).
+  const myHandleForHeader = window.MR_AUTH?.profile?.handle || null;
+  const headerHandle = (SOLO && SOLO !== 'me')
+    ? SOLO
+    : (myHandleForHeader || null);
+  const isOwnHeader = !SOLO || SOLO === 'me' || (myHandleForHeader && SOLO?.toLowerCase() === myHandleForHeader.toLowerCase());
+  const titleHtml = headerHandle
+    ? `<h1 class="stats-title">@${escapeHtml(headerHandle)}${isOwnHeader ? ' <span class="stats-title-tag">your stats</span>' : ' <span class="stats-title-tag">stats</span>'}</h1>`
+    : `<h1 class="stats-title">Stats</h1>`;
+
   root.innerHTML = `<div class="detail">
-    <h1>Stats</h1>
+    ${titleHtml}
     <p class="dashboard-intro"><strong>SFF Readmore</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
     ${compareWidgetHtml}
     ${!HAS_READER ? `<p class="dashboard-sort-cta">New here? Use the <a href="#/discover"><strong>Sort</strong></a> tab to rapidly label every book as Read, Nightstand, or Skip — builds your reading list in minutes.</p>` : ''}
@@ -1920,7 +1968,6 @@ function renderStats() {
           <h2>Recently read</h2>
           <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Sorted by publication year, newest first.</p>
         </div>
-        <a class="featured-shelf-cta" href="#/books?meStatus=read">View all <span class="featured-arrow">→</span></a>
       </div>
       <div class="swimlane-strip">${recentEitherHtml}</div>
     </section>` : ''}
@@ -1931,9 +1978,8 @@ function renderStats() {
           <h2>On the nightstand <span class="featured-shelf-count">${nightstandBooks.length}</span></h2>
           <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Books you have, but haven't finished yet.</p>
         </div>
-        <a class="featured-shelf-cta" href="#/books?meStatus=nightstand">View all <span class="featured-arrow">→</span></a>
       </div>
-      ${buildNightstandShelf(nightstandBooks)}
+      ${buildNightstandTwoUp(nightstandBooks)}
     </section>` : ''}
 
     ${HAS_READER && upNext.length > 0 ? `<section class="featured-shelf featured-shelf-upnext">
@@ -1942,7 +1988,6 @@ function renderStats() {
           <h2>Up next</h2>
           <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Recent winners on no nightstand yet. Open one to add it to your shelf.</p>
         </div>
-        <a class="featured-shelf-cta" href="#/books?status=winner">View all <span class="featured-arrow">→</span></a>
       </div>
       <div class="recent-reads">${upNextHtml}</div>
     </section>` : ''}
@@ -2152,9 +2197,36 @@ function renderStats() {
         if (r.award === 'hugo') hugoByUser[r.user_id] = r.read_count;
         else if (r.award === 'nebula') nebulaByUser[r.user_id] = r.read_count;
       }
-      const totalLabel = overall[0]?.total_books ?? 0;
+      // When the leaderboard view returned no rows (e.g. user hasn't added
+      // friends yet, or hasn't opted in), synthesize a self-row from the
+      // signed-in user's local data so the section always has something.
+      let rows = overall;
+      if (rows.length === 0 && meHandle && myUserId) {
+        const ub = auth.userBooks || {};
+        const readIds = Object.keys(ub).filter(id => ub[id]?.status === 'read');
+        const total = DATA.books.length;
+        const readCount = readIds.length;
+        let hugoRead = 0, nebRead = 0;
+        for (const id of readIds) {
+          const b = DATA.books.find(x => x.id === id);
+          if (!b) continue;
+          if ((b.awards || {}).hugo) hugoRead++;
+          if ((b.awards || {}).nebula) nebRead++;
+        }
+        hugoByUser[myUserId] = hugoRead;
+        nebulaByUser[myUserId] = nebRead;
+        rows = [{
+          user_id: myUserId,
+          handle: meHandle,
+          read_count: readCount,
+          total_books: total,
+          pct: total > 0 ? Math.round((readCount / total) * 100) : 0,
+          rank: 1,
+        }];
+      }
+      const totalLabel = rows[0]?.total_books ?? DATA.books.length;
       const meHandleSlug = meHandle ? encodeURIComponent(meHandle) : 'me';
-      const rowHtml = overall.map(r => {
+      const rowHtml = rows.map(r => {
         const isMeRow = r.user_id === myUserId;
         const compareTag = !isMeRow
           ? `<a class="lb-compare" href="#/stats?u=${meHandleSlug}&u=${encodeURIComponent(r.handle)}">Compare →</a>`
@@ -2170,6 +2242,9 @@ function renderStats() {
         </div>`;
       }).join('');
       const onLeaderboard = auth.profile?.on_leaderboard;
+      const noFriendsNote = overall.length === 0
+        ? `<p style="color:var(--muted);font-size:13px;">No friends yet — add one above to start comparing reads.</p>`
+        : '';
       return `<div class="progress-section" id="stats-friends-section">
         <h2>Friends</h2>
         <p style="color:var(--muted);font-size:13px;">You and your friends, ranked by reads from the ${totalLabel} canonical books. Tap Compare for a head-to-head.</p>
@@ -2179,9 +2254,8 @@ function renderStats() {
           <button type="submit" class="mr-btn-primary">Add friend</button>
           <span id="stats-friends-add-status" class="settings-inline-status"></span>
         </form>
-        ${overall.length > 0
-          ? `<div class="lb-table">${rowHtml}</div>`
-          : `<p style="color:var(--muted);">No friends yet — add one above.</p>`}
+        <div class="lb-table">${rowHtml}</div>
+        ${noFriendsNote}
       </div>`;
     })()}
 
