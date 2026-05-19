@@ -41801,9 +41801,9 @@
       "isbn": "9781568652511",
       "pages": 150,
       "author_genders": [
-        "male"
+        "female"
       ],
-      "primary_author_gender": "male",
+      "primary_author_gender": "female",
       "goodreads_id": "318011"
     },
     {
@@ -41957,9 +41957,9 @@
       },
       "cover_url": "https://covers.openlibrary.org/b/id/12126316-L.jpg",
       "author_genders": [
-        "male"
+        "female"
       ],
-      "primary_author_gender": "male"
+      "primary_author_gender": "female"
     },
     {
       "id": "the-word-for-world-is-forest-guin-1973-novella",
@@ -46460,8 +46460,8 @@
     "total": 794,
     "by_category": {
       "Novelette": 78,
-      "Novella": 78,
-      "Novel": 638
+      "Novel": 638,
+      "Novella": 78
     }
   }
 }

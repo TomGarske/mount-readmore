@@ -118,12 +118,14 @@
   async function bootstrap() {
     const { data: { session } } = await client.auth.getSession();
     currentUser = session?.user || null;
+    _loadLocalUnread();
     // Load everything user-scoped in parallel. Pages waiting on MR_AUTH.ready
     // get friends + leaderboard data without firing extra queries.
     await Promise.all([loadProfile(), loadUserBooks(), loadFriends(), loadLeaderboards()]);
     notify();
     client.auth.onAuthStateChange(async (_event, session) => {
       currentUser = session?.user || null;
+      _loadLocalUnread();
       await Promise.all([loadProfile(), loadUserBooks(), loadFriends(), loadLeaderboards()]);
       notify();
     });
@@ -344,10 +346,63 @@
     return null;
   }
 
+  // Local-only 'unread' tracker. The user_books.status column has a CHECK
+  // constraint that only allows 'read' | 'nightstand' | 'started', so we
+  // can't persist 'unread' server-side without a schema migration.
+  // Track explicit-skip decisions in localStorage instead — surfaced via
+  // statusFor() so the Sort queue, badges, and Stats all see 'unread'.
+  const _localUnread = new Set();
+  function _localUnreadKey() {
+    return currentUser ? `mr-unread-${currentUser.id}` : null;
+  }
+  function _loadLocalUnread() {
+    _localUnread.clear();
+    const k = _localUnreadKey();
+    if (!k) return;
+    try {
+      const arr = JSON.parse(localStorage.getItem(k) || '[]');
+      for (const id of arr) _localUnread.add(id);
+    } catch {}
+  }
+  function _saveLocalUnread() {
+    const k = _localUnreadKey();
+    if (!k) return;
+    try { localStorage.setItem(k, JSON.stringify([...
+      _localUnread])); } catch {}
+  }
+
   async function setBookStatus(bookId, status) {
     // status: 'read' | 'nightstand' | 'unread' | 'started' | null (null = remove)
     if (!currentUser) throw new Error('Not signed in');
     const uid = currentUser.id;
+
+    // 'unread' = explicit "I won't read this." DB doesn't accept the value
+    // (CHECK constraint), so persist to localStorage and delete any prior
+    // user_books row so the book doesn't double-count.
+    if (status === 'unread') {
+      _localUnread.add(bookId);
+      _saveLocalUnread();
+      // Drop any DB row that might exist for this book (was read/nightstand).
+      const hadRow = !!userBooksById[bookId];
+      delete userBooksById[bookId];
+      notify();
+      if (hadRow) {
+        try {
+          const token = _getAccessToken();
+          await fetch(`${cfg.SUPABASE_URL}/rest/v1/user_books?user_id=eq.${uid}&book_id=eq.${encodeURIComponent(bookId)}`, {
+            method: 'DELETE',
+            headers: { apikey: cfg.SUPABASE_PUBLISHABLE_KEY, Authorization: `Bearer ${token}` },
+          });
+        } catch (e) { console.error('setBookStatus unread-cleanup failed:', e); }
+      }
+      return;
+    }
+    // Any non-unread status (or null) → drop the book from the local-unread set first.
+    if (_localUnread.has(bookId)) {
+      _localUnread.delete(bookId);
+      _saveLocalUnread();
+    }
+
     // Update local cache FIRST so the UI (Sort queue, stats, badges)
     // reflects intent immediately even if the network call is slow/failing.
     // Background save below; if it fails the cache stays optimistic for this
@@ -449,7 +504,10 @@
     get friends() { return friendsList; },
     get leaderboardOverall() { return leaderboardOverall; },
     get leaderboardByAward() { return leaderboardByAward; },
-    statusFor(bookId) { return userBooksById[bookId]?.status || null; },
+    statusFor(bookId) {
+      if (_localUnread.has(bookId)) return 'unread';
+      return userBooksById[bookId]?.status || null;
+    },
     onChange(cb) {
       subscribers.add(cb);
       // If bootstrap already fired its initial notify, replay it for this

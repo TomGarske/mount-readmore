@@ -3442,8 +3442,11 @@ fieldset label input { margin-right: 8px; }
 .discover-side-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .discover-cardstack {
   position: relative;
-  height: 540px;
-  max-width: 380px;
+  /* Wider + shorter — the cover-left / info-right combined layout looks
+     unbalanced when it's a tall narrow card. Max width ~720 fits a 200-px
+     cover + readable info column on most screens. */
+  height: 420px;
+  max-width: 720px;
   margin: 0 auto;
   width: 100%;
 }
