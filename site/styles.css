@@ -1129,11 +1129,9 @@ a:hover { text-decoration: underline; }
 .author-bar-bg {
   height: 100%;
   width: var(--bar-width, 0%);
-  background: linear-gradient(90deg, var(--accent), var(--accent-2));
-  opacity: 0.85;
   border-radius: 4px;
-  position: relative;
   overflow: hidden;
+  display: flex;
   animation: author-bar-grow 0.7s cubic-bezier(.2,.7,.2,1) both;
   animation-delay: inherit;
 }
@@ -1141,21 +1139,11 @@ a:hover { text-decoration: underline; }
   0%   { width: 0; }
   100% { width: var(--bar-width); }
 }
-.author-bar-tom,
-.author-bar-nika,
-.author-bar-westdac,
-.author-bar-colton,
-.author-bar-schupp {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  opacity: 0.85;
-}
-.author-bar-tom     { left: 0; background: var(--accent);   }
-.author-bar-nika    { background: var(--accent-2); }
-.author-bar-westdac { background: var(--accent-3); }
-.author-bar-colton  { background: var(--accent-4); }
-.author-bar-schupp  { background: var(--accent-5); }
+/* Solid read / nightstand / unread segments inside the appearances bar. */
+.author-seg { height: 100%; }
+.author-seg-read   { background: var(--accent); }
+.author-seg-night  { background: var(--accent-3, #b6783c); }
+.author-seg-unread { background: rgba(122, 113, 95, 0.45); }
 .author-count { color: var(--muted); font-size: 12px; }
 
 /* Stats filter row — multi-select checkboxes for Status / Award / Category
@@ -3334,7 +3322,13 @@ fieldset label input { margin-right: 8px; }
   font-size: 12px;
   border-top: 1px solid var(--border);
   margin-top: 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
 }
+.footer-bookshop { max-width: 640px; line-height: 1.5; }
+.footer-bookshop a { font-weight: 600; }
 
 /* 2026 finalists tabs (Hugo + Nebula) */
 .nav-hot {

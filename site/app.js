@@ -2126,12 +2126,15 @@ function renderStats() {
       for (const a of (b.authors || [])) {
         if (!buckets[a]) {
           buckets[a] = { total: 0, winners: 0 };
-          for (const id of READER_KEYS) buckets[a][`${id}Read`] = 0;
+          for (const id of READER_KEYS) { buckets[a][`${id}Read`] = 0; buckets[a][`${id}_read`] = 0; buckets[a][`${id}_night`] = 0; }
         }
         buckets[a].total++;
         if (Object.values(b.awards || {}).includes('winner')) buckets[a].winners++;
         for (const id of READER_KEYS) {
           if (isProjectedRead(b, id)) buckets[a][`${id}Read`]++;
+          // Solid-segment counts: read and nightstand kept separate.
+          if (readStatus(b, id) === 'read') buckets[a][`${id}_read`]++;
+          else if (onNightstand(b, id)) buckets[a][`${id}_night`]++;
         }
       }
     }
@@ -2298,18 +2301,22 @@ function renderStats() {
     } else {
       countCol = `${a.total} appearances · <span style="color: var(--accent)">${a.winners} wins</span>`;
     }
-    let leftAcc = 0;
-    const fillBars = ACTIVE_READERS.map(r => {
-      const fillPct = a.total > 0 ? (a[r.id + 'Read'] / a.total) * 100 : 0;
-      const cls = r.id === 'tom' ? 'author-bar-tom' : (r.id === 'nika' ? 'author-bar-nika' : 'author-bar-westdac');
-      const html = `<div class="${cls}" style="width: ${fillPct}%; left: ${leftAcc}%;" title="${r.label} read ${a[r.id + 'Read']}"></div>`;
-      leftAcc += fillPct;
-      return html;
-    }).join('');
+    // Solid read / nightstand / unread segments for the primary reader. Signed
+    // out (no reader) → the whole bar is the "unread" tone.
+    const pr = PRIMARY_READER;
+    const readN = pr ? (a[`${pr}_read`] || 0) : 0;
+    const nightN = pr ? (a[`${pr}_night`] || 0) : 0;
+    const unreadN = Math.max(0, a.total - readN - nightN);
+    const seg = (n, cls, label) => n > 0
+      ? `<div class="author-seg ${cls}" style="width: ${(n / a.total * 100).toFixed(2)}%;" title="${label}: ${n}"></div>`
+      : '';
+    const segs = seg(readN, 'author-seg-read', 'Read')
+      + seg(nightN, 'author-seg-night', 'Nightstand')
+      + seg(unreadN, 'author-seg-unread', 'Unread');
     return `<div class="author-row" style="animation-delay: ${idx * 0.04}s;">
       <div class="author-name">${escapeHtml(a.name)}</div>
       <div class="author-bar">
-        <div class="author-bar-bg" style="--bar-width: ${widthPct}%;">${fillBars}</div>
+        <div class="author-bar-bg" style="--bar-width: ${widthPct}%;">${segs}</div>
       </div>
       <div class="author-count">${countCol}</div>
     </div>`;
