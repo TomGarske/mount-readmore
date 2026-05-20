@@ -3437,16 +3437,24 @@ function saveNightPlan() {
 function buildDiscoverQueue() {
   const auth = window.MR_AUTH;
   if (!auth || !auth.user) return [];
-  const dStatus = __discoverState?.status || 'winner';
-  const dAward  = __discoverState?.award  || 'both';
+  const statuses = __discoverState?.statuses || new Set(['winner']);
+  const awards = __discoverState?.awards || new Set(['hugo', 'nebula']);
+  const categories = __discoverState?.categories || new Set(['Novel', 'Novella', 'Novelette']);
   // Unrated only — anything in user_books (read/nightstand/started) is
-  // already categorized and shouldn't reappear in the swipe queue.
+  // already categorized and shouldn't reappear in the swipe queue. Then apply
+  // the Status/Award/Category checkbox filters (all multi-select).
   return DATA.books
     .filter(b => {
       if (auth.statusFor(b.id) !== null) return false;
-      if (dAward !== 'both' && !(b.awards || {})[dAward]) return false;
-      if (dStatus === 'winner') return Object.values(b.awards || {}).includes('winner');
-      if (dStatus === 'nominee') return !Object.values(b.awards || {}).includes('winner') && Object.keys(b.awards || {}).length > 0;
+      if (!categories.has(b.category)) return false;
+      const aw = b.awards || {};
+      // Must carry at least one of the selected awards.
+      if (![...awards].some(a => aw[a])) return false;
+      // A book counts as a winner if any of its selected awards is a winner;
+      // otherwise it's a nominee. Filter by the checked Status boxes.
+      const isWinner = [...awards].some(a => aw[a] === 'winner');
+      if (isWinner && !statuses.has('winner')) return false;
+      if (!isWinner && !statuses.has('nominee')) return false;
       return true;
     })
     .sort((a, b) => {
@@ -3624,8 +3632,10 @@ async function renderDiscover() {
       history: [],
       skipped: new Set(),
       tab: 'cover',
-      status: 'winner',
-      award: 'both',
+      // Multi-select filters (match the Stats page). All feed the swipe queue.
+      statuses: new Set(['winner']),
+      awards: new Set(['hugo', 'nebula']),
+      categories: new Set(['Novel', 'Novella', 'Novelette']),
     };
     __discoverState.queue = buildDiscoverQueue();
   }
@@ -3656,28 +3666,36 @@ function drawDiscover() {
 
   const book = discoverNextBook();
 
-  // Status/award filter toggles. Rendered in BOTH the active-card view and the
-  // empty state so the user can switch scope (e.g. winners → nominees) after
-  // finishing one filtered queue without leaving the Sort page.
+  // Status / Award / Category filter checkboxes — same shape as the Stats
+  // page. All three feed buildDiscoverQueue. Rendered in BOTH the active-card
+  // view and the empty state so the user can re-scope the queue without
+  // leaving the Sort page.
   const togglesHtml = (() => {
-    const dStatus = __discoverState.status || 'winner';
-    const dAward  = __discoverState.award  || 'both';
+    const statuses = __discoverState.statuses;
+    const awards = __discoverState.awards;
+    const categories = __discoverState.categories;
     const allW = DATA.books.filter(b => Object.values(b.awards||{}).includes('winner')).length;
     const allN = DATA.books.filter(b => !Object.values(b.awards||{}).includes('winner') && Object.keys(b.awards||{}).length > 0).length;
-    const allB = allW + allN;
     const hugoAll = DATA.books.filter(b => (b.awards||{}).hugo).length;
     const nebAll  = DATA.books.filter(b => (b.awards||{}).nebula).length;
-    return `<div class="discover-toggles">
-      <div class="status-toggle" data-discover-status="${dStatus}">
-        <button class="status-tab${dStatus==='winner'?' active':''}" data-discover-status="winner">Winners <span class="status-count">${allW}</span></button>
-        <button class="status-tab${dStatus==='nominee'?' active':''}" data-discover-status="nominee">Nominees <span class="status-count">${allN}</span></button>
-        <button class="status-tab${dStatus==='both'?' active':''}" data-discover-status="both">Both <span class="status-count">${allB}</span></button>
-      </div>
-      <div class="status-toggle award-toggle" data-discover-award="${dAward}">
-        <button class="status-tab${dAward==='both'?' active':''}" data-discover-award="both">Both <span class="status-count">${allB}</span></button>
-        <button class="status-tab status-tab-hugo${dAward==='hugo'?' active':''}" data-discover-award="hugo">Hugo <span class="status-count">${hugoAll}</span></button>
-        <button class="status-tab status-tab-nebula${dAward==='nebula'?' active':''}" data-discover-award="nebula">Nebula <span class="status-count">${nebAll}</span></button>
-      </div>
+    const catCount = (c) => DATA.books.filter(b => b.category === c).length;
+    return `<div class="stats-filter-row discover-filter-row">
+      <fieldset class="stats-filter-group">
+        <legend>Status</legend>
+        <label><input type="checkbox" data-discover-status="winner" ${statuses.has('winner')?'checked':''}> Winners <span class="status-count">${allW}</span></label>
+        <label><input type="checkbox" data-discover-status="nominee" ${statuses.has('nominee')?'checked':''}> Nominees <span class="status-count">${allN}</span></label>
+      </fieldset>
+      <fieldset class="stats-filter-group">
+        <legend>Award</legend>
+        <label><input type="checkbox" data-discover-award="hugo" ${awards.has('hugo')?'checked':''}> Hugo <span class="status-count">${hugoAll}</span></label>
+        <label><input type="checkbox" data-discover-award="nebula" ${awards.has('nebula')?'checked':''}> Nebula <span class="status-count">${nebAll}</span></label>
+      </fieldset>
+      <fieldset class="stats-filter-group">
+        <legend>Category</legend>
+        <label><input type="checkbox" data-discover-category="Novel" ${categories.has('Novel')?'checked':''}> Novel <span class="status-count">${catCount('Novel')}</span></label>
+        <label><input type="checkbox" data-discover-category="Novella" ${categories.has('Novella')?'checked':''}> Novella <span class="status-count">${catCount('Novella')}</span></label>
+        <label><input type="checkbox" data-discover-category="Novelette" ${categories.has('Novelette')?'checked':''}> Novelette <span class="status-count">${catCount('Novelette')}</span></label>
+      </fieldset>
     </div>`;
   })();
 
@@ -3714,19 +3732,18 @@ function drawDiscover() {
   </div>`;
 
   if (!book) {
-    // Scope label so the empty message reflects the active filter, not "every
-    // book" — the user may have only finished e.g. Hugo winners.
-    const dStatus = __discoverState.status || 'winner';
-    const dAward = __discoverState.award || 'both';
-    const statusWord = dStatus === 'winner' ? 'winner' : dStatus === 'nominee' ? 'nominee' : 'book';
-    const awardWord = dAward === 'hugo' ? 'Hugo ' : dAward === 'nebula' ? 'Nebula ' : '';
-    const scopeLabel = `${awardWord}${statusWord}`;
+    // Message reflects whether the filters are narrowed at all. With the
+    // multi-select checkboxes, "everything in this filter" is the honest line.
+    const narrowed = __discoverState.statuses.size < 2
+      || __discoverState.awards.size < 2
+      || __discoverState.categories.size < 3;
+    const headline = narrowed ? "You've sorted everything in this filter." : "You've labeled every book.";
     root.innerHTML = `<div class="detail discover-page">
       ${togglesHtml}
       ${statsRow}
       <div class="discover-empty">
-        <p style="font-size: 18px;"><strong>You've sorted every ${escapeHtml(scopeLabel)}.</strong></p>
-        <p style="color: var(--muted);">Switch the filters above to keep sorting${dStatus !== 'both' || dAward !== 'both' ? ' — try Nominees or Both' : ''}, or hit <a href="#/search">Search</a> to browse and <a href="#/">Home</a> for your progress.</p>
+        <p style="font-size: 18px;"><strong>${headline}</strong></p>
+        <p style="color: var(--muted);">${narrowed ? 'Adjust the filters above to keep sorting, or hit' : 'Nice work. Hit'} <a href="#/search">Search</a> to browse and <a href="#/">Home</a> for your progress.</p>
         ${__discoverState && __discoverState.skipped.size > 0
           ? `<p style="margin-top: 18px;"><button type="button" id="discover-replay" class="user-status-btn">Replay ${__discoverState.skipped.size} skipped</button></p>`
           : ''}
@@ -3852,29 +3869,23 @@ function wireDiscover() {
   const root = $('#view-discover');
   if (!root) return;
 
-  // Status/award toggle buttons (Winners / Nominees / Both, Hugo / Nebula).
-  // Scope to <button> only — the wrapping .status-toggle div also carries a
-  // data-discover-* attribute (for state/styling), and matching it here would
-  // double-fire on bubble and revert the user's pick.
-  root.querySelectorAll('button[data-discover-status]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const val = btn.dataset.discoverStatus;
-      if (!val || val === __discoverState.status) return;
-      __discoverState.status = val;
-      __discoverState.skipped = new Set();
-      __discoverState.queue = buildDiscoverQueue();
-      drawDiscover();
-    });
+  // Status / Award / Category filter checkboxes — multi-select, all feed the
+  // swipe queue. Toggling any rebuilds the queue and re-renders.
+  const onDiscoverFilter = (setName, key, checked) => {
+    const set = __discoverState[setName];
+    if (checked) set.add(key); else set.delete(key);
+    __discoverState.skipped = new Set();
+    __discoverState.queue = buildDiscoverQueue();
+    drawDiscover();
+  };
+  root.querySelectorAll('input[data-discover-status]').forEach(cb => {
+    cb.addEventListener('change', () => onDiscoverFilter('statuses', cb.dataset.discoverStatus, cb.checked));
   });
-  root.querySelectorAll('button[data-discover-award]').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const val = btn.dataset.discoverAward;
-      if (!val || val === __discoverState.award) return;
-      __discoverState.award = val;
-      __discoverState.skipped = new Set();
-      __discoverState.queue = buildDiscoverQueue();
-      drawDiscover();
-    });
+  root.querySelectorAll('input[data-discover-award]').forEach(cb => {
+    cb.addEventListener('change', () => onDiscoverFilter('awards', cb.dataset.discoverAward, cb.checked));
+  });
+  root.querySelectorAll('input[data-discover-category]').forEach(cb => {
+    cb.addEventListener('change', () => onDiscoverFilter('categories', cb.dataset.discoverCategory, cb.checked));
   });
 
   // Action buttons. "Not read" = explicit Unread (status='unread' in DB) so
