@@ -1502,7 +1502,7 @@ function renderStats() {
       if (AWARD !== 'both' && a !== AWARD) continue;
       byAward[a].total++;
       for (const id of READER_KEYS) {
-        if (readStatus(b, id) === 'read') byAward[a][id]++;
+        if (isProjectedRead(b, id)) byAward[a][id]++;
       }
     }
   }
@@ -1511,7 +1511,7 @@ function renderStats() {
     byCategory[b.category] = byCategory[b.category] || emptyBucket();
     byCategory[b.category].total++;
     for (const id of READER_KEYS) {
-      if (readStatus(b, id) === 'read') byCategory[b.category][id]++;
+      if (isProjectedRead(b, id)) byCategory[b.category][id]++;
     }
   }
 
@@ -1577,6 +1577,16 @@ function renderStats() {
   }
   nightstandBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
 
+  // Projection helper — when "Include nightstand" is ON, treat books on
+  // the reader's nightstand as read for ALL chart purposes (Era bars,
+  // Influence-by-era radar, Primary-genre radar, Subgenre fingerprint,
+  // Genre vectors, By award/category/gender breakdowns).
+  const isProjectedRead = (b, id) => {
+    if (readStatus(b, id) === 'read') return true;
+    if (state.includeNightstand && onNightstand(b, id)) return true;
+    return false;
+  };
+
   // ===== Genre breakdown (winners only) =====
   const genreBuckets = {};
   for (const b of winners) {
@@ -1596,7 +1606,7 @@ function renderStats() {
       if (!subBuckets[g]) subBuckets[g] = emptyBucket();
       subBuckets[g].total++;
       for (const id of READER_KEYS) {
-        if (readStatus(b, id) === 'read') subBuckets[g][id]++;
+        if (isProjectedRead(b, id)) subBuckets[g][id]++;
       }
     }
   }
@@ -1608,7 +1618,7 @@ function renderStats() {
     if (!primaryBuckets[p]) primaryBuckets[p] = emptyBucket();
     primaryBuckets[p].total++;
     for (const id of READER_KEYS) {
-      if (readStatus(b, id) === 'read') primaryBuckets[p][id]++;
+      if (isProjectedRead(b, id)) primaryBuckets[p][id]++;
     }
   }
   const primaryList = ['Science Fiction', 'Fantasy', 'Blend', 'Horror', 'Unclassified']
@@ -1714,7 +1724,7 @@ function renderStats() {
     comboBuckets[key].total++;
     if (Object.values(b.awards || {}).includes('winner')) comboBuckets[key].winners++;
     for (const id of READER_KEYS) {
-      if (readStatus(b, id) === 'read') comboBuckets[key][`${id}Read`]++;
+      if (isProjectedRead(b, id)) comboBuckets[key][`${id}Read`]++;
     }
   }
   // Keep combos with >= 3 samples; sort by win rate desc, then by total desc
@@ -1767,7 +1777,7 @@ function renderStats() {
     if (!(g in genderBuckets)) continue;
     genderBuckets[g]++;
     for (const id of READER_KEYS) {
-      if (readStatus(b, id) === 'read') genderReadByReader[id][g]++;
+      if (isProjectedRead(b, id)) genderReadByReader[id][g]++;
     }
   }
 
@@ -1788,7 +1798,7 @@ function renderStats() {
         buckets[a].total++;
         if (Object.values(b.awards || {}).includes('winner')) buckets[a].winners++;
         for (const id of READER_KEYS) {
-          if (readStatus(b, id) === 'read') buckets[a][`${id}Read`]++;
+          if (isProjectedRead(b, id)) buckets[a][`${id}Read`]++;
         }
       }
     }
@@ -1827,7 +1837,7 @@ function renderStats() {
     if (!eraBuckets[dec]) continue;
     eraBuckets[dec].total++;
     for (const id of READER_KEYS) {
-      if (readStatus(b, id) === 'read') eraBuckets[dec][id]++;
+      if (isProjectedRead(b, id)) eraBuckets[dec][id]++;
     }
   }
   const eras = Object.entries(eraBuckets).map(([d, v]) => [parseInt(d, 10), v]).sort((a, b) => a[0] - b[0]);
@@ -2154,18 +2164,19 @@ function renderStats() {
       ${HAS_READER ? (() => {
         // Influence by era — spider chart over DATA.books (winners + nominees,
         // not the SUBSET). Each axis = a decade with at least 3 books; value =
-        // share of that decade the reader has finished.
+        // share of that decade the reader has finished (or has on their
+        // nightstand when projection is on).
         const byDecade = bucketBooksByDecade(DATA.books);
         const decades = eraRadarAxes(byDecade);
         if (decades.length < 3) return '';
         const axes = decades.map(eraAxisLabel);
         const values = {};
         for (const r of ACTIVE_READERS) {
-          values[r.id] = eraReaderValues(decades, byDecade, (b) => readStatus(b, r.id) === 'read');
+          values[r.id] = eraReaderValues(decades, byDecade, (b) => isProjectedRead(b, r.id));
         }
         const mrd = ACTIVE_READERS
           .map(r => {
-            const m = mostReadDecade(DATA.books, (b) => readStatus(b, r.id) === 'read');
+            const m = mostReadDecade(DATA.books, (b) => isProjectedRead(b, r.id));
             return m ? `<span style="color:${r.colorVar}"><strong>${r.label}</strong> · most-read ${eraAxisLabel(m.decade)} (${m.count})</span>` : '';
           })
           .filter(Boolean)
@@ -3531,7 +3542,11 @@ function drawDiscover() {
         <span>Sorted</span>
         <span class="discover-progress-count">${sortedCount} of ${total} · ${sortedPct}%</span>
       </div>
-      <div class="discover-progress-bar"><div class="discover-progress-fill" style="width:${sortedPct}%"></div></div>
+      <div class="discover-progress-bar discover-progress-bar-seg">
+        ${total > 0 ? `<div class="seg seg-read" style="width:${(readCount / total * 100).toFixed(2)}%" title="Read · ${readCount}"></div>` : ''}
+        ${total > 0 ? `<div class="seg seg-nightstand" style="width:${(nightstandCount / total * 100).toFixed(2)}%" title="Nightstand · ${nightstandCount}"></div>` : ''}
+        ${total > 0 ? `<div class="seg seg-unread" style="width:${(unreadCount / total * 100).toFixed(2)}%" title="Unread · ${unreadCount}"></div>` : ''}
+      </div>
     </div>
   </div>`;
 
@@ -3633,7 +3648,6 @@ function drawDiscover() {
 
   root.innerHTML = `<div class="detail discover-page">
     <h1>Sort</h1>
-    <p class="discover-instructions">Rapidly label every book on the list. <strong>Swipe left</strong> (or ✓ Read) to mark as Read · <strong>Swipe right</strong> (or ○ Not read) to mark Unread · <strong>Swipe up</strong> (or 📖 Nightstand) to queue it.</p>
     ${(() => {
       const dStatus = __discoverState.status || 'winner';
       const dAward  = __discoverState.award  || 'both';
@@ -3656,27 +3670,25 @@ function drawDiscover() {
       </div>`;
     })()}
     ${statsRow}
-    <div class="discover-stage">
-      <div class="discover-side-controls">
-        <button type="button" class="discover-side-btn discover-undo" title="Undo last decision" aria-label="Undo" ${__discoverState.history.length === 0 ? 'disabled' : ''}>↶ Undo</button>
+    <div class="discover-actionbar">
+      <div class="discover-actions">
+        <button type="button" class="discover-action discover-action-read" data-action="read">✓ Read</button>
+        <button type="button" class="discover-action discover-action-night" data-action="nightstand">📖 Nightstand</button>
+        <button type="button" class="discover-action discover-action-neither" data-action="neither">○ Not read</button>
       </div>
-      <div class="discover-cardstack">
-        ${peekCard(peek2, 2)}
-        ${peekCard(peek1, 1)}
-        <div class="discover-card discover-card-top" id="discover-top-card" data-book-id="${escapeHtml(book.id)}">
-          <div class="discover-swipe-hint discover-swipe-hint-left">Read</div>
-          <div class="discover-swipe-hint discover-swipe-hint-right">Unread</div>
-          <div class="discover-swipe-hint discover-swipe-hint-up">Nightstand</div>
-          ${combinedCardContent(book)}
-        </div>
+      <button type="button" class="discover-undo-btn discover-undo" title="Undo last decision" aria-label="Undo" ${__discoverState.history.length === 0 ? 'disabled' : ''}>↶</button>
+    </div>
+    <div class="discover-cardstack">
+      ${peekCard(peek2, 2)}
+      ${peekCard(peek1, 1)}
+      <div class="discover-card discover-card-top" id="discover-top-card" data-book-id="${escapeHtml(book.id)}">
+        <div class="discover-swipe-hint discover-swipe-hint-left">Read</div>
+        <div class="discover-swipe-hint discover-swipe-hint-right">Unread</div>
+        <div class="discover-swipe-hint discover-swipe-hint-up">Nightstand</div>
+        ${combinedCardContent(book)}
       </div>
     </div>
-    <div class="discover-actions">
-      <button type="button" class="discover-action discover-action-read" data-action="read">✓ Read</button>
-      <button type="button" class="discover-action discover-action-night" data-action="nightstand">📖 Nightstand</button>
-      <button type="button" class="discover-action discover-action-neither" data-action="neither">○ Not read</button>
-    </div>
-    <p class="discover-hint">Swipe <strong>left</strong> for Read · <strong>right</strong> for Unread · <strong>up</strong> for Nightstand</p>
+    <p class="discover-instructions">Rapidly label every book on the list. <strong>Swipe left</strong> (or ✓ Read) to mark as Read · <strong>Swipe right</strong> (or ○ Not read) to mark Unread · <strong>Swipe up</strong> (or 📖 Nightstand) to queue it.</p>
   </div>`;
 
   wireDiscover();
