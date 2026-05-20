@@ -2339,6 +2339,8 @@ a:hover { text-decoration: underline; }
    nominee variant softens to an outline so winners pop. */
 .rr-pill-hugo    { background: rgba(198, 68, 79, 0.12); color: var(--sf);      border-color: rgba(198, 68, 79, 0.45); }
 .rr-pill-nebula  { background: rgba(44, 93, 150, 0.12); color: var(--fantasy); border-color: rgba(44, 93, 150, 0.45); }
+/* Retro Hugo — a sepia/bronze flair to read as "retrospective/vintage". */
+.rr-pill-retro_hugo { background: rgba(150, 110, 64, 0.14); color: #8a6334; border-color: rgba(150, 110, 64, 0.5); }
 .rr-pill-nominee { background: transparent; }
 .rr-pill-cat     { background: rgba(120, 120, 120, 0.10); color: var(--muted); border-color: rgba(120, 120, 120, 0.35); }
 
@@ -3002,6 +3004,24 @@ fieldset label input { margin-right: 8px; }
   border-top: none;
 }
 .collections-genre-section { margin-top: 0; }
+/* Retro Hugo session cards */
+.retro-session {
+  margin: 18px 0 6px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid #966e40;
+  border-radius: var(--radius);
+  background: var(--bg-2);
+}
+.retro-session-head h3 {
+  font-size: 16px;
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.retro-session-meta { color: var(--muted); font-size: 13px; margin: 0 0 12px; }
 .magazines-intro {
   font-size: 15px;
   color: var(--text-2);

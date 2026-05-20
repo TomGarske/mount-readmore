@@ -159,6 +159,17 @@ def normalize_status(raw: str) -> str | None:
     return v or None
 
 
+# Years for which "Retro Hugos" were awarded — real Hugos began in 1953, so any
+# Hugo-column entry in one of these years is actually a Retrospective Hugo, a
+# separate award. Source: thehugoawards.org/hugo-history.
+RETRO_HUGO_YEARS = {1939, 1941, 1943, 1944, 1945, 1946, 1951, 1954}
+
+
+def hugo_award_key(year) -> str:
+    """Hugo entries in a Retro Hugo year map to the retro_hugo award, not hugo."""
+    return "retro_hugo" if year in RETRO_HUGO_YEARS else "hugo"
+
+
 def process_csv(path: Path, sheet_stem: str) -> list[dict]:
     df = pd.read_csv(path, dtype=str, keep_default_na=False)
     category = CATEGORY_FOR_SHEET.get(sheet_stem, "Other")
@@ -181,13 +192,14 @@ def process_csv(path: Path, sheet_stem: str) -> list[dict]:
         for col in award_cols:
             status = normalize_status(row.get(col, ""))
             if status:
-                awards[col.lower()] = status
+                key = hugo_award_key(year) if col == "Hugo" else col.lower()
+                awards[key] = status
 
         if not awards and "Hugo" in df.columns:
             # 7-col Hugo-only sheets where the status sits in the Hugo column
             status = normalize_status(row.get("Hugo", ""))
             if status:
-                awards["hugo"] = status
+                awards[hugo_award_key(year)] = status
 
         if not awards:
             continue  # skip rows with no award status (junk)

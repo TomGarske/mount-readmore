@@ -3,6 +3,7 @@
 const AWARD_LABELS = {
   hugo: 'Hugo',
   nebula: 'Nebula',
+  retro_hugo: 'Retro Hugo',
 };
 
 // Canonical magazine names — maps publisher field variants to a display name.
@@ -112,6 +113,21 @@ const MAGAZINE_DATA = [
   },
 ];
 
+// Retrospective Hugo Awards. Real Hugos began in 1953; these honor works from
+// Worldcon years that gave no Hugo, awarded 50/75/100 years later. `year` is
+// the award year, `works` the publication year honored. Ceremony details from
+// thehugoawards.org/hugo-history.
+const RETRO_HUGO_SESSIONS = [
+  { year: 1939, works: 1938, held: 'August 14, 2014',   con: 'Loncon 3',              city: 'London, UK' },
+  { year: 1941, works: 1940, held: 'August 18, 2016',   con: 'MidAmeriCon II',        city: 'Kansas City, MO' },
+  { year: 1943, works: 1942, held: 'August 16, 2018',   con: 'Worldcon 76',           city: 'San José, CA' },
+  { year: 1944, works: 1943, held: 'August 15, 2019',   con: 'Dublin 2019',           city: 'Dublin, Ireland' },
+  { year: 1945, works: 1944, held: 'July 30, 2020',     con: 'CoNZealand',            city: 'Wellington, NZ' },
+  { year: 1946, works: 1945, held: 'August 30, 1996',   con: 'L.A. Con III',          city: 'Anaheim, CA' },
+  { year: 1951, works: 1950, held: 'August 31, 2001',   con: 'The Millennium Philcon', city: 'Philadelphia, PA' },
+  { year: 1954, works: 1953, held: 'September 2–6, 2004', con: 'Noreascon 4',          city: 'Boston, MA' },
+];
+
 // Shared swimlane card builder used in publication/author swimlanes on the
 // detail page and the magazines section on the home page.
 function makeSwimlaneCard(b) {
@@ -120,7 +136,7 @@ function makeSwimlaneCard(b) {
     : `<span class="swimlane-placeholder">📖</span>`;
   const isWinner = Object.values(b.awards || {}).includes('winner');
   const awardPills = Object.entries(b.awards || {}).map(([a, s]) =>
-    `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+    `<span class="rr-pill rr-pill-${a}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
   ).join('');
   const readerPillsList = SOLO
     ? (() => {
@@ -228,8 +244,8 @@ let state = {
   sort: 'year-desc',
   // Progress-page status filter (multi-select): subset of {'winner','nominee'}.
   progressStatuses: new Set(['winner']),
-  // Progress-page award scope (multi-select): subset of {'hugo','nebula'}.
-  progressAwards: new Set(['hugo', 'nebula']),
+  // Progress-page award scope (multi-select): subset of {'hugo','nebula','retro_hugo'}.
+  progressAwards: new Set(['hugo', 'nebula', 'retro_hugo']),
   // Progress-page category scope (multi-select).
   progressCategories: new Set(['Novel', 'Novella', 'Novelette']),
   // Include nightstand books in stats projections everywhere — always on.
@@ -1221,11 +1237,42 @@ function renderMagazines() {
       </div>
     </div>`;
 
+  // Retro Hugos — one card per retrospective session, each with ceremony
+  // details and the books that took that year's Retro Hugo.
+  const retroHugosHtml = (() => {
+    const sessions = RETRO_HUGO_SESSIONS
+      .map(s => ({ ...s, books: DATA.books
+        .filter(b => (b.awards || {}).retro_hugo && b.year === s.year)
+        .sort((a, b) => {
+          const aw = (b.awards.retro_hugo === 'winner') - (a.awards.retro_hugo === 'winner');
+          return aw || a.title.localeCompare(b.title);
+        }) }))
+      .filter(s => s.books.length > 0);
+    if (sessions.length === 0) return '';
+    const total = sessions.reduce((n, s) => n + s.books.length, 0);
+    const cards = sessions.map(s => {
+      const wins = s.books.filter(b => b.awards.retro_hugo === 'winner').length;
+      return `<div class="retro-session">
+        <div class="retro-session-head">
+          <h3>${s.year} Retro Hugos <span class="rr-pill rr-pill-retro_hugo">${s.books.length} on the list</span></h3>
+          <p class="retro-session-meta">Honoring works first published in ${s.works}. Awarded ${escapeHtml(s.held)} at <strong>${escapeHtml(s.con)}</strong>, ${escapeHtml(s.city)} — ${wins} winner${wins === 1 ? '' : 's'}.</p>
+        </div>
+        <div class="swimlane-strip">${s.books.map(b => makeSwimlaneCard(b)).join('')}</div>
+      </div>`;
+    }).join('');
+    return `<div id="retro-hugos" class="progress-section collections-retro-section">
+      <h2 class="collections-section-head">Retro Hugos <span class="collections-section-count">${total}</span></h2>
+      <p style="color: var(--muted); font-size: 13px;">The <strong>Retrospective Hugo Awards</strong> honor science fiction and fantasy from Worldcon years that never gave a Hugo — voted decades later, 50, 75, or 100 years on. <a href="https://www.thehugoawards.org/hugo-history/" target="_blank" rel="noopener">Hugo Awards history ↗</a></p>
+      ${cards}
+    </div>`;
+  })();
+
   // Anchorable sections: each top-level group gets a stable id so links
   // like #/collections?section=super-winners scroll directly to it after
   // route render. Section ids:
   //   nominees      — This Year's Nominees!
   //   super-winners — Hugo + Nebula double crown
+  //   retro-hugos   — Retrospective Hugo sessions
   //   magazines     — Genre magazines block
   //   genres        — Browse by genre swimlanes
   root.innerHTML = `<div class="detail magazines-page">
@@ -1234,6 +1281,7 @@ function renderMagazines() {
       <span class="collections-toc-label">Jump to:</span>
       <a href="#/collections?section=nominees">Nominees</a>
       ${superWinners.length ? `<a href="#/collections?section=super-winners">Super Winners</a>` : ''}
+      ${retroHugosHtml ? `<a href="#/collections?section=retro-hugos">Retro Hugos</a>` : ''}
       <a href="#/collections?section=magazines">Magazines</a>
       <a href="#/collections?section=genres">Genres</a>
     </div>
@@ -1241,6 +1289,7 @@ function renderMagazines() {
     ${awardFeaturedBannersHtml()}
     ${freeReadBannerHtml()}
     ${superWinnersHtml}
+    ${retroHugosHtml}
     <h2 id="magazines" class="collections-section-head">Magazines</h2>
     <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet.</p>
     <div class="mag-grid">${magBlocksHtml}</div>
@@ -1477,8 +1526,10 @@ function renderStats() {
   const CATEGORIES = state.progressCategories;        // Set<'Novel','Novella','Novelette'>
   const STATUS_BOTH = STATUSES.has('winner') && STATUSES.has('nominee');
   const STATUS = STATUS_BOTH ? 'both' : (STATUSES.has('winner') ? 'winner' : (STATUSES.has('nominee') ? 'nominee' : 'none'));
-  const AWARD_BOTH = AWARDS.has('hugo') && AWARDS.has('nebula');
-  const AWARD = AWARD_BOTH ? 'both' : (AWARDS.has('hugo') ? 'hugo' : (AWARDS.has('nebula') ? 'nebula' : 'none'));
+  // "All awards selected" vs a single-award focus. Generalized to any number of
+  // award types (hugo / nebula / retro_hugo).
+  const AWARD_BOTH = Object.keys(AWARD_LABELS).every(a => AWARDS.has(a));
+  const AWARD = AWARDS.size === 1 ? [...AWARDS][0] : (AWARDS.size === 0 ? 'none' : 'both');
 
   // Award scope: a book is in scope if it carries at least one of the
   // checked awards AND falls in one of the checked categories.
@@ -1507,6 +1558,7 @@ function renderStats() {
   // Award scope counts (for the second toggle)
   const hugoCount = DATA.books.filter(b => (b.awards || {}).hugo).length;
   const nebulaCount = DATA.books.filter(b => (b.awards || {}).nebula).length;
+  const retroHugoCount = DATA.books.filter(b => (b.awards || {}).retro_hugo).length;
 
   // Which subset drives this render
   const winners = STATUS === 'winner' ? winnersAll
@@ -1578,7 +1630,7 @@ function renderStats() {
       const s = b.awards[a];
       if (STATUS === 'winner' && s !== 'winner') continue;
       if (STATUS === 'nominee' && s !== 'nominee') continue;
-      if (AWARD !== 'both' && a !== AWARD) continue;
+      if (!AWARDS.has(a)) continue;
       byAward[a].total++;
       for (const id of READER_KEYS) {
         if (isProjectedRead(b, id)) byAward[a][id]++;
@@ -2149,6 +2201,7 @@ function renderStats() {
         <legend>Award</legend>
         <label><input type="checkbox" data-progress-award="hugo" ${AWARDS.has('hugo') ? 'checked' : ''}> Hugo <span class="status-count">${hugoCount}</span></label>
         <label><input type="checkbox" data-progress-award="nebula" ${AWARDS.has('nebula') ? 'checked' : ''}> Nebula <span class="status-count">${nebulaCount}</span></label>
+        <label><input type="checkbox" data-progress-award="retro_hugo" ${AWARDS.has('retro_hugo') ? 'checked' : ''}> Retro Hugo <span class="status-count">${retroHugoCount}</span></label>
       </fieldset>
       <fieldset class="stats-filter-group">
         <legend>Category</legend>
@@ -2890,7 +2943,7 @@ async function renderCompare(params) {
   const subBuckets = {};
   // Per-side stat accumulators (computed in one DATA.books pass).
   const empty = () => ({ Novel: 0, Novella: 0, Novelette: 0 });
-  const emptyAward = () => ({ hugo: 0, nebula: 0 });
+  const emptyAward = () => Object.fromEntries(Object.keys(AWARD_LABELS).map(a => [a, 0]));
   const emptyGender = () => ({ female: 0, male: 0, unknown: 0 });
   const stats = {
     a: { byCategory: empty(), byAward: emptyAward(), byGender: emptyGender(), byPrimaryGenre: {}, byDecade: {}, yearSum: 0, yearCount: 0 },
@@ -3098,14 +3151,15 @@ async function renderCompare(params) {
     .join('');
 
   // Award breakdown
-  const awardTotals = { hugo: 0, nebula: 0 };
+  const awardTotals = {};
+  for (const a of Object.keys(AWARD_LABELS)) awardTotals[a] = 0;
   for (const b of DATA.books) {
     for (const a of Object.keys(b.awards || {})) {
       if (awardTotals[a] != null) awardTotals[a]++;
     }
   }
-  const awardRows = ['hugo', 'nebula']
-    .map(a => pctRow(a.charAt(0).toUpperCase() + a.slice(1), stats.a.byAward[a] || 0, stats.b.byAward[a] || 0, awardTotals[a], { showPct: true }))
+  const awardRows = Object.keys(AWARD_LABELS)
+    .map(a => pctRow(AWARD_LABELS[a], stats.a.byAward[a] || 0, stats.b.byAward[a] || 0, awardTotals[a], { showPct: true }))
     .join('');
 
   // Primary-genre breakdown — rank by combined reader interest
@@ -3457,7 +3511,7 @@ function buildDiscoverQueue() {
   const auth = window.MR_AUTH;
   if (!auth || !auth.user) return [];
   const statuses = __discoverState?.statuses || new Set(['winner']);
-  const awards = __discoverState?.awards || new Set(['hugo', 'nebula']);
+  const awards = __discoverState?.awards || new Set(['hugo', 'nebula', 'retro_hugo']);
   const categories = __discoverState?.categories || new Set(['Novel', 'Novella', 'Novelette']);
   // Unrated only — anything in user_books (read/nightstand/started) is
   // already categorized and shouldn't reappear in the swipe queue. Then apply
@@ -3535,7 +3589,7 @@ function freeReadBannerHtml() {
     .sort((a, b) => (b.year || 0) - (a.year || 0));
 
   const awardPills = Object.entries(featured.awards || {}).map(([a, s]) =>
-    `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+    `<span class="rr-pill rr-pill-${a}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
   ).join('');
 
   const coverHtml = featured.cover_url
@@ -3658,7 +3712,7 @@ async function renderDiscover() {
       tab: 'cover',
       // Multi-select filters (match the Stats page). All feed the swipe queue.
       statuses: new Set(['winner']),
-      awards: new Set(['hugo', 'nebula']),
+      awards: new Set(['hugo', 'nebula', 'retro_hugo']),
       categories: new Set(['Novel', 'Novella', 'Novelette']),
       // Queue order — mirrors the Search tab's sort options.
       sort: 'year-desc',
@@ -3705,6 +3759,7 @@ function drawDiscover() {
     const allN = DATA.books.filter(b => !Object.values(b.awards||{}).includes('winner') && Object.keys(b.awards||{}).length > 0).length;
     const hugoAll = DATA.books.filter(b => (b.awards||{}).hugo).length;
     const nebAll  = DATA.books.filter(b => (b.awards||{}).nebula).length;
+    const retroAll = DATA.books.filter(b => (b.awards||{}).retro_hugo).length;
     const catCount = (c) => DATA.books.filter(b => b.category === c).length;
     const sortOpt = (v, label) => `<option value="${v}"${sort===v?' selected':''}>${label}</option>`;
     return `<div class="stats-filter-row discover-filter-row">
@@ -3717,6 +3772,7 @@ function drawDiscover() {
         <legend>Award</legend>
         <label><input type="checkbox" data-discover-award="hugo" ${awards.has('hugo')?'checked':''}> Hugo <span class="status-count">${hugoAll}</span></label>
         <label><input type="checkbox" data-discover-award="nebula" ${awards.has('nebula')?'checked':''}> Nebula <span class="status-count">${nebAll}</span></label>
+        <label><input type="checkbox" data-discover-award="retro_hugo" ${awards.has('retro_hugo')?'checked':''}> Retro Hugo <span class="status-count">${retroAll}</span></label>
       </fieldset>
       <fieldset class="stats-filter-group">
         <legend>Category</legend>
@@ -3816,7 +3872,7 @@ function drawDiscover() {
     : `<p style="color: var(--muted);">No description on file for this one.</p>`;
 
   const awardPills = Object.entries(book.awards || {}).map(([a, s]) =>
-    `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+    `<span class="rr-pill rr-pill-${a}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
   ).join('');
 
   const authorList = moreByAuthor.length === 0
