@@ -508,6 +508,11 @@ function eraAxisLabel(d) {
   const two = d % 100;
   return `${two < 10 ? '0' + two : two}s`;
 }
+// Full four-digit decade label (e.g. 2010 → "2010s"). Used for the "most-read
+// decade" stat where the compact radar-axis form ("10s") is ambiguous.
+function decadeLabel(d) {
+  return `${d}s`;
+}
 function eraReaderValues(decades, byDecade, isReadFn) {
   return decades.map(d => {
     const books = byDecade[d] || [];
@@ -2395,7 +2400,7 @@ function renderStats() {
                 : (state.viewingProfile ? "Across the books they've read" : "Across the books you've read"));
           const mrdSub = !mrd ? 'No reads yet'
             : (hasProj && projectedMrd && projectedMrd.decade !== mrd.decade
-                ? `${mrd.count} now → <span class="stat-projection">${eraAxisLabel(projectedMrd.decade)} with ${projectedMrd.count} projected</span>`
+                ? `${mrd.count} now → <span class="stat-projection">${decadeLabel(projectedMrd.decade)} with ${projectedMrd.count} projected</span>`
                 : (hasProj && projectedMrd && projectedMrd.count !== mrd.count
                     ? `${mrd.count} now → <span class="stat-projection">${projectedMrd.count} projected</span>`
                     : `${mrd.count} ${SUBSET}`));
@@ -2403,7 +2408,7 @@ function renderStats() {
             ${card('Read', readBooks.length, readSub, readBooks.length / winnersTotal * 100)}
             ${card('On Nightstand', nightstandTotal, 'nightstand + in progress')}
             ${card('Avg pub year', avgYear ?? '—', avgYearSub)}
-            ${card('Most-read decade', mrd ? eraAxisLabel(mrd.decade) : '—', mrdSub)}
+            ${card('Most-read decade', mrd ? decadeLabel(mrd.decade) : '—', mrdSub)}
           `;
         }
         const readerCards = ACTIVE_READERS.map(r => {
@@ -2493,7 +2498,7 @@ function renderStats() {
         const mrd = ACTIVE_READERS
           .map(r => {
             const m = mostReadDecade(DATA.books, (b) => readStatus(b, r.id) === 'read');
-            return m ? `<span style="color:${r.colorVar}"><strong>${r.label}</strong> · most-read ${eraAxisLabel(m.decade)} (${m.count})</span>` : '';
+            return m ? `<span style="color:${r.colorVar}"><strong>${r.label}</strong> · most-read ${decadeLabel(m.decade)} (${m.count})</span>` : '';
           })
           .filter(Boolean)
           .join(' &nbsp;·&nbsp; ');
@@ -3288,9 +3293,9 @@ async function renderCompare(params) {
       <div class="compare-stat-card">
         <div class="compare-stat-card-label">Most-read decade</div>
         <div class="compare-stat-card-value compare-avg-year">
-          <span style="color:${aSide.colorVar}">${mrdA ? eraAxisLabel(mrdA.decade) : '—'}</span>
+          <span style="color:${aSide.colorVar}">${mrdA ? decadeLabel(mrdA.decade) : '—'}</span>
           <span style="color:var(--muted)">vs</span>
-          <span style="color:${bSide.colorVar}">${mrdB ? eraAxisLabel(mrdB.decade) : '—'}</span>
+          <span style="color:${bSide.colorVar}">${mrdB ? decadeLabel(mrdB.decade) : '—'}</span>
         </div>
         <div class="compare-stat-card-sub">${mrdA ? `${aSide.label} ${mrdA.count}` : ''}${mrdA && mrdB ? ' · ' : ''}${mrdB ? `${bSide.label} ${mrdB.count}` : ''}</div>
       </div>
@@ -3347,8 +3352,8 @@ async function renderCompare(params) {
       <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Each axis = a decade. Distance from center = share of that decade's winners + finalists each reader has read. Grey overlay = where each reader lands after finishing their nightstand.</p>
       ${eraRadarHtml}
       <div class="era-radar-stats">
-        <span style="color:${aSide.colorVar}"><strong>@${escapeHtml(aSide.label)}</strong> · avg ${avgYearA ?? '—'}${mrdA ? ` · most-read ${eraAxisLabel(mrdA.decade)} (${mrdA.count})` : ''}</span>
-        <span style="color:${bSide.colorVar}"><strong>@${escapeHtml(bSide.label)}</strong> · avg ${avgYearB ?? '—'}${mrdB ? ` · most-read ${eraAxisLabel(mrdB.decade)} (${mrdB.count})` : ''}</span>
+        <span style="color:${aSide.colorVar}"><strong>@${escapeHtml(aSide.label)}</strong> · avg ${avgYearA ?? '—'}${mrdA ? ` · most-read ${decadeLabel(mrdA.decade)} (${mrdA.count})` : ''}</span>
+        <span style="color:${bSide.colorVar}"><strong>@${escapeHtml(bSide.label)}</strong> · avg ${avgYearB ?? '—'}${mrdB ? ` · most-read ${decadeLabel(mrdB.decade)} (${mrdB.count})` : ''}</span>
       </div>
     </section>` : ''}
 
@@ -3570,12 +3575,14 @@ function buildDiscoverQueue() {
   const statuses = __discoverState?.statuses || new Set(['winner']);
   const awards = __discoverState?.awards || new Set(DEFAULT_AWARDS);
   const categories = __discoverState?.categories || new Set(['Novel', 'Novella', 'Novelette']);
-  // Unrated only — anything in user_books (read/nightstand/started) is
-  // already categorized and shouldn't reappear in the swipe queue. Then apply
-  // the Status/Award/Category checkbox filters (all multi-select).
+  const reading = __discoverState?.reading || new Set(['unlabeled']);
+  // Apply the reading-status filter (default: unlabeled, i.e. books not yet
+  // sorted), then the Status/Award/Category checkbox filters (all multi-select).
+  // Selecting Read/Nightstand/Unread lets the user revisit and re-categorize
+  // books they've already labeled.
   return DATA.books
     .filter(b => {
-      if (auth.statusFor(b.id) !== null) return false;
+      if (!reading.has(discoverReadingBucket(auth.statusFor(b.id)))) return false;
       if (!categories.has(b.category)) return false;
       const aw = b.awards || {};
       // Must carry at least one of the selected awards.
@@ -3589,6 +3596,14 @@ function buildDiscoverQueue() {
     })
     .sort(discoverComparator(__discoverState?.sort || 'year-desc'))
     .map(b => b.id);
+}
+
+// Map a user_books status to a Discover reading-filter bucket.
+function discoverReadingBucket(status) {
+  if (status === 'read') return 'read';
+  if (status === 'nightstand' || status === 'started') return 'nightstand';
+  if (status === 'unread' || status === 'skipped') return 'unread';
+  return 'unlabeled';
 }
 
 // Queue ordering for the Sort page — mirrors the Search tab's sort options.
@@ -3771,6 +3786,10 @@ async function renderDiscover() {
       statuses: new Set(['winner']),
       awards: new Set(DEFAULT_AWARDS),
       categories: new Set(['Novel', 'Novella', 'Novelette']),
+      // Reading-status filter — which of YOUR labels enter the queue. Default
+      // 'unlabeled' = the usual "sort new books" flow; switch to read/etc to
+      // revisit and re-categorize.
+      reading: new Set(['unlabeled']),
       // Queue order — mirrors the Search tab's sort options.
       sort: 'year-desc',
     };
@@ -3811,6 +3830,7 @@ function drawDiscover() {
     const statuses = __discoverState.statuses;
     const awards = __discoverState.awards;
     const categories = __discoverState.categories;
+    const reading = __discoverState.reading;
     const sort = __discoverState.sort || 'year-desc';
     const allW = DATA.books.filter(b => Object.values(b.awards||{}).includes('winner')).length;
     const allN = DATA.books.filter(b => !Object.values(b.awards||{}).includes('winner') && Object.keys(b.awards||{}).length > 0).length;
@@ -3820,6 +3840,13 @@ function drawDiscover() {
     const catCount = (c) => DATA.books.filter(b => b.category === c).length;
     const sortOpt = (v, label) => `<option value="${v}"${sort===v?' selected':''}>${label}</option>`;
     return `<div class="stats-filter-row discover-filter-row">
+      <fieldset class="stats-filter-group">
+        <legend>Your status</legend>
+        <label><input type="checkbox" data-discover-reading="unlabeled" ${reading.has('unlabeled')?'checked':''}> Unlabeled <span class="status-count">${unsortedCount}</span></label>
+        <label><input type="checkbox" data-discover-reading="read" ${reading.has('read')?'checked':''}> Read <span class="status-count">${readCount}</span></label>
+        <label><input type="checkbox" data-discover-reading="nightstand" ${reading.has('nightstand')?'checked':''}> Nightstand <span class="status-count">${nightstandCount}</span></label>
+        <label><input type="checkbox" data-discover-reading="unread" ${reading.has('unread')?'checked':''}> Unread <span class="status-count">${unreadCount}</span></label>
+      </fieldset>
       <fieldset class="stats-filter-group">
         <legend>Status</legend>
         <label><input type="checkbox" data-discover-status="winner" ${statuses.has('winner')?'checked':''}> Winners <span class="status-count">${allW}</span></label>
@@ -3884,9 +3911,11 @@ function drawDiscover() {
   if (!book) {
     // Message reflects whether the filters are narrowed at all. With the
     // multi-select checkboxes, "everything in this filter" is the honest line.
+    const readingIsDefault = __discoverState.reading.size === 1 && __discoverState.reading.has('unlabeled');
     const narrowed = __discoverState.statuses.size < 2
       || __discoverState.awards.size < 2
-      || __discoverState.categories.size < 3;
+      || __discoverState.categories.size < 3
+      || !readingIsDefault;
     const headline = narrowed ? "You've sorted everything in this filter." : "You've labeled every book.";
     root.innerHTML = `<div class="detail discover-page">
       <div class="discover-layout">
@@ -4044,6 +4073,9 @@ function wireDiscover() {
   });
   root.querySelectorAll('input[data-discover-category]').forEach(cb => {
     cb.addEventListener('change', () => onDiscoverFilter('categories', cb.dataset.discoverCategory, cb.checked));
+  });
+  root.querySelectorAll('input[data-discover-reading]').forEach(cb => {
+    cb.addEventListener('change', () => onDiscoverFilter('reading', cb.dataset.discoverReading, cb.checked));
   });
   // Sort select — reorders the queue without changing which books are in it,
   // so the skipped set is preserved (unlike the filter checkboxes).
@@ -4620,7 +4652,7 @@ async function renderProfile(handle) {
     </div>
     <div class="compare-stat-card">
       <div class="compare-stat-card-label">Most-read decade</div>
-      <div class="compare-stat-card-value">${mrd ? eraAxisLabel(mrd.decade) : '—'}</div>
+      <div class="compare-stat-card-value">${mrd ? decadeLabel(mrd.decade) : '—'}</div>
       <div class="compare-stat-card-sub">${mrd ? `${mrd.count} books` : 'No reads yet'}</div>
     </div>
   </section>`;
