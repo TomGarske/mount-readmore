@@ -2362,6 +2362,7 @@ function renderStats() {
   const isAnonHome = !window.MR_AUTH?.user && !state.viewingProfile;
 
   root.innerHTML = `<div class="detail stats-page">
+    <figure class="stats-quote"><blockquote>“But though I can digress with the best of them, I am nothing in my soul if not obsessive”</blockquote></figure>
     ${isOwnHeader ? '' : titleHtml}
     ${isAnonHome
       ? unauthOverviewHtml()
