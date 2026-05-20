@@ -2345,7 +2345,11 @@ function renderStats() {
     ${isOwnHeader ? '' : titleHtml}
     ${isAnonHome
       ? unauthOverviewHtml()
-      : (state.viewingProfile ? '' : `<p class="dashboard-intro"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>`)}
+      : (state.viewingProfile ? '' : `<section class="about-banner">
+          <h2 class="about-banner-title">Read every Hugo &amp; Nebula winner.</h2>
+          <p class="about-banner-text"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette — plus the <strong>Retrospective Hugos</strong> that filled in the genre's earliest years. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Science Fiction &amp; Fantasy</strong> across the decades. Every year, these are the works the field itself decided were worth remembering — nearly a century of the stories that shaped it.</p>
+          <p class="about-banner-text">Track what you've read, build out your nightstand, sort the whole canon in minutes, and compare your progress with friends. The goal is simple: <strong>read them all</strong>.</p>
+        </section>`)}
     ${friendsSectionHtml()}
     <div class="stats-filter-row">
       <fieldset class="stats-filter-group">

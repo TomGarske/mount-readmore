@@ -1198,6 +1198,20 @@ a:hover { text-decoration: underline; }
    900px cap). Two-class selector beats the later `.detail` rule. */
 .detail.stats-page, .detail.magazines-page { max-width: none; }
 
+/* Signed-in home "about" banner — centered, boxed like a featured banner. */
+.about-banner {
+  max-width: 760px;
+  margin: 8px auto 28px;
+  padding: 24px 28px;
+  text-align: center;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-2);
+}
+.about-banner-title { font-size: 24px; letter-spacing: -0.01em; margin: 0 0 12px; }
+.about-banner-text { font-size: 15px; line-height: 1.6; color: var(--text-2); margin: 0 auto 12px; max-width: 640px; }
+.about-banner-text:last-child { margin-bottom: 0; }
+
 /* Signed-out home overview */
 .unauth-overview { margin: 8px 0 32px; max-width: 880px; }
 .unauth-title { font-size: 30px; letter-spacing: -0.01em; margin: 0 0 10px; }
@@ -2377,7 +2391,9 @@ a:hover { text-decoration: underline; }
 .view.hidden { display: none !important; }
 
 /* List view */
-#view-list { display: grid; grid-template-columns: 240px 1fr; gap: 28px; align-items: start; }
+/* Tighter width so the 3-column results sit at a comfortable card size
+   instead of stretching across the full page. */
+#view-list { display: grid; grid-template-columns: 240px 1fr; gap: 28px; align-items: start; max-width: 1080px; margin: 0 auto; }
 
 .filters {
   position: sticky;
@@ -2531,6 +2547,8 @@ fieldset label input { margin-right: 8px; }
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
 }
+/* Search results: fixed 3-column grid. */
+.results .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 
 .card {
   background: var(--bg-2);

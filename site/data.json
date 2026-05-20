@@ -2098,7 +2098,7 @@
         "hugo": 2022,
         "nebula": 2022
       },
-      "cover_url": "https://covers.openlibrary.org/b/id/10457293-M.jpg",
+      "cover_url": null,
       "ol_key": "/works/OL22425740W",
       "first_pub_year": 2021,
       "isbn": "9781250267665",
@@ -46629,9 +46629,9 @@
   "meta": {
     "total": 798,
     "by_category": {
+      "Novelette": 78,
       "Novel": 638,
-      "Novella": 82,
-      "Novelette": 78
+      "Novella": 82
     }
   }
 }
