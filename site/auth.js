@@ -545,7 +545,34 @@
       }
       return () => subscribers.delete(cb);
     },
-    signOut: async () => { await client.auth.signOut(); },
+    signOut: async () => {
+      // client.auth.signOut() defaults to scope:'global', which fires a network
+      // revoke through the same SDK machinery that hangs elsewhere in this app
+      // (see _authedRest / direct-fetch writes) — the await never resolves, so
+      // the caller's redirect never runs and the button looks dead. Use the
+      // local scope (no network call) and don't let it block forever.
+      try {
+        await Promise.race([
+          client.auth.signOut({ scope: 'local' }),
+          new Promise(res => setTimeout(res, 1500)),
+        ]);
+      } catch (e) { console.warn('signOut (sdk):', e); }
+      // localStorage is the source of truth for "are we signed in" in this app
+      // (_getAccessToken reads it directly). Wipe the token so any reload — and
+      // any SDK autoRefresh that outraced the call above — comes up signed out.
+      try {
+        Object.keys(localStorage)
+          .filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'))
+          .forEach(k => localStorage.removeItem(k));
+      } catch {}
+      currentUser = null;
+      currentProfile = null;
+      userBooksById = {};
+      friendsList = [];
+      leaderboardOverall = [];
+      leaderboardByAward = [];
+      notify();
+    },
     showSignInModal,
     setBookStatus,
     listFriends,
