@@ -297,6 +297,12 @@
     await Promise.all([loadFriends(), loadLeaderboards()]);
     notify();
   }
+  // Same reload, but WITHOUT notify() — for callers that patch their own DOM
+  // and must not trigger the global onChange re-render (which would loop if the
+  // caller runs during a render).
+  async function refreshFriendsQuiet() {
+    await Promise.all([loadFriends(), loadLeaderboards()]);
+  }
   function invalidateFriendsCache() { /* no-op — kept for backwards compat */ }
 
   async function addFriendByHandle(handle) {
@@ -524,6 +530,7 @@
     setBookStatus,
     listFriends,
     refreshFriends,
+    refreshFriendsQuiet,
     invalidateFriendsCache,
     addFriendByHandle,
     removeFriend,

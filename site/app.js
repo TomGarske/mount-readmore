@@ -2670,10 +2670,11 @@ function renderStats() {
 
   // Friends data is cached from bootstrap and can be stale/empty when arriving
   // here by SPA navigation. Refresh it on each Stats visit and re-patch just
-  // the friends section (no full re-render, no notify loop) so the list loads
-  // reliably. Guarded so it only runs on the signed-in user's own Stats.
-  if (window.MR_AUTH?.user && !state.viewingProfile && window.MR_AUTH.refreshFriends) {
-    window.MR_AUTH.refreshFriends().then(() => {
+  // the friends section. Use the QUIET reload (no notify) — refreshFriends()
+  // would fire onChange → route() → renderStats → refresh… an infinite loop
+  // that also bounces the scroll to the top. Guarded to the user's own Stats.
+  if (window.MR_AUTH?.user && !state.viewingProfile && window.MR_AUTH.refreshFriendsQuiet) {
+    window.MR_AUTH.refreshFriendsQuiet().then(() => {
       // Bail if the user navigated away while the refresh was in flight.
       if (!location.hash.startsWith('#/stats') && location.hash !== '#/' && !location.hash.startsWith('#/u/')) return;
       const el = document.getElementById('stats-friends-section');
