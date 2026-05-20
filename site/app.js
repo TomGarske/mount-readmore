@@ -748,10 +748,18 @@ function renderDetail(id) {
       <div class="swimlane-strip">${fromSamePub.map(b => makeSwimlaneCard(b)).join('')}</div>
     </div>`;
 
+  const shareUrl = `${location.origin}/books/${encodeURIComponent(book.id)}`;
+  const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  const shareRow = `<div class="detail-share-row">
+    ${canNativeShare ? `<button type="button" class="detail-share-btn" data-share-url="${escapeHtml(shareUrl)}" title="Share this book">Share</button>` : ''}
+    <button type="button" class="detail-copy-btn" data-share-url="${escapeHtml(shareUrl)}" title="Copy a link to this book">Copy link</button>
+  </div>`;
+
   root.innerHTML = `<div class="detail">
     <a href="#/search" class="back">← back to search</a>
     <h1>${escapeHtml(book.title)}</h1>
     <div class="author-line">by ${(book.authors || []).map(a => `<a href="#/authors/${encodeURIComponent(a)}" class="author-link">${escapeHtml(a)}</a>`).join(', ') || escapeHtml(book.author_raw || '')}${book.series ? ` · <span class="series-inline">${escapeHtml(book.series)}</span>` : ''}</div>
+    ${shareRow}
     <div class="detail-grid">
       <div class="detail-cover">${coverHtml}</div>
       <div class="detail-info">
@@ -789,8 +797,7 @@ function renderDetail(id) {
                 ? `Originally published in <strong>${escapeHtml(magazine)}</strong>`
                 : 'Find or purchase this book on Bookshop.org';
             }
-            const shareUrl = `${location.origin}/books/${encodeURIComponent(book.id)}`;
-            return `<div class="detail-link-read-label">${label}</div><div class="detail-links-buttons"><a href="${escapeHtml(readUrl)}" target="_blank" rel="noopener" class="detail-link-read">${cta} <img src="${favicon}" alt="${escapeHtml(host)}" class="detail-link-favicon"></a><a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a><a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a><button type="button" class="detail-share-btn" data-share-url="${escapeHtml(shareUrl)}" title="Copy a shareable link to this book">Share link</button></div>`;
+            return `<div class="detail-link-read-label">${label}</div><div class="detail-links-buttons"><a href="${escapeHtml(readUrl)}" target="_blank" rel="noopener" class="detail-link-read">${cta} <img src="${favicon}" alt="${escapeHtml(host)}" class="detail-link-favicon"></a><a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a><a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a></div>`;
           })()}
         </div>
       </div>
@@ -802,21 +809,33 @@ function renderDetail(id) {
     ${book.authors && book.authors.length > 0 ? `<div id="detail-author-bio" class="book-section author-bio-section"></div>` : ''}
   </div>`;
   wireUserStatusControls();
+  const titleForShare = book.title;
   const shareBtn = $('.detail-share-btn', root);
   if (shareBtn) {
     shareBtn.addEventListener('click', async () => {
-      const shareUrl = shareBtn.dataset.shareUrl;
-      const title = shareBtn.closest('.detail')?.querySelector('h1')?.textContent || 'Readmore SFF';
       try {
-        if (navigator.share) {
-          await navigator.share({ title, url: shareUrl });
-        } else {
-          await navigator.clipboard.writeText(shareUrl);
-          const prev = shareBtn.textContent;
-          shareBtn.textContent = '✓ Link copied';
-          setTimeout(() => { shareBtn.textContent = prev; }, 1800);
-        }
-      } catch (_) { /* user cancelled share sheet — no-op */ }
+        await navigator.share({ title: titleForShare, url: shareBtn.dataset.shareUrl });
+      } catch (_) { /* user cancelled the share sheet — no-op */ }
+    });
+  }
+  const copyBtn = $('.detail-copy-btn', root);
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const url = copyBtn.dataset.shareUrl;
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch (_) {
+        // Fallback for browsers/contexts without the async clipboard API.
+        const ta = document.createElement('textarea');
+        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (_) {}
+        ta.remove();
+      }
+      const prev = copyBtn.textContent;
+      copyBtn.textContent = '✓ Copied';
+      copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = prev; copyBtn.classList.remove('copied'); }, 1800);
     });
   }
   $$('.swimlane-card', root).forEach(el => {

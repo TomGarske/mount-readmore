@@ -2670,6 +2670,19 @@ fieldset label input { margin-right: 8px; }
 .detail .back { color: var(--muted); font-size: 13px; }
 .detail h1 { font-size: 28px; margin: 8px 0 4px; letter-spacing: -0.01em; }
 .detail .author-line { color: var(--muted); font-size: 16px; margin-bottom: 16px; }
+.detail-share-row { display: flex; gap: 8px; margin: 0 0 20px; }
+.detail-share-row button {
+  padding: 6px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.detail-share-row button:hover { border-color: var(--accent); }
+.detail-share-row button.copied { color: var(--accent); border-color: var(--accent); }
 .detail-grid {
   display: grid;
   grid-template-columns: 200px 1fr;
