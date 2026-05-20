@@ -426,6 +426,60 @@ def apply_manual_overrides(records: list[dict], path: Path) -> int:
     return applied
 
 
+def apply_supplemental_descriptions(records: list[dict], path: Path) -> int:
+    """Fill descriptions fetched by scripts/fetch_descriptions.py (Wikipedia),
+    keyed by canonical book id. Only fills records that still have no
+    description, so Open Library, Goodreads, and hand-curated
+    manual_overrides.json all take precedence. Records provenance so the UI can
+    attribute the source if desired."""
+    if not path.exists():
+        return 0
+    with path.open() as f:
+        supp = json.load(f)
+    applied = 0
+    id_map = {r["id"]: r for r in records}
+    for book_id, entry in supp.items():
+        rec = id_map.get(book_id)
+        if not rec:
+            continue
+        desc = (entry.get("description") or "").strip()
+        if desc and not (rec.get("description") or "").strip():
+            rec["description"] = desc
+            rec["description_source"] = entry.get("source") or "wikipedia"
+            if entry.get("url"):
+                rec["description_source_url"] = entry["url"]
+            applied += 1
+    return applied
+
+
+def apply_auto_links(records: list[dict], path: Path) -> int:
+    """Apply read links resolved by scripts/fetch_links.py (Bookshop product
+    pages by ISBN), keyed by book id. Only fills a link when the record has
+    neither a free-read publication_url nor a bookshop_url — so hand-curated
+    free-online links and manual_overrides.json always win."""
+    if not path.exists():
+        return 0
+    with path.open() as f:
+        links = json.load(f)
+    applied = 0
+    id_map = {r["id"]: r for r in records}
+    for book_id, entry in links.items():
+        rec = id_map.get(book_id)
+        if not rec:
+            continue
+        if (rec.get("publication_url") or rec.get("bookshop_url") or "").strip():
+            continue
+        if entry.get("bookshop_url"):
+            rec["bookshop_url"] = entry["bookshop_url"]
+            applied += 1
+        elif entry.get("publication_url"):
+            rec["publication_url"] = entry["publication_url"]
+            if entry.get("publication_label"):
+                rec["publication_label"] = entry["publication_label"]
+            applied += 1
+    return applied
+
+
 def main() -> None:
     p = argparse.ArgumentParser()
     p.add_argument("--data", type=Path, default=Path("data"))
@@ -508,13 +562,16 @@ def main() -> None:
     covers = apply_cover_cache(all_records, args.data / "openlib_cache.json", args.data / "openlib_descriptions.json")
     google_covers = apply_google_books_cache(all_records, args.data / "google_books_cache.json")
     gr_covers, gr_descs = apply_goodreads_metadata(all_records, args.data / "goodreads_metadata.json")
+    supp_descs = apply_supplemental_descriptions(all_records, args.data / "supplemental_descriptions.json")
+    auto_links = apply_auto_links(all_records, args.data / "auto_links.json")
     apply_manual_overrides(all_records, args.data / "manual_overrides.json")
     descs = sum(1 for r in all_records if r.get("description"))
     gend = apply_author_gender(all_records, args.data / "author_gender.json")
     gr_ids = apply_goodreads_ids(all_records, args.data / "goodreads_ids.json")
     genres = sum(1 for r in all_records if r.get("genres"))
     total_covers = sum(1 for r in all_records if r.get("cover_url"))
-    print(f"  Applied {covers} OL covers + {google_covers} Google Books covers + {gr_covers} GR covers ({total_covers} total) + {descs} descs (incl. {gr_descs} from GR) + {genres} genre sets + {gend} genders + {gr_ids} Goodreads ids")
+    links_total = sum(1 for r in all_records if (r.get("publication_url") or r.get("bookshop_url") or "").strip())
+    print(f"  Applied {covers} OL covers + {google_covers} Google Books covers + {gr_covers} GR covers ({total_covers} total) + {descs} descs (incl. {gr_descs} from GR, {supp_descs} from Wikipedia) + {auto_links} auto links ({links_total} total) + {genres} genre sets + {gend} genders + {gr_ids} Goodreads ids")
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     with args.out.open("w") as f:
