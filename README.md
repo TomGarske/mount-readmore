@@ -1,6 +1,6 @@
 # Readmore
 
-Personal tracker for Hugo and Nebula winners and finalists, comparing Tom's and Nika's reading progress. Read status comes from the awards spreadsheet plus Tom's exported Goodreads "read" shelf. Live at [readmore.tomgarske.com](https://readmore.tomgarske.com/).
+Personal tracker for Hugo and Nebula winners and finalists, comparing Tom's and Nika's reading progress. Read status comes from the awards spreadsheet plus Tom's exported Goodreads "read" shelf. Live at [readmoresff.org](https://readmoresff.org/).
 
 ## Why
 
@@ -19,12 +19,12 @@ award-books-tracker/
 
 ## Hosting & auth
 
-- **Primary URL:** [readmore.tomgarske.com](https://readmore.tomgarske.com/) — served by Cloudflare Pages (project `mount-readmore`, attached via `.github/workflows/cloudflare-pages.yml`). DNS lives in Cloudflare.
+- **Primary URL:** [readmoresff.org](https://readmoresff.org/) — served by Cloudflare Pages (project `mount-readmore`, attached via `.github/workflows/cloudflare-pages.yml`). DNS lives in Cloudflare.
 - **Supabase config** (must match the production URL):
-  - Project Settings → URL Configuration → **Site URL**: `https://readmore.tomgarske.com`
-  - Authentication → URL Configuration → **Redirect URLs**: add `https://readmore.tomgarske.com/**` (the trailing `**` allows magic-link callbacks at any path)
+  - Project Settings → URL Configuration → **Site URL**: `https://readmoresff.org`
+  - Authentication → URL Configuration → **Redirect URLs**: add `https://readmoresff.org/**` (the trailing `**` allows magic-link callbacks at any path)
   - Authentication → Email Templates → **Magic Link**: body should reference Readmore; the `{{ .ConfirmationURL }}` token resolves against Site URL
-- **Magic-link redirect:** `site/auth.js` pins `emailRedirectTo` to `https://readmore.tomgarske.com/` so the login email always lands on the canonical domain regardless of where the visitor was when they hit "Send link."
+- **Magic-link redirect:** `site/auth.js` pins `emailRedirectTo` to `https://readmoresff.org/` so the login email always lands on the canonical domain regardless of where the visitor was when they hit "Send link."
 
 ## Awards tracked
 

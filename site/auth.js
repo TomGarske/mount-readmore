@@ -178,7 +178,7 @@
         phaseEl('code').hidden = p !== 'code';
       };
 
-      const REDIRECT_URL = 'https://readmore.tomgarske.com/';
+      const REDIRECT_URL = 'https://readmoresff.org/';
 
       const sendCode = async (email) => {
         const status = dlg.querySelector('#mr-signin-status');

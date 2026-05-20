@@ -920,7 +920,7 @@ async function _fetchWikiTitle(title) {
   try {
     const r = await fetch(
       `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
-      { headers: { 'Api-User-Agent': 'Readmore/1.0 (https://readmore.tomgarske.com)' } }
+      { headers: { 'Api-User-Agent': 'Readmore/1.0 (https://readmoresff.org)' } }
     );
     if (!r.ok) return null;
     const data = await r.json();

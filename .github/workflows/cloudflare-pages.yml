@@ -50,8 +50,8 @@ jobs:
         if: github.ref == 'refs/heads/main'
         env:
           PROJECT: mount-readmore
-          ZONE: tomgarske.com
-          DOMAIN: readmore.tomgarske.com
+          ZONE: readmoresff.org
+          DOMAIN: readmoresff.org
         run: |
           ZONE_ID=$(curl -sS "https://api.cloudflare.com/client/v4/zones?name=$ZONE" \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
