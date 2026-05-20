@@ -1450,6 +1450,16 @@ function renderStats() {
     : 'books';
   const SUBSET_CAP = SUBSET.charAt(0).toUpperCase() + SUBSET.slice(1);
 
+  // Projection helper — when "Include nightstand" is ON, treat books on the
+  // reader's nightstand as read for chart purposes (Era bars, radars, genre
+  // breakdowns, etc.). MUST be declared before any chart bucket-fill block
+  // references it.
+  const isProjectedRead = (b, id) => {
+    if (readStatus(b, id) === 'read') return true;
+    if (state.includeNightstand && onNightstand(b, id)) return true;
+    return false;
+  };
+
   const winnersTom = winners.filter(b => readStatus(b, 'tom') === 'read');
   const winnersNika = winners.filter(b => readStatus(b, 'nika') === 'read');
   const winnersWestdac = winners.filter(b => readStatus(b, 'westdac') === 'read');
@@ -1576,16 +1586,6 @@ function renderStats() {
     }
   }
   nightstandBooks.sort((a, b) => (b.year || 0) - (a.year || 0));
-
-  // Projection helper — when "Include nightstand" is ON, treat books on
-  // the reader's nightstand as read for ALL chart purposes (Era bars,
-  // Influence-by-era radar, Primary-genre radar, Subgenre fingerprint,
-  // Genre vectors, By award/category/gender breakdowns).
-  const isProjectedRead = (b, id) => {
-    if (readStatus(b, id) === 'read') return true;
-    if (state.includeNightstand && onNightstand(b, id)) return true;
-    return false;
-  };
 
   // ===== Genre breakdown (winners only) =====
   const genreBuckets = {};
@@ -3552,7 +3552,6 @@ function drawDiscover() {
 
   if (!book) {
     root.innerHTML = `<div class="detail discover-page">
-      <h1>Sort</h1>
       ${statsRow}
       <div class="discover-empty">
         <p style="font-size: 18px;"><strong>You've labeled every book.</strong></p>
@@ -3647,7 +3646,6 @@ function drawDiscover() {
   };
 
   root.innerHTML = `<div class="detail discover-page">
-    <h1>Sort</h1>
     ${(() => {
       const dStatus = __discoverState.status || 'winner';
       const dAward  = __discoverState.award  || 'both';
@@ -3669,7 +3667,6 @@ function drawDiscover() {
         </div>
       </div>`;
     })()}
-    ${statsRow}
     <div class="discover-actionbar">
       <div class="discover-actions">
         <button type="button" class="discover-action discover-action-read" data-action="read">✓ Read</button>
@@ -3688,6 +3685,7 @@ function drawDiscover() {
         ${combinedCardContent(book)}
       </div>
     </div>
+    ${statsRow}
     <p class="discover-instructions">Rapidly label every book on the list. <strong>Swipe left</strong> (or ✓ Read) to mark as Read · <strong>Swipe right</strong> (or ○ Not read) to mark Unread · <strong>Swipe up</strong> (or 📖 Nightstand) to queue it.</p>
   </div>`;
 
