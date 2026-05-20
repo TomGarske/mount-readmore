@@ -1251,6 +1251,7 @@ function renderMagazines() {
 
   // Super winners — books that took BOTH the Hugo AND the Nebula. The rare
   // double-crown. Computed inline so it stays in sync with DATA.books.
+  const freeReadHtml = freeReadBannerHtml();
   const superWinners = DATA.books
     .filter(b => (b.awards || {}).hugo === 'winner' && (b.awards || {}).nebula === 'winner')
     .sort((a, b) => (b.year || 0) - (a.year || 0));
@@ -1307,6 +1308,7 @@ function renderMagazines() {
     <div class="collections-toc">
       <span class="collections-toc-label">Jump to:</span>
       <a href="#/collections?section=nominees">Nominees</a>
+      ${freeReadHtml ? `<a href="#/collections?section=free-online">Read Free</a>` : ''}
       ${superWinners.length ? `<a href="#/collections?section=super-winners">Super Winners</a>` : ''}
       ${retroHugosHtml ? `<a href="#/collections?section=retro-hugos">Retro Hugos</a>` : ''}
       <a href="#/collections?section=magazines">Magazines</a>
@@ -1314,7 +1316,10 @@ function renderMagazines() {
     </div>
     <h2 id="nominees" class="collections-section-head collections-section-head-first">This Year's Nominees! ${sectionCopyBtn('nominees')}</h2>
     ${awardFeaturedBannersHtml()}
-    ${freeReadBannerHtml()}
+    ${freeReadHtml ? `
+      <h2 id="free-online" class="collections-section-head">Read Free Online ${sectionCopyBtn('free-online')}</h2>
+      <p style="color: var(--muted); font-size: 13px;">Award-listed short fiction you can read free online right now — magazines and authors' sites that posted the full text.</p>
+      ${freeReadHtml}` : ''}
     ${superWinnersHtml}
     ${retroHugosHtml}
     <h2 id="magazines" class="collections-section-head">Magazines ${sectionCopyBtn('magazines')}</h2>
@@ -1499,7 +1504,7 @@ function buildCalloutGrid(items, options = {}) {
 // each cover without violating HTML's no-nested-anchor rule. A full-card
 // overlay <a> makes the whole banner clickable.
 function featuredBanner(opts) {
-  const { theme, name, audience, since, descriptionHtml, ceremonyDate, ceremonyLoc, finalistsTagline, finalists, href, howToVote } = opts;
+  const { theme, name, audience, since, descriptionHtml, ceremonyDate, ceremonyLoc, finalistsTagline, finalists, href, howToVote, anchorId } = opts;
 
   // Build a cover strip for one category, with a label above it.
   const makeCoverRow = (books, rowLabel) => {
@@ -1542,11 +1547,12 @@ function featuredBanner(opts) {
       </div>
     </div>` : '';
 
-  return `<div class="featured-banner featured-full featured-${theme}">
+  return `<div class="featured-banner featured-full featured-${theme}"${anchorId ? ` id="${escapeHtml(anchorId)}"` : ''}>
     <div class="featured-head">
       <span class="featured-tag featured-tag-${theme}">${escapeHtml(name)}</span>
       <span class="awards-tag awards-tag-${audience.toLowerCase()}">${escapeHtml(audience)}</span>
       <span class="featured-since">since ${escapeHtml(since)}</span>
+      ${anchorId ? `<button type="button" class="collections-copy-btn" data-copy-section="${escapeHtml(anchorId)}" title="Copy a link to these nominees">Copy link</button>` : ''}
     </div>
     <div class="featured-description">${descriptionHtml}</div>
     <div class="featured-ceremony">
@@ -2291,28 +2297,6 @@ function renderStats() {
   }).join('');
   const authorRows = renderAuthorRows(topAuthors, maxAppearances);
 
-  // Compare widget — suggest friends. Use friends list (all friends regardless
-  // of leaderboard opt-in) and fall back to leaderboardOverall if friends
-  // list is empty (e.g. auth not yet bootstrapped).
-  const dashMyHandle = window.MR_AUTH?.profile?.handle || null;
-  const rawFriends = window.MR_AUTH?.friends?.length
-    ? window.MR_AUTH.friends.map(f => f.handle)
-    : (window.MR_AUTH?.leaderboardOverall || []).map(r => r.handle);
-  const dashFriendHandles = rawFriends.filter(h => h && h !== dashMyHandle);
-  // Compare widget only makes sense on the viewer's OWN dashboard — when
-  // viewing another user we hide it to avoid the confusing "compare WITH me"
-  // semantics from someone else's page.
-  const compareWidgetHtml = state.viewingProfile ? '' : `<div class="dashboard-compare">
-    <input type="text" id="dashboard-compare-input" class="dashboard-compare-input"
-      placeholder="Compare with a friend by @handle…"
-      list="dashboard-compare-list"
-      autocomplete="off">
-    <datalist id="dashboard-compare-list">
-      ${dashFriendHandles.map(h => `<option value="${escapeHtml(h)}">`).join('')}
-    </datalist>
-    <button type="button" id="dashboard-compare-btn" class="mr-btn-primary">Compare →</button>
-  </div>`;
-
   // Profile header — show whose stats you're viewing.
   // SOLO is set by the #/stats?u= router for hardcoded readers; 'me' or null
   // means own stats (use the signed-in handle if available). When
@@ -2330,7 +2314,6 @@ function renderStats() {
   root.innerHTML = `<div class="detail">
     ${titleHtml}
     ${state.viewingProfile ? '' : `<p class="dashboard-intro"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>`}
-    ${compareWidgetHtml}
     ${friendsSectionHtml()}
     ${!HAS_READER ? `<p class="dashboard-sort-cta">New here? Use the <a href="#/discover"><strong>Discover</strong></a> tab to rapidly label every book as Read, Nightstand, or Skip — builds your reading list in minutes.</p>` : ''}
     <div class="stats-filter-row">
@@ -2653,23 +2636,6 @@ function renderStats() {
     </div>
 
   </div>`;
-
-  // Dashboard compare widget
-  const dashCompareInput = document.getElementById('dashboard-compare-input');
-  const dashCompareBtn = document.getElementById('dashboard-compare-btn');
-  const doCompare = async () => {
-    const handle = (dashCompareInput?.value || '').trim().replace(/^@/, '');
-    if (!handle) return;
-    // Wait for the auth bootstrap so we have a real handle. Without this,
-    // a rapid click after page load constructs ?u=me&u=<friend>; then
-    // renderCompare's "drop 'me' if not signed in" filter trims the URL
-    // to one id and redirects to #/, looking like "first click didn't work."
-    await window.MR_AUTH?.ready;
-    const me = window.MR_AUTH?.profile?.handle || 'me';
-    location.hash = `#/stats?u=${encodeURIComponent(me)}&u=${encodeURIComponent(handle)}`;
-  };
-  dashCompareBtn?.addEventListener('click', doCompare);
-  dashCompareInput?.addEventListener('keydown', e => { if (e.key === 'Enter') doCompare(); });
 
   wireStatsFriendsForm();
 
@@ -3682,7 +3648,6 @@ function freeReadBannerHtml() {
     </div>`;
 
   return `<div class="free-banner">
-    <div class="free-banner-eyebrow">Read Free Online</div>
     <div class="free-banner-body">
       <a class="free-banner-cover" href="#/books/${escapeHtml(featured.id)}">${coverHtml}</a>
       <div class="free-banner-info">
@@ -3705,6 +3670,7 @@ function awardFeaturedBannersHtml() {
   return `<div class="featured-banners featured-banners-full">
       ${featuredBanner({
         theme: 'hugo',
+        anchorId: 'hugo-nominees',
         name: 'Hugo Awards',
         audience: 'Fans',
         since: '1953',
@@ -3741,6 +3707,7 @@ function awardFeaturedBannersHtml() {
       })}
       ${featuredBanner({
         theme: 'nebula',
+        anchorId: 'nebula-nominees',
         name: 'Nebula Awards',
         audience: 'Writers',
         since: '1965',

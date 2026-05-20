@@ -60,39 +60,34 @@
   // synchronously instead of firing on-demand queries each navigation.
   async function loadFriends() {
     if (!currentUser) { friendsList = []; return; }
-    const { data: edges, error: eErr } = await withTimeout(
-      client.from('friendships')
-        .select('user_id_a, user_id_b')
-        .or(`user_id_a.eq.${currentUser.id},user_id_b.eq.${currentUser.id}`),
-      8000, 'friendships load'
-    );
-    if (eErr) { console.error('friendships load:', eErr); friendsList = []; return; }
-    const friendIds = (edges || []).map(f =>
-      f.user_id_a === currentUser.id ? f.user_id_b : f.user_id_a
-    );
-    if (friendIds.length === 0) { friendsList = []; return; }
-    const { data: profs, error: pErr } = await withTimeout(
-      client.from('profiles')
-        .select('id, handle, profile_visibility, on_leaderboard')
-        .in('id', friendIds),
-      8000, 'friend profiles load'
-    );
-    if (pErr) { console.error('friend profiles load:', pErr); friendsList = []; return; }
-    friendsList = profs || [];
+    // friendships RLS gates on auth.uid(), so this MUST carry the token.
+    try {
+      const uid = currentUser.id;
+      const edges = await _authedRest(
+        `friendships?select=user_id_a,user_id_b&or=(user_id_a.eq.${uid},user_id_b.eq.${uid})`);
+      const friendIds = (edges || []).map(f => f.user_id_a === uid ? f.user_id_b : f.user_id_a);
+      if (friendIds.length === 0) { friendsList = []; return; }
+      friendsList = await _authedRest(
+        `profiles?select=id,handle,profile_visibility,on_leaderboard&id=in.(${friendIds.join(',')})`);
+    } catch (e) { console.error('friends load:', e); friendsList = []; }
   }
 
   async function loadLeaderboards() {
     // leaderboard_overall + leaderboard_by_award are SECURITY DEFINER views
-    // friends-scoped by auth.uid() — safe to query without a where clause.
+    // friends-scoped by auth.uid() — they return ZERO rows unless the token is
+    // attached, so query them with the explicit-token fetch (not client.from).
     if (!currentUser) { leaderboardOverall = []; leaderboardByAward = []; return; }
-    const [overall, byAward] = await Promise.all([
-      withTimeout(client.from('leaderboard_overall').select('*').order('rank'),  8000, 'leaderboard_overall'),
-      withTimeout(client.from('leaderboard_by_award').select('*').order('rank'), 8000, 'leaderboard_by_award'),
-    ]);
-    if (overall.error) console.error('leaderboard_overall:', overall.error);
-    if (byAward.error) console.error('leaderboard_by_award:', byAward.error);
-    leaderboardOverall = overall.data || [];
-    leaderboardByAward = byAward.data || [];
+    try {
+      const [overall, byAward] = await Promise.all([
+        _authedRest('leaderboard_overall?select=*&order=rank'),
+        _authedRest('leaderboard_by_award?select=*&order=rank'),
+      ]);
+      leaderboardOverall = overall || [];
+      leaderboardByAward = byAward || [];
+    } catch (e) {
+      console.error('leaderboard load:', e);
+      leaderboardOverall = []; leaderboardByAward = [];
+    }
   }
 
   // Tracks whether bootstrap has fired at least one notify. New subscribers
@@ -350,6 +345,31 @@
       } catch {}
     }
     return null;
+  }
+
+  // Authenticated PostgREST GET with the access token attached EXPLICITLY.
+  // client.from() does not reliably attach the session token in this app (the
+  // noopLock bypass + storage timing), so any query gated by auth.uid() —
+  // friendships, the friends-scoped leaderboard views — silently returns zero
+  // rows. The token is read from localStorage (same source setBookStatus uses
+  // for writes), guaranteeing auth.uid() resolves server-side.
+  async function _authedRest(pathAndQuery, ms = 8000) {
+    const token = _getAccessToken();
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    try {
+      const res = await fetch(`${cfg.SUPABASE_URL}/rest/v1/${pathAndQuery}`, {
+        headers: {
+          apikey: cfg.SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${token || cfg.SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        signal: ctrl.signal,
+      });
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+      return await res.json();
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   // Local-only 'unread' tracker. The user_books.status column has a CHECK
