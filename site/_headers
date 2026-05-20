@@ -15,3 +15,7 @@
 
 /styles.css
   Cache-Control: public, max-age=600, must-revalidate
+
+# OG preview image — long cache so link previewers can hit it fast.
+/preview.png
+  Cache-Control: public, max-age=86400, must-revalidate

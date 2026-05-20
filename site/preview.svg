@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <!-- Cream background matching site -->
+  <rect width="1200" height="630" fill="#f7efe0"/>
+
+  <!-- Decorative gradient strip on the right -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7efe0"/>
+      <stop offset="1" stop-color="#ece2c8"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Brand mark: scaled-up version of the favicon book -->
+  <g transform="translate(80, 130) scale(11.5)">
+    <!-- Left page (red) -->
+    <path d="M 16 26 L 16 6 C 12 4 5 4 2 6 L 2 22 C 5 20 12 20 16 22 Z" fill="#c6444f"/>
+    <!-- Right page (blue) -->
+    <path d="M 16 26 L 16 6 C 20 4 27 4 30 6 L 30 22 C 27 20 20 20 16 22 Z" fill="#2c5d96"/>
+    <!-- Text lines on the right page -->
+    <path d="M 19 9.95 C 21.3 8.81 25.3 8.81 27 9.95 L 27 11.03 C 25.3 9.89 21.3 9.89 19 11.03 Z" fill="rgba(255,255,255,0.6)"/>
+    <path d="M 19 13.25 C 21.3 12.11 25.3 12.11 27 13.25 L 27 14.33 C 25.3 13.19 21.3 13.19 19 14.33 Z" fill="rgba(255,255,255,0.6)"/>
+    <path d="M 19 16.55 C 21.3 15.41 25.3 15.41 27 16.55 L 27 17.63 C 25.3 16.49 21.3 16.49 19 17.63 Z" fill="rgba(255,255,255,0.6)"/>
+  </g>
+
+  <!-- Title -->
+  <text x="510" y="280" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="96" font-weight="800" fill="#1a1a2e">
+    Readmore SFF
+  </text>
+
+  <!-- Tagline -->
+  <text x="510" y="340" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="32" font-weight="500" fill="#5b5743">
+    Hugo &amp; Nebula winners + finalists
+  </text>
+  <text x="510" y="385" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="22" font-weight="400" fill="#5b5743">
+    Novel · Novella · Novelette — track every book, see your progress
+  </text>
+
+  <!-- Award pills -->
+  <g transform="translate(510, 430)">
+    <rect x="0" y="0" width="120" height="40" rx="20" fill="#2c5d96"/>
+    <text x="60" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">Hugo</text>
+
+    <rect x="135" y="0" width="120" height="40" rx="20" fill="#c6444f"/>
+    <text x="195" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">Nebula</text>
+
+    <text x="280" y="27" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="20" font-weight="500" fill="#5b5743">
+      251 winners · 543 finalists · 794 books
+    </text>
+  </g>
+
+  <!-- Footer URL -->
+  <text x="510" y="555" font-family="-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif" font-size="22" font-weight="600" fill="#1a1a2e">
+    readmore.tomgarske.com
+  </text>
+</svg>
