@@ -208,6 +208,7 @@ function recomputeReaders() {
 }
 const ALL_READ_STATES = ['read', 'unread', 'started'];
 const fullStatusSet = () => new Set(ALL_READ_STATES);
+const ALL_DECADES = [1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020];
 
 let state = {
   search: '',
@@ -219,8 +220,7 @@ let state = {
   awards: new Set(Object.keys(AWARD_LABELS)),
   statuses: new Set(['winner', 'nominee']),
   categories: new Set(['Novel', 'Novella', 'Novelette']),
-  yearMin: null,
-  yearMax: null,
+  decades: new Set(ALL_DECADES),
   sort: 'year-desc',
   // Progress-page status filter (multi-select): subset of {'winner','nominee'}.
   progressStatuses: new Set(['winner']),
@@ -309,8 +309,10 @@ function matchesFilters(book) {
   // Conjunctive: book must have at least one (award, status) pair where both match the filter
   const hasMatchingAward = Object.entries(book.awards || {}).some(([a, s]) => state.awards.has(a) && state.statuses.has(s));
   if (!hasMatchingAward) return false;
-  if (state.yearMin != null && (book.year == null || book.year < state.yearMin)) return false;
-  if (state.yearMax != null && (book.year == null || book.year > state.yearMax)) return false;
+  if (state.decades.size < ALL_DECADES.length) {
+    if (book.year == null) return false;
+    if (!state.decades.has(Math.floor(book.year / 10) * 10)) return false;
+  }
   // Author gender filter: full set (3 of 3) = no filter, otherwise restrict.
   if (state.authorGender && state.authorGender.size < 3) {
     const g = book.primary_author_gender || 'unknown';
@@ -1637,13 +1639,39 @@ function renderStats() {
     return ACTIVE_READERS.some(r => (bucket[r.id] || 0) > 0);
   });
   const radarValues = {};
+  const radarConfigOverride = {};
+  // Projected polygon first (drawn underneath) when nightstand toggle is on.
+  // The pre-computed subBuckets already include nightstand reads in [r.id]
+  // when projection is on, so those values are the projected ones.
+  if (state.includeNightstand) {
+    for (const r of ACTIVE_READERS) {
+      const projKey = r.id + '__proj';
+      radarValues[projKey] = RADAR_AXES.map(g => {
+        const bucket = subBuckets[g] || { total: 0 };
+        return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
+      });
+      radarConfigOverride[projKey] = { label: r.label + ' (with nightstand)', colorVar: 'var(--muted)', colorRgb: '120, 120, 120' };
+    }
+  }
+  // Actual-reads polygon. When projection is OFF the buckets already match
+  // actual reads. When ON we recompute by walking winners so this stays the
+  // honest "what you've read" shape.
   for (const r of ACTIVE_READERS) {
     radarValues[r.id] = RADAR_AXES.map(g => {
-      const bucket = subBuckets[g] || { total: 0 };
-      return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
+      if (!state.includeNightstand) {
+        const bucket = subBuckets[g] || { total: 0 };
+        return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
+      }
+      let actual = 0, total = 0;
+      for (const b of winners) {
+        if (!(b.subgenres || []).includes(g)) continue;
+        total++;
+        if (readStatus(b, r.id) === 'read') actual++;
+      }
+      return total > 0 ? actual / total : 0;
     });
   }
-  const radarHtml = RADAR_AXES.length >= 3 ? buildRadar(RADAR_AXES, radarValues) : '<p style="color:var(--muted)">Not enough subgenre coverage in this view.</p>';
+  const radarHtml = RADAR_AXES.length >= 3 ? buildRadar(RADAR_AXES, radarValues, radarConfigOverride) : '<p style="color:var(--muted)">Not enough subgenre coverage in this view.</p>';
   const genres = Object.entries(genreBuckets)
     .map(([name, s]) => ({ name, ...s }))
     .sort((a, b) => b.total - a.total);
@@ -1737,14 +1765,34 @@ function renderStats() {
   // ===== Genre section — primary radar, subgenre fingerprint, vector table =====
   const PRIMARY_RADAR_AXES = primaryList.map(g => g.name);
   const primaryRadarValues = {};
+  const primaryRadarConfigOverride = {};
+  if (state.includeNightstand) {
+    for (const r of ACTIVE_READERS) {
+      const projKey = r.id + '__proj';
+      primaryRadarValues[projKey] = PRIMARY_RADAR_AXES.map(g => {
+        const bucket = primaryBuckets[g] || { total: 0 };
+        return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
+      });
+      primaryRadarConfigOverride[projKey] = { label: r.label + ' (with nightstand)', colorVar: 'var(--muted)', colorRgb: '120, 120, 120' };
+    }
+  }
   for (const r of ACTIVE_READERS) {
     primaryRadarValues[r.id] = PRIMARY_RADAR_AXES.map(g => {
-      const bucket = primaryBuckets[g] || { total: 0 };
-      return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
+      if (!state.includeNightstand) {
+        const bucket = primaryBuckets[g] || { total: 0 };
+        return bucket.total > 0 ? bucket[r.id] / bucket.total : 0;
+      }
+      let actual = 0, total = 0;
+      for (const b of winners) {
+        if ((b.primary_genre || 'Unclassified') !== g) continue;
+        total++;
+        if (readStatus(b, r.id) === 'read') actual++;
+      }
+      return total > 0 ? actual / total : 0;
     });
   }
   const primaryRadarHtml = (HAS_READER && PRIMARY_RADAR_AXES.length >= 3)
-    ? buildRadar(PRIMARY_RADAR_AXES, primaryRadarValues)
+    ? buildRadar(PRIMARY_RADAR_AXES, primaryRadarValues, primaryRadarConfigOverride)
     : '';
 
   const subList = Object.entries(subBuckets)
@@ -2163,28 +2211,38 @@ function renderStats() {
 
       ${HAS_READER ? (() => {
         // Influence by era — spider chart over DATA.books (winners + nominees,
-        // not the SUBSET). Each axis = a decade with at least 3 books; value =
-        // share of that decade the reader has finished (or has on their
-        // nightstand when projection is on).
+        // not the SUBSET). Each axis = a decade with at least 3 books.
+        // Actual reads = colored polygon. When "Include nightstand" is on, a
+        // second grey ghost polygon shows where you'd be if you finished the
+        // nightstand.
         const byDecade = bucketBooksByDecade(DATA.books);
         const decades = eraRadarAxes(byDecade);
         if (decades.length < 3) return '';
         const axes = decades.map(eraAxisLabel);
         const values = {};
+        const configOverride = {};
+        // Projected polygon first (drawn underneath); actual second (on top).
+        if (state.includeNightstand) {
+          for (const r of ACTIVE_READERS) {
+            const projKey = r.id + '__proj';
+            values[projKey] = eraReaderValues(decades, byDecade, (b) => isProjectedRead(b, r.id));
+            configOverride[projKey] = { label: r.label + ' (with nightstand)', colorVar: 'var(--muted)', colorRgb: '120, 120, 120' };
+          }
+        }
         for (const r of ACTIVE_READERS) {
-          values[r.id] = eraReaderValues(decades, byDecade, (b) => isProjectedRead(b, r.id));
+          values[r.id] = eraReaderValues(decades, byDecade, (b) => readStatus(b, r.id) === 'read');
         }
         const mrd = ACTIVE_READERS
           .map(r => {
-            const m = mostReadDecade(DATA.books, (b) => isProjectedRead(b, r.id));
+            const m = mostReadDecade(DATA.books, (b) => readStatus(b, r.id) === 'read');
             return m ? `<span style="color:${r.colorVar}"><strong>${r.label}</strong> · most-read ${eraAxisLabel(m.decade)} (${m.count})</span>` : '';
           })
           .filter(Boolean)
           .join(' &nbsp;·&nbsp; ');
         return `<div class="progress-section radar-hero">
           <h2>Influence by era</h2>
-          <p style="color: var(--muted); font-size: 13px;">Each axis = a decade. Distance from center = % of that decade's winners + finalists this reader has read.</p>
-          ${buildRadar(axes, values)}
+          <p style="color: var(--muted); font-size: 13px;">Each axis = a decade. Distance from center = % of that decade's winners + finalists this reader has read.${state.includeNightstand ? ' Grey overlay = where you\'d land after finishing your nightstand.' : ''}</p>
+          ${buildRadar(axes, values, configOverride)}
           ${mrd ? `<p class="era-radar-stats">${mrd}</p>` : ''}
         </div>`;
       })() : ''}
@@ -4385,8 +4443,7 @@ function resetFilterState() {
   state.awards = new Set(Object.keys(AWARD_LABELS));
   state.statuses = new Set(['winner', 'nominee']);
   state.categories = new Set(['Novel', 'Novella', 'Novelette']);
-  state.yearMin = null;
-  state.yearMax = null;
+  state.decades = new Set(ALL_DECADES);
   state.authorGender = new Set(['female', 'male', 'unknown']);
   state.missingFilter = new Set();
   state.meStatus = new Set(['read', 'nightstand', 'neither']);
@@ -4413,10 +4470,13 @@ function applyFilterParams(params) {
   }
   const search = params.get('search');
   if (search) state.search = search;
-  const yMin = params.get('yearMin');
-  if (yMin) state.yearMin = parseInt(yMin, 10);
-  const yMax = params.get('yearMax');
-  if (yMax) state.yearMax = parseInt(yMax, 10);
+  const decades = params.get('decades');
+  if (decades) {
+    const valid = decades.split(',')
+      .map(s => parseInt(s.trim(), 10))
+      .filter(n => ALL_DECADES.includes(n));
+    if (valid.length) state.decades = new Set(valid);
+  }
   // readTom param is comma-separated list of states (e.g. ?readTom=read,started)
   const readTom = params.get('readTom');
   if (readTom) {
@@ -4451,8 +4511,6 @@ function applyFilterParams(params) {
 
 function syncFiltersToDom() {
   $('#search').value = state.search;
-  $('#year-min').value = state.yearMin == null ? '' : String(state.yearMin);
-  $('#year-max').value = state.yearMax == null ? '' : String(state.yearMax);
   const readerStateMap = { tom: state.readTom, nika: state.readNika, westdac: state.readWestdac, colton: state.readColton, schupp: state.readSchupp };
   for (const [who, set] of Object.entries(readerStateMap)) {
     $$(`input[name="read-${who}"]`).forEach(el => { el.checked = set.has(el.value); });
@@ -4460,6 +4518,7 @@ function syncFiltersToDom() {
   $$('input[name="award"]').forEach(el => { el.checked = state.awards.has(el.value); });
   $$('input[name="status"]').forEach(el => { el.checked = state.statuses.has(el.value); });
   $$('input[name="category"]').forEach(el => { el.checked = state.categories.has(el.value); });
+  $$('input[name="decade"]').forEach(el => { el.checked = state.decades.has(parseInt(el.value, 10)); });
   $$('input[name="author-gender"]').forEach(el => { el.checked = state.authorGender.has(el.value); });
   $$('input[name="missing"]').forEach(el => { el.checked = state.missingFilter.has(el.value); });
   $$('input[name="me-status"]').forEach(el => { el.checked = state.meStatus.has(el.value); });
@@ -4491,8 +4550,9 @@ function pushFiltersToUrl() {
   if (state.categories.size && state.categories.size < 3) {
     p.set('category', [...state.categories].join(','));
   }
-  if (state.yearMin != null) p.set('yearMin', state.yearMin);
-  if (state.yearMax != null) p.set('yearMax', state.yearMax);
+  if (state.decades.size > 0 && state.decades.size < ALL_DECADES.length) {
+    p.set('decades', [...state.decades].sort((a, b) => a - b).join(','));
+  }
   if (state.authorGender.size > 0 && state.authorGender.size < 3) {
     p.set('gender', [...state.authorGender].join(','));
   }
@@ -4744,8 +4804,11 @@ function wireFilters() {
     if (e.target.checked) state.categories.add(e.target.value); else state.categories.delete(e.target.value);
     renderList();
   }));
-  $('#year-min').addEventListener('input', e => { state.yearMin = e.target.value ? parseInt(e.target.value, 10) : null; renderList(); });
-  $('#year-max').addEventListener('input', e => { state.yearMax = e.target.value ? parseInt(e.target.value, 10) : null; renderList(); });
+  $$('input[name="decade"]').forEach(el => el.addEventListener('change', e => {
+    const dec = parseInt(e.target.value, 10);
+    if (e.target.checked) state.decades.add(dec); else state.decades.delete(dec);
+    renderList();
+  }));
   $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderList(); });
   $$('input[name="author-gender"]').forEach(el => el.addEventListener('change', e => {
     if (e.target.checked) state.authorGender.add(e.target.value);
@@ -4790,7 +4853,8 @@ function wireFilters() {
       awards: new Set(Object.keys(AWARD_LABELS)),
       statuses: new Set(['winner', 'nominee']),
       categories: new Set(['Novel', 'Novella', 'Novelette']),
-      yearMin: null, yearMax: null, sort: 'year-desc',
+      decades: new Set(ALL_DECADES),
+      sort: 'year-desc',
       progressStatuses: new Set(state.progressStatuses),
       progressAwards: new Set(state.progressAwards),
       progressCategories: new Set(state.progressCategories),
@@ -4804,14 +4868,13 @@ function wireFilters() {
       searchMode: 'books',
     };
     $('#search').value = '';
-    $('#year-min').value = '';
-    $('#year-max').value = '';
     for (const who of ALL_READER_IDS) {
       $$(`input[name="read-${who}"]`).forEach(el => { el.checked = true; });
     }
     $$('input[name="award"]').forEach(el => el.checked = true);
     $$('input[name="status"]').forEach(el => el.checked = true);
     $$('input[name="category"]').forEach(el => el.checked = true);
+    $$('input[name="decade"]').forEach(el => el.checked = true);
     $$('input[name="author-gender"]').forEach(el => el.checked = true);
     $$('input[name="missing"]').forEach(el => el.checked = false);
     $$('input[name="me-status"]').forEach(el => el.checked = true);

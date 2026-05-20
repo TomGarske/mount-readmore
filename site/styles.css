@@ -2369,15 +2369,12 @@ fieldset label {
 }
 fieldset label input { margin-right: 8px; }
 
-.year-row { display: flex; align-items: center; gap: 8px; }
-.year-row input {
-  width: 70px;
-  padding: 6px 8px;
-  background: var(--bg-3);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  color: var(--text);
+.decade-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 8px;
 }
+.decade-grid label { padding: 3px 0; }
 
 #reset {
   background: var(--bg-3);

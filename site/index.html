@@ -23,7 +23,7 @@
 <meta name="twitter:description" content="Hugo and Nebula winners + finalists in Novel, Novella, Novelette. Track every book.">
 <meta name="twitter:image" content="https://readmore.tomgarske.com/preview.png">
 
-<link rel="stylesheet" href="styles.css?v=20260519be">
+<link rel="stylesheet" href="styles.css?v=20260519bg">
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link rel="apple-touch-icon" href="./preview.png">
 </head>
@@ -107,11 +107,18 @@
       </fieldset>
 
       <fieldset>
-        <legend>Year range</legend>
-        <div class="year-row">
-          <input type="number" id="year-min" placeholder="from" min="1900" max="2100">
-          <span>–</span>
-          <input type="number" id="year-max" placeholder="to" min="1900" max="2100">
+        <legend>Decade</legend>
+        <div class="decade-grid">
+          <label><input type="checkbox" name="decade" value="1930" checked> 1930s</label>
+          <label><input type="checkbox" name="decade" value="1940" checked> 1940s</label>
+          <label><input type="checkbox" name="decade" value="1950" checked> 1950s</label>
+          <label><input type="checkbox" name="decade" value="1960" checked> 1960s</label>
+          <label><input type="checkbox" name="decade" value="1970" checked> 1970s</label>
+          <label><input type="checkbox" name="decade" value="1980" checked> 1980s</label>
+          <label><input type="checkbox" name="decade" value="1990" checked> 1990s</label>
+          <label><input type="checkbox" name="decade" value="2000" checked> 2000s</label>
+          <label><input type="checkbox" name="decade" value="2010" checked> 2010s</label>
+          <label><input type="checkbox" name="decade" value="2020" checked> 2020s</label>
         </div>
       </fieldset>
 
@@ -182,8 +189,8 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js?v=20260519be"></script>
-<script src="auth.js?v=20260519be"></script>
-<script src="app.js?v=20260519be"></script>
+<script src="config.js?v=20260519bg"></script>
+<script src="auth.js?v=20260519bg"></script>
+<script src="app.js?v=20260519bg"></script>
 </body>
 </html>
