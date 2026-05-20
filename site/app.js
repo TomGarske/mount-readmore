@@ -1150,6 +1150,12 @@ function renderMagazines() {
 
   const HAS_READER = ACTIVE_READERS.length > 0;
 
+  // Per-section "Copy link" — deep-links to /collections?section=<id>, which
+  // the Pages Function serves with the Collections preview and the SPA scrolls
+  // to on load.
+  const sectionCopyBtn = (id) =>
+    `<button type="button" class="collections-copy-btn" data-copy-section="${escapeHtml(id)}" title="Copy a link to this section">Copy link</button>`;
+
   // Genre swimlanes (moved here from Genre tab)
   const swimlaneGenres = ['Time Travel', 'Horror', 'Military SF', 'Space Opera', 'Hard SF', 'Dystopian', 'First Contact', 'Cyberpunk'];
   const swimlanes = swimlaneGenres.map(g => {
@@ -1160,7 +1166,7 @@ function renderMagazines() {
   }).filter(s => s.books.length > 0);
 
   const genreSwimlanesHtml = `<div id="genres" class="progress-section collections-genre-section">
-    <h2 class="collections-section-head">Browse by genre</h2>
+    <h2 class="collections-section-head">Browse by genre ${sectionCopyBtn('genres')}</h2>
     <p style="color: var(--muted); font-size: 13px;">Scroll any row sideways. Click a cover for details. Each row is sorted by publication year, newest first.</p>
     ${swimlanes.map(lane => `
       <div class="swimlane">
@@ -1245,7 +1251,7 @@ function renderMagazines() {
     .sort((a, b) => (b.year || 0) - (a.year || 0));
   const superWinnersHtml = superWinners.length === 0 ? '' : `
     <div id="super-winners" class="progress-section collections-superwinners-section">
-      <h2 class="collections-section-head">Super Winners <span class="collections-section-count">${superWinners.length}</span></h2>
+      <h2 class="collections-section-head">Super Winners <span class="collections-section-count">${superWinners.length}</span> ${sectionCopyBtn('super-winners')}</h2>
       <p style="color: var(--muted); font-size: 13px;">Books that won <strong>both</strong> the Hugo and the Nebula — the rare double crown.</p>
       <div class="swimlane">
         <div class="swimlane-strip">${superWinners.map(b => makeSwimlaneCard(b)).join('')}</div>
@@ -1276,7 +1282,7 @@ function renderMagazines() {
       </div>`;
     }).join('');
     return `<div id="retro-hugos" class="progress-section collections-retro-section">
-      <h2 class="collections-section-head">Retro Hugos <span class="collections-section-count">${total}</span></h2>
+      <h2 class="collections-section-head">Retro Hugos <span class="collections-section-count">${total}</span> ${sectionCopyBtn('retro-hugos')}</h2>
       <p style="color: var(--muted); font-size: 13px;">The <strong>Retrospective Hugo Awards</strong> honor science fiction and fantasy from Worldcon years that never gave a Hugo — voted decades later, 50, 75, or 100 years on. <a href="https://www.thehugoawards.org/hugo-history/" target="_blank" rel="noopener">Hugo Awards history ↗</a></p>
       ${cards}
     </div>`;
@@ -1301,12 +1307,12 @@ function renderMagazines() {
       <a href="#/collections?section=magazines">Magazines</a>
       <a href="#/collections?section=genres">Genres</a>
     </div>
-    <h2 id="nominees" class="collections-section-head collections-section-head-first">This Year's Nominees!</h2>
+    <h2 id="nominees" class="collections-section-head collections-section-head-first">This Year's Nominees! ${sectionCopyBtn('nominees')}</h2>
     ${awardFeaturedBannersHtml()}
     ${freeReadBannerHtml()}
     ${superWinnersHtml}
     ${retroHugosHtml}
-    <h2 id="magazines" class="collections-section-head">Magazines</h2>
+    <h2 id="magazines" class="collections-section-head">Magazines ${sectionCopyBtn('magazines')}</h2>
     <p class="magazines-intro">Hugo and Nebula award-winning short fiction overwhelmingly originated in a handful of genre magazines — some running for nearly a century, others born in the age of the internet.</p>
     <div class="mag-grid">${magBlocksHtml}</div>
     ${genreSwimlanesHtml}
@@ -1316,6 +1322,25 @@ function renderMagazines() {
     el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; })
   );
   wireShareRow(root);
+  // Per-section copy-link buttons.
+  $$('.collections-copy-btn', root).forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const url = `${location.origin}/collections?section=${encodeURIComponent(btn.dataset.copySection)}`;
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch (_) {
+        const ta = document.createElement('textarea');
+        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (_) {}
+        ta.remove();
+      }
+      const prev = btn.textContent;
+      btn.textContent = '✓ Copied';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = prev; btn.classList.remove('copied'); }, 1800);
+    });
+  });
 }
 
 // Nightstand visual — books rendered as vertical spines stacked side by
@@ -5374,7 +5399,8 @@ async function init() {
     } else if ((authorM = p.match(/^\/authors\/([^/?#]+)\/?$/))) {
       history.replaceState({}, '', '/#/authors/' + encodeURIComponent(decodeURIComponent(authorM[1])));
     } else if (/^\/collections\/?$/.test(p)) {
-      history.replaceState({}, '', '/#/collections');
+      // Preserve ?section=<id> so per-section deep links scroll to the section.
+      history.replaceState({}, '', '/#/collections' + (location.search || ''));
     }
   }
   recomputeReaders();

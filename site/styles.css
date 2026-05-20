@@ -1205,6 +1205,9 @@ a:hover { text-decoration: underline; }
   border-radius: 999px;
 }
 .stats-filter-projection legend { color: var(--accent); }
+/* Card stack + stats card stay centered within the wider main column (the
+   full-width override lives in the Discover block below). */
+.discover-page .discover-stats-card { max-width: 820px; margin-left: auto; margin-right: auto; }
 /* Discover page: filters live in a left sidebar, card stack on the right. */
 .discover-layout {
   display: grid;
@@ -3017,7 +3020,27 @@ fieldset label input { margin-right: 8px; }
   padding-top: 36px;
   border-top: 2px solid var(--border);
   color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
+/* Per-section copy-link button — small, pushed to the right of the heading. */
+.collections-copy-btn {
+  margin-left: auto;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  letter-spacing: normal;
+  color: var(--text);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+.collections-copy-btn:hover { border-color: var(--accent); }
+.collections-copy-btn.copied { color: var(--accent); border-color: var(--accent); }
 .collections-section-head-first {
   margin-top: 12px;
   padding-top: 0;
@@ -3491,7 +3514,9 @@ fieldset label input { margin-right: 8px; }
 }
 
 /* ===== Discover (Tinder-style) ===================================== */
-.discover-page { max-width: 720px; margin: 0 auto; }
+/* Full width like the Search tab (overrides the .detail 900px cap). The card
+   stack stays centered within the wider main column. */
+.discover-page { max-width: none; margin: 0; }
 .discover-instructions {
   color: var(--muted);
   font-size: 13px;

@@ -38788,6 +38788,7 @@
         "American literature"
       ],
       "genres": [],
+      "bookshop_url": "https://bookshop.org/p/books/automatic-noodle-annalee-newitz/625018d0518991aa?ean=9781250357465",
       "author_genders": [
         "female"
       ],
@@ -46464,9 +46465,9 @@
   "meta": {
     "total": 794,
     "by_category": {
+      "Novelette": 78,
       "Novel": 638,
-      "Novella": 78,
-      "Novelette": 78
+      "Novella": 78
     }
   }
 }
