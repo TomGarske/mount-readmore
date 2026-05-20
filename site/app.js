@@ -2318,7 +2318,7 @@ function renderStats() {
       + seg(nightN, 'author-seg-night', 'Nightstand')
       + seg(unreadN, 'author-seg-unread', 'Unread');
     return `<div class="author-row" style="animation-delay: ${idx * 0.04}s;">
-      <div class="author-name">${escapeHtml(a.name)}</div>
+      <div class="author-name"><a href="#/authors/${encodeURIComponent(a.name)}">${escapeHtml(a.name)}</a></div>
       <div class="author-bar">
         <div class="author-bar-bg" style="--bar-width: ${widthPct}%;">${segs}</div>
       </div>

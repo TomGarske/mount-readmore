@@ -1125,6 +1125,8 @@ a:hover { text-decoration: underline; }
   100% { opacity: 1; transform: translateX(0); }
 }
 .author-name { color: var(--text); font-weight: 500; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.author-name a { color: inherit; }
+.author-name a:hover { color: var(--accent); text-decoration: underline; }
 .author-bar { background: var(--bg-3); border-radius: 4px; height: 18px; overflow: hidden; position: relative; }
 .author-bar-bg {
   height: 100%;
@@ -1196,12 +1198,11 @@ a:hover { text-decoration: underline; }
 
 /* Stats + Collections span the full Search-tab width (override .detail's
    900px cap). Two-class selector beats the later `.detail` rule. */
-.detail.stats-page, .detail.magazines-page { max-width: none; }
+.detail.stats-page, .detail.magazines-page { max-width: 1080px; margin: 0 auto; }
 
 /* Signed-in home "about" banner — centered, boxed like a featured banner. */
 .about-banner {
-  max-width: 760px;
-  margin: 8px auto 28px;
+  margin: 8px 0 28px;
   padding: 24px 28px;
   text-align: center;
   border: 1px solid var(--border);
@@ -3546,7 +3547,7 @@ fieldset label input { margin-right: 8px; }
 /* ===== Discover (Tinder-style) ===================================== */
 /* Full width like the Search tab (overrides the .detail 900px cap). The card
    stack stays centered within the wider main column. */
-.discover-page { max-width: none; margin: 0; }
+.discover-page { max-width: 1080px; margin: 0 auto; }
 .discover-instructions {
   color: var(--muted);
   font-size: 13px;
