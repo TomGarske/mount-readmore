@@ -5,6 +5,9 @@ const AWARD_LABELS = {
   nebula: 'Nebula',
   retro_hugo: 'Retro Hugo',
 };
+// Awards selected by default. Retro Hugos are opt-in (deselected by default)
+// across Stats, Search, and Discover.
+const DEFAULT_AWARDS = ['hugo', 'nebula'];
 
 // Canonical magazine names — maps publisher field variants to a display name.
 // Only magazines appear here; book publishers are absent so no swimlane shows.
@@ -237,15 +240,15 @@ let state = {
   readWestdac: fullStatusSet(),
   readColton: fullStatusSet(),
   readSchupp: fullStatusSet(),
-  awards: new Set(Object.keys(AWARD_LABELS)),
+  awards: new Set(DEFAULT_AWARDS),
   statuses: new Set(['winner', 'nominee']),
   categories: new Set(['Novel', 'Novella', 'Novelette']),
   decades: new Set(ALL_DECADES),
   sort: 'year-desc',
   // Progress-page status filter (multi-select): subset of {'winner','nominee'}.
-  progressStatuses: new Set(['winner']),
-  // Progress-page award scope (multi-select): subset of {'hugo','nebula','retro_hugo'}.
-  progressAwards: new Set(['hugo', 'nebula', 'retro_hugo']),
+  progressStatuses: new Set(['winner', 'nominee']),
+  // Progress-page award scope (multi-select). Retro Hugos opt-in (off by default).
+  progressAwards: new Set(DEFAULT_AWARDS),
   // Progress-page category scope (multi-select).
   progressCategories: new Set(['Novel', 'Novella', 'Novelette']),
   // Include nightstand books in stats projections everywhere — always on.
@@ -3525,7 +3528,7 @@ function buildDiscoverQueue() {
   const auth = window.MR_AUTH;
   if (!auth || !auth.user) return [];
   const statuses = __discoverState?.statuses || new Set(['winner']);
-  const awards = __discoverState?.awards || new Set(['hugo', 'nebula', 'retro_hugo']);
+  const awards = __discoverState?.awards || new Set(DEFAULT_AWARDS);
   const categories = __discoverState?.categories || new Set(['Novel', 'Novella', 'Novelette']);
   // Unrated only — anything in user_books (read/nightstand/started) is
   // already categorized and shouldn't reappear in the swipe queue. Then apply
@@ -3726,7 +3729,7 @@ async function renderDiscover() {
       tab: 'cover',
       // Multi-select filters (match the Stats page). All feed the swipe queue.
       statuses: new Set(['winner']),
-      awards: new Set(['hugo', 'nebula', 'retro_hugo']),
+      awards: new Set(DEFAULT_AWARDS),
       categories: new Set(['Novel', 'Novella', 'Novelette']),
       // Queue order — mirrors the Search tab's sort options.
       sort: 'year-desc',
@@ -3846,14 +3849,18 @@ function drawDiscover() {
       || __discoverState.categories.size < 3;
     const headline = narrowed ? "You've sorted everything in this filter." : "You've labeled every book.";
     root.innerHTML = `<div class="detail discover-page">
-      ${togglesHtml}
-      ${statsRow}
-      <div class="discover-empty">
-        <p style="font-size: 18px;"><strong>${headline}</strong></p>
-        <p style="color: var(--muted);">${narrowed ? 'Adjust the filters above to keep sorting, or hit' : 'Nice work. Hit'} <a href="#/search">Search</a> to browse and <a href="#/">Home</a> for your progress.</p>
-        ${__discoverState && __discoverState.skipped.size > 0
-          ? `<p style="margin-top: 18px;"><button type="button" id="discover-replay" class="user-status-btn">Replay ${__discoverState.skipped.size} skipped</button></p>`
-          : ''}
+      <div class="discover-layout">
+        <aside class="discover-sidebar">${togglesHtml}</aside>
+        <div class="discover-main">
+          ${statsRow}
+          <div class="discover-empty">
+            <p style="font-size: 18px;"><strong>${headline}</strong></p>
+            <p style="color: var(--muted);">${narrowed ? 'Adjust the filters to keep sorting, or hit' : 'Nice work. Hit'} <a href="#/search">Search</a> to browse and <a href="#/">Home</a> for your progress.</p>
+            ${__discoverState && __discoverState.skipped.size > 0
+              ? `<p style="margin-top: 18px;"><button type="button" id="discover-replay" class="user-status-btn">Replay ${__discoverState.skipped.size} skipped</button></p>`
+              : ''}
+          </div>
+        </div>
       </div>
     </div>`;
     wireDiscover();
@@ -3946,27 +3953,31 @@ function drawDiscover() {
   };
 
   root.innerHTML = `<div class="detail discover-page">
-    ${togglesHtml}
-    <div class="discover-actionbar">
-      <div class="discover-actions">
-        <button type="button" class="discover-action discover-action-read" data-action="read">✓ Read</button>
-        <button type="button" class="discover-action discover-action-night" data-action="nightstand">📖 Nightstand</button>
-        <button type="button" class="discover-action discover-action-neither" data-action="neither">○ Not read</button>
+    <div class="discover-layout">
+      <aside class="discover-sidebar">${togglesHtml}</aside>
+      <div class="discover-main">
+        <div class="discover-actionbar">
+          <div class="discover-actions">
+            <button type="button" class="discover-action discover-action-read" data-action="read">✓ Read</button>
+            <button type="button" class="discover-action discover-action-night" data-action="nightstand">📖 Nightstand</button>
+            <button type="button" class="discover-action discover-action-neither" data-action="neither">○ Not read</button>
+          </div>
+          <button type="button" class="discover-undo-btn discover-undo" title="Undo last decision" aria-label="Undo" ${__discoverState.history.length === 0 ? 'disabled' : ''}>↶</button>
+        </div>
+        <div class="discover-cardstack">
+          ${peekCard(peek2, 2)}
+          ${peekCard(peek1, 1)}
+          <div class="discover-card discover-card-top" id="discover-top-card" data-book-id="${escapeHtml(book.id)}">
+            <div class="discover-swipe-hint discover-swipe-hint-left">Read</div>
+            <div class="discover-swipe-hint discover-swipe-hint-right">Unread</div>
+            <div class="discover-swipe-hint discover-swipe-hint-up">Nightstand</div>
+            ${combinedCardContent(book)}
+          </div>
+        </div>
+        ${statsRow}
+        <p class="discover-instructions">Rapidly label every book on the list. <strong>Swipe left</strong> (or ✓ Read) to mark as Read · <strong>Swipe right</strong> (or ○ Not read) to mark Unread · <strong>Swipe up</strong> (or 📖 Nightstand) to queue it.</p>
       </div>
-      <button type="button" class="discover-undo-btn discover-undo" title="Undo last decision" aria-label="Undo" ${__discoverState.history.length === 0 ? 'disabled' : ''}>↶</button>
     </div>
-    <div class="discover-cardstack">
-      ${peekCard(peek2, 2)}
-      ${peekCard(peek1, 1)}
-      <div class="discover-card discover-card-top" id="discover-top-card" data-book-id="${escapeHtml(book.id)}">
-        <div class="discover-swipe-hint discover-swipe-hint-left">Read</div>
-        <div class="discover-swipe-hint discover-swipe-hint-right">Unread</div>
-        <div class="discover-swipe-hint discover-swipe-hint-up">Nightstand</div>
-        ${combinedCardContent(book)}
-      </div>
-    </div>
-    ${statsRow}
-    <p class="discover-instructions">Rapidly label every book on the list. <strong>Swipe left</strong> (or ✓ Read) to mark as Read · <strong>Swipe right</strong> (or ○ Not read) to mark Unread · <strong>Swipe up</strong> (or 📖 Nightstand) to queue it.</p>
   </div>`;
 
   wireDiscover();
@@ -4709,7 +4720,7 @@ function resetFilterState() {
   state.readWestdac = fullStatusSet();
   state.readColton = fullStatusSet();
   state.readSchupp = fullStatusSet();
-  state.awards = new Set(Object.keys(AWARD_LABELS));
+  state.awards = new Set(DEFAULT_AWARDS);
   state.statuses = new Set(['winner', 'nominee']);
   state.categories = new Set(['Novel', 'Novella', 'Novelette']);
   state.decades = new Set(ALL_DECADES);
@@ -4810,7 +4821,12 @@ function pushFiltersToUrl() {
   // searchMode persists across reloads — 'authors' explicit, 'books' default.
   if (state.searchMode === 'authors') p.set('mode', 'authors');
   if (state.search) p.set('search', state.search);
-  if (state.awards.size && state.awards.size < Object.keys(AWARD_LABELS).length) {
+  // Emit the award param only when the selection differs from the default
+  // (hugo + nebula) — keeps the default Search URL clean even though retro_hugo
+  // is off by default.
+  const awardsAreDefault = state.awards.size === DEFAULT_AWARDS.length
+    && DEFAULT_AWARDS.every(a => state.awards.has(a));
+  if (state.awards.size && !awardsAreDefault) {
     p.set('award', [...state.awards].join(','));
   }
   if (state.statuses.size && state.statuses.size < 2) {
@@ -5157,7 +5173,7 @@ function wireFilters() {
       readWestdac: fullStatusSet(),
       readColton: fullStatusSet(),
       readSchupp: fullStatusSet(),
-      awards: new Set(Object.keys(AWARD_LABELS)),
+      awards: new Set(DEFAULT_AWARDS),
       statuses: new Set(['winner', 'nominee']),
       categories: new Set(['Novel', 'Novella', 'Novelette']),
       decades: new Set(ALL_DECADES),
@@ -5178,7 +5194,7 @@ function wireFilters() {
     for (const who of ALL_READER_IDS) {
       $$(`input[name="read-${who}"]`).forEach(el => { el.checked = true; });
     }
-    $$('input[name="award"]').forEach(el => el.checked = true);
+    $$('input[name="award"]').forEach(el => el.checked = DEFAULT_AWARDS.includes(el.value));
     $$('input[name="status"]').forEach(el => el.checked = true);
     $$('input[name="category"]').forEach(el => el.checked = true);
     $$('input[name="decade"]').forEach(el => el.checked = true);

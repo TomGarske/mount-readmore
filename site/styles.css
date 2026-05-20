@@ -1205,9 +1205,27 @@ a:hover { text-decoration: underline; }
   border-radius: 999px;
 }
 .stats-filter-projection legend { color: var(--accent); }
-/* On the Sort page the content column is centered, so center the reused
-   Stats filter row too. */
-.discover-filter-row { justify-content: center; }
+/* Discover page: filters live in a left sidebar, card stack on the right. */
+.discover-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 28px;
+  align-items: start;
+}
+.discover-sidebar { position: sticky; top: 80px; }
+/* Stack the reused Stats filter groups vertically in the sidebar. */
+.discover-sidebar .discover-filter-row {
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+}
+.discover-sidebar .stats-filter-group { width: 100%; }
+.discover-main { min-width: 0; }
+@media (max-width: 760px) {
+  .discover-layout { grid-template-columns: 1fr; gap: 16px; }
+  .discover-sidebar { position: static; }
+  .discover-sidebar .discover-filter-row { flex-direction: row; flex-wrap: wrap; justify-content: center; }
+}
 .discover-sort-select {
   font-family: inherit;
   font-size: 13px;
