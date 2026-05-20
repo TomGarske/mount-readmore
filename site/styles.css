@@ -1208,6 +1208,17 @@ a:hover { text-decoration: underline; }
 /* On the Sort page the content column is centered, so center the reused
    Stats filter row too. */
 .discover-filter-row { justify-content: center; }
+.discover-sort-select {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  margin-top: 2px;
+}
 
 /* Legacy toggle-row kept for any other callers, but the Stats page now
    uses .stats-filter-row above. */

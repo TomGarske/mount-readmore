@@ -3476,15 +3476,20 @@ function buildDiscoverQueue() {
       if (!isWinner && !statuses.has('nominee')) return false;
       return true;
     })
-    .sort((a, b) => {
-      const aWin = Object.values(a.awards || {}).includes('winner') ? 1 : 0;
-      const bWin = Object.values(b.awards || {}).includes('winner') ? 1 : 0;
-      if (aWin !== bWin) return bWin - aWin;
-      const yearDiff = (b.year || 0) - (a.year || 0);
-      if (yearDiff !== 0) return yearDiff;
-      return a.title.localeCompare(b.title);
-    })
+    .sort(discoverComparator(__discoverState?.sort || 'year-desc'))
     .map(b => b.id);
+}
+
+// Queue ordering for the Sort page — mirrors the Search tab's sort options.
+function discoverComparator(sort) {
+  const author = b => (b.authors && b.authors[0]) || b.author_raw || '';
+  switch (sort) {
+    case 'year-asc':    return (a, b) => (a.year || 0) - (b.year || 0) || a.title.localeCompare(b.title);
+    case 'author-asc':  return (a, b) => author(a).localeCompare(author(b)) || (b.year || 0) - (a.year || 0);
+    case 'author-desc': return (a, b) => author(b).localeCompare(author(a)) || (b.year || 0) - (a.year || 0);
+    case 'year-desc':
+    default:            return (a, b) => (b.year || 0) - (a.year || 0) || a.title.localeCompare(b.title);
+  }
 }
 
 function discoverNextBook() {
@@ -3655,6 +3660,8 @@ async function renderDiscover() {
       statuses: new Set(['winner']),
       awards: new Set(['hugo', 'nebula']),
       categories: new Set(['Novel', 'Novella', 'Novelette']),
+      // Queue order — mirrors the Search tab's sort options.
+      sort: 'year-desc',
     };
     __discoverState.queue = buildDiscoverQueue();
   }
@@ -3693,11 +3700,13 @@ function drawDiscover() {
     const statuses = __discoverState.statuses;
     const awards = __discoverState.awards;
     const categories = __discoverState.categories;
+    const sort = __discoverState.sort || 'year-desc';
     const allW = DATA.books.filter(b => Object.values(b.awards||{}).includes('winner')).length;
     const allN = DATA.books.filter(b => !Object.values(b.awards||{}).includes('winner') && Object.keys(b.awards||{}).length > 0).length;
     const hugoAll = DATA.books.filter(b => (b.awards||{}).hugo).length;
     const nebAll  = DATA.books.filter(b => (b.awards||{}).nebula).length;
     const catCount = (c) => DATA.books.filter(b => b.category === c).length;
+    const sortOpt = (v, label) => `<option value="${v}"${sort===v?' selected':''}>${label}</option>`;
     return `<div class="stats-filter-row discover-filter-row">
       <fieldset class="stats-filter-group">
         <legend>Status</legend>
@@ -3714,6 +3723,15 @@ function drawDiscover() {
         <label><input type="checkbox" data-discover-category="Novel" ${categories.has('Novel')?'checked':''}> Novel <span class="status-count">${catCount('Novel')}</span></label>
         <label><input type="checkbox" data-discover-category="Novella" ${categories.has('Novella')?'checked':''}> Novella <span class="status-count">${catCount('Novella')}</span></label>
         <label><input type="checkbox" data-discover-category="Novelette" ${categories.has('Novelette')?'checked':''}> Novelette <span class="status-count">${catCount('Novelette')}</span></label>
+      </fieldset>
+      <fieldset class="stats-filter-group">
+        <legend>Sort by</legend>
+        <select id="discover-sort" class="discover-sort-select">
+          ${sortOpt('year-desc', 'Publication date ↓')}
+          ${sortOpt('year-asc', 'Publication date ↑')}
+          ${sortOpt('author-asc', 'Author A–Z')}
+          ${sortOpt('author-desc', 'Author Z–A')}
+        </select>
       </fieldset>
     </div>`;
   })();
@@ -3905,6 +3923,13 @@ function wireDiscover() {
   });
   root.querySelectorAll('input[data-discover-category]').forEach(cb => {
     cb.addEventListener('change', () => onDiscoverFilter('categories', cb.dataset.discoverCategory, cb.checked));
+  });
+  // Sort select — reorders the queue without changing which books are in it,
+  // so the skipped set is preserved (unlike the filter checkboxes).
+  root.querySelector('#discover-sort')?.addEventListener('change', (e) => {
+    __discoverState.sort = e.target.value;
+    __discoverState.queue = buildDiscoverQueue();
+    drawDiscover();
   });
 
   // Action buttons. "Not read" = explicit Unread (status='unread' in DB) so
