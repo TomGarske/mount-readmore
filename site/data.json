@@ -44310,7 +44310,7 @@
       "award_years": {
         "hugo": 2003
       },
-      "cover_url": "https://covers.openlibrary.org/b/id/2096842-L.jpg",
+      "cover_url": null,
       "author_genders": [
         "male"
       ],
@@ -46462,9 +46462,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novel": 638,
       "Novelette": 78,
-      "Novella": 78
+      "Novella": 78,
+      "Novel": 638
     }
   }
 }
