@@ -2368,6 +2368,23 @@ fieldset legend {
   letter-spacing: 0.06em;
   padding: 0 4px;
 }
+/* Collapsible filter sections — click the legend to fold a section away.
+   The chevron flips and the section's contents hide when .collapsed. */
+.filters legend {
+  cursor: pointer;
+  user-select: none;
+}
+.filters legend::after {
+  content: '▾';
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 9px;
+  color: var(--muted);
+  transition: transform 0.15s ease;
+}
+.filters fieldset.collapsed legend::after { transform: rotate(-90deg); }
+.filters fieldset.collapsed > *:not(legend) { display: none; }
+.filters fieldset.collapsed { padding-bottom: 8px; }
 fieldset label {
   display: block;
   padding: 3px 0;

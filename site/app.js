@@ -4916,10 +4916,46 @@ function applyReaderFilterVisibility() {
     const who = fs.dataset.reader;
     fs.style.display = READERS.includes(who) ? '' : 'none';
   });
+  // "Your status" (Read/Nightstand/Neither) only makes sense for the signed-in
+  // user. Toggle it here so it tracks auth state on init AND on sign-in/out —
+  // syncFiltersToDom only runs on filtered routes, so a bare #/search would
+  // otherwise leave it stuck hidden.
+  const meFs = $('#me-status-fieldset');
+  if (meFs) meFs.hidden = !window.MR_AUTH?.user;
+}
+
+// Collapsible filter sections — fold state is keyed by legend text and
+// persisted so it survives reloads. The filters aside is static HTML (not
+// re-rendered on SPA navigation), so we wire this once in wireFilters.
+const COLLAPSED_FILTERS_KEY = 'mr_collapsed_filters';
+function loadCollapsedFilters() {
+  try {
+    const raw = localStorage.getItem(COLLAPSED_FILTERS_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch (_) { return new Set(); }
+}
+function saveCollapsedFilters(set) {
+  try { localStorage.setItem(COLLAPSED_FILTERS_KEY, JSON.stringify([...set])); } catch (_) {}
+}
+function wireFilterCollapse() {
+  const collapsed = loadCollapsedFilters();
+  $$('.filters fieldset').forEach(fs => {
+    const legend = fs.querySelector('legend');
+    if (!legend) return;
+    const key = legend.textContent.trim();
+    if (collapsed.has(key)) fs.classList.add('collapsed');
+    legend.addEventListener('click', () => {
+      const isCollapsed = fs.classList.toggle('collapsed');
+      const cur = loadCollapsedFilters();
+      if (isCollapsed) cur.add(key); else cur.delete(key);
+      saveCollapsedFilters(cur);
+    });
+  });
 }
 
 function wireFilters() {
   applyReaderFilterVisibility();
+  wireFilterCollapse();
 
   $('#search').addEventListener('input', e => { state.search = e.target.value.trim(); renderList(); });
 
