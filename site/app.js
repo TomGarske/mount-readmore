@@ -3402,6 +3402,11 @@ async function renderFriends() {
 // explicitly hits "Start over".
 let __discoverState = null;
 
+// Tracks the last-seen signed-in user id so the MR_AUTH.onChange handler can
+// tell an identity change (sign in/out) from a plain data refresh. undefined
+// until the first notify so the initial fire counts as an identity change.
+let __lastUserId = undefined;
+
 // Nightstand planner: set of book IDs the user has UN-checked on the Stats
 // page's nightstand checklist. Default state is "all checked" (planning to
 // read everything on the nightstand), so we store the negative space.
@@ -5241,21 +5246,32 @@ async function init() {
   // subscribe (common when data.json is the slowest network call), the
   // callback fires once on a microtask with the current snapshot.
   if (window.MR_AUTH) {
-    window.MR_AUTH.onChange(() => {
+    window.MR_AUTH.onChange((snapshot) => {
       recomputeReaders();
       applySoloUI();
       applyReaderFilterVisibility();
       renderAuthPill();
-      // Identity changed → drop everything that's user-scoped so the next
-      // page render sees fresh data for the new (or no) user.
-      __invalidateCompareCaches();
-      window.MR_AUTH.invalidateFriendsCache?.();
-      __discoverState = null;
-      // Re-load nightstand planner state for the new identity (or clear
-      // when signing out — no user → no localStorage key).
-      __nightstandUnplanned.clear();
-      __nightstandUnplannedLoaded = false;
-      route();
+      // notify() fires for BOTH identity changes (sign in/out) AND data
+      // mutations (e.g. setBookStatus while sorting a card). Only blow away
+      // user-scoped session state when the identity actually changed —
+      // otherwise sorting a card would reset the Discover queue + filter and
+      // re-route mid-swipe.
+      const newUserId = snapshot?.user?.id || null;
+      const identityChanged = newUserId !== __lastUserId;
+      __lastUserId = newUserId;
+      if (identityChanged) {
+        __invalidateCompareCaches();
+        window.MR_AUTH.invalidateFriendsCache?.();
+        __discoverState = null;
+        __nightstandUnplanned.clear();
+        __nightstandUnplannedLoaded = false;
+        route();
+      } else if (!location.hash.startsWith('#/discover')) {
+        // Same user, just a data refresh (leaderboards loaded, a status saved).
+        // Re-render the current view so it picks up fresh data — but skip
+        // Discover, which manages its own incremental re-render.
+        route();
+      }
     });
   }
   // Race-safe initial render: wait for the auth bootstrap so the FIRST
