@@ -40707,7 +40707,8 @@
       "award_years": {
         "hugo": 1997
       },
-      "cover_url": "https://covers.openlibrary.org/b/id/12063529-L.jpg",
+      "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1706083386i/57562528.jpg",
+      "goodreads_id": "57562528",
       "author_genders": [
         "male"
       ],
@@ -46462,9 +46463,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novel": 638,
       "Novella": 78,
-      "Novelette": 78
+      "Novelette": 78,
+      "Novel": 638
     }
   }
 }
