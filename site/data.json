@@ -53,6 +53,7 @@
         "Fantasy"
       ],
       "pages": 461,
+      "bookshop_url": "https://bookshop.org/p/books/a-drop-of-corruption-an-ana-and-din-mystery-robert-jackson-bennett/873b326585e7cd10?ean=9780593723821",
       "author_genders": [
         "male"
       ],
@@ -46463,9 +46464,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novelette": 78,
       "Novel": 638,
-      "Novella": 78
+      "Novella": 78,
+      "Novelette": 78
     }
   }
 }

@@ -1792,6 +1792,8 @@ a:hover { text-decoration: underline; }
   overflow: hidden;
   background: var(--bg-2);
 }
+/* Friends list scrolls once it's longer than ~10 rows. */
+.lb-table-scroll { max-height: 520px; overflow-y: auto; }
 .lb-row {
   display: grid;
   grid-template-columns: 56px 1fr 130px 90px 90px 70px 100px;

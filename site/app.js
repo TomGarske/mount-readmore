@@ -838,7 +838,7 @@ function renderDetail(id) {
         ${addToShelfBtn ? `<div style="margin-top: 16px;">${addToShelfBtn}</div>` : ''}
         <div class="detail-links">
           ${(() => {
-            const readUrl = book.publication_url || `https://bookshop.org/search?keywords=${searchQ}`;
+            const readUrl = book.publication_url || book.bookshop_url || `https://bookshop.org/search?keywords=${searchQ}`;
             const host = new URL(readUrl).hostname.replace(/^www\./, '');
             const favicon = `https://www.google.com/s2/favicons?domain=${host}&sz=32`;
             const magazine = book.publication_label || MAGAZINE_CANONICAL[book.publisher] || null;
@@ -1531,6 +1531,100 @@ function featuredBanner(opts) {
   </div>`;
 }
 
+// Friends list for the Stats page — the signed-in user + friends ranked by
+// reads. Reads from cached MR_AUTH leaderboards; renderStats refreshes them on
+// each visit and re-patches this section (see below) so the list reliably
+// loads on navigation, not just on a cold page load.
+function friendsSectionHtml() {
+  const auth = window.MR_AUTH;
+  if (!auth?.user) return '';
+  if (state.viewingProfile) return '';
+  const overall = auth.leaderboardOverall || [];
+  const byAward = auth.leaderboardByAward || [];
+  const meHandle = auth.profile?.handle || null;
+  const myUserId = auth.user?.id || null;
+  const hugoByUser = {};
+  const nebulaByUser = {};
+  for (const r of byAward) {
+    if (r.award === 'hugo') hugoByUser[r.user_id] = r.read_count;
+    else if (r.award === 'nebula') nebulaByUser[r.user_id] = r.read_count;
+  }
+  // Synthesize a self-row when the leaderboard view is empty (no friends yet
+  // or not opted in) so the section always shows the signed-in reader.
+  let rows = overall;
+  if (rows.length === 0 && meHandle && myUserId) {
+    const ub = auth.userBooks || {};
+    const readIds = Object.keys(ub).filter(id => ub[id]?.status === 'read');
+    const total = DATA.books.length;
+    let hugoRead = 0, nebRead = 0;
+    for (const id of readIds) {
+      const b = DATA.books.find(x => x.id === id);
+      if (!b) continue;
+      if ((b.awards || {}).hugo) hugoRead++;
+      if ((b.awards || {}).nebula) nebRead++;
+    }
+    hugoByUser[myUserId] = hugoRead;
+    nebulaByUser[myUserId] = nebRead;
+    rows = [{ user_id: myUserId, handle: meHandle, read_count: readIds.length, total_books: total, pct: total > 0 ? Math.round((readIds.length / total) * 100) : 0, rank: 1 }];
+  }
+  const totalLabel = rows[0]?.total_books ?? DATA.books.length;
+  const meHandleSlug = meHandle ? encodeURIComponent(meHandle) : 'me';
+  const rowHtml = rows.map(r => {
+    const isMeRow = r.user_id === myUserId;
+    const compareTag = !isMeRow
+      ? `<a class="lb-compare" href="#/stats?u=${meHandleSlug}&u=${encodeURIComponent(r.handle)}">Compare →</a>`
+      : `<span class="lb-me">you</span>`;
+    return `<div class="lb-row${isMeRow ? ' lb-row-me' : ''}">
+      <div class="lb-rank">#${r.rank}</div>
+      <div class="lb-handle"><a href="#/u/${escapeHtml(r.handle)}">@${escapeHtml(r.handle)}</a></div>
+      <div class="lb-stat"><strong>${r.read_count}</strong> <span class="lb-of">/ ${r.total_books}</span></div>
+      <div class="lb-stat-sub" style="color:var(--sf)"><strong>${hugoByUser[r.user_id] ?? 0}</strong> Hugo</div>
+      <div class="lb-stat-sub" style="color:var(--fantasy)"><strong>${nebulaByUser[r.user_id] ?? 0}</strong> Nebula</div>
+      <div class="lb-pct">${r.pct ?? 0}%</div>
+      <div class="lb-action">${compareTag}</div>
+    </div>`;
+  }).join('');
+  const onLeaderboard = auth.profile?.on_leaderboard;
+  const noFriendsNote = overall.length === 0
+    ? `<p style="color:var(--muted);font-size:13px;">No friends yet — add one above to start comparing reads.</p>`
+    : '';
+  return `<div class="progress-section" id="stats-friends-section">
+    <h2>Friends</h2>
+    <p style="color:var(--muted);font-size:13px;">You and your friends, ranked by reads from the ${totalLabel} canonical books. Tap Compare for a head-to-head.</p>
+    ${!onLeaderboard ? `<p style="color:var(--muted);font-size:13px;">You're not on the leaderboard yet. <a href="#/settings">Opt in from Settings</a>.</p>` : ''}
+    <form id="stats-friends-add-form" class="friends-add-form">
+      <input type="text" id="stats-friends-add-handle" placeholder="@handle to add" autocomplete="off">
+      <button type="submit" class="mr-btn-primary">Add friend</button>
+      <span id="stats-friends-add-status" class="settings-inline-status"></span>
+    </form>
+    <div class="lb-table lb-table-scroll">${rowHtml}</div>
+    ${noFriendsNote}
+  </div>`;
+}
+
+// Wire the Stats friends add-form. Called after the initial render and again
+// after the async friends refresh re-patches the section.
+function wireStatsFriendsForm() {
+  const statsFriendsForm = document.getElementById('stats-friends-add-form');
+  if (!statsFriendsForm) return;
+  const addStatus = document.getElementById('stats-friends-add-status');
+  statsFriendsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('stats-friends-add-handle');
+    const v = (input?.value || '').trim();
+    if (!v) return;
+    if (addStatus) { addStatus.textContent = 'Adding…'; addStatus.className = 'settings-inline-status'; }
+    try {
+      const target = await window.MR_AUTH.addFriendByHandle(v);
+      if (addStatus) { addStatus.textContent = `✓ Added @${target.handle}`; addStatus.className = 'settings-inline-status success'; }
+      if (input) input.value = '';
+      setTimeout(() => renderStats(), 200);
+    } catch (err) {
+      if (addStatus) { addStatus.textContent = err.message || String(err); addStatus.className = 'settings-inline-status error'; }
+    }
+  });
+}
+
 function renderStats() {
   // Per-reader loops inside this function must include 'me' so signed-in
   // users (whose reader id is 'me') don't crash on map lookups.
@@ -2207,6 +2301,7 @@ function renderStats() {
     ${titleHtml}
     ${state.viewingProfile ? '' : `<p class="dashboard-intro"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>`}
     ${compareWidgetHtml}
+    ${friendsSectionHtml()}
     ${!HAS_READER ? `<p class="dashboard-sort-cta">New here? Use the <a href="#/discover"><strong>Discover</strong></a> tab to rapidly label every book as Read, Nightstand, or Skip — builds your reading list in minutes.</p>` : ''}
     <div class="stats-filter-row">
       <fieldset class="stats-filter-group">
@@ -2527,83 +2622,6 @@ function renderStats() {
       </div>
     </div>
 
-    ${(() => {
-      const auth = window.MR_AUTH;
-      if (!auth?.user) return '';
-      // Don't render the signed-in user's friends list on someone else's page.
-      if (state.viewingProfile) return '';
-      const overall = auth.leaderboardOverall || [];
-      const byAward = auth.leaderboardByAward || [];
-      const meHandle = auth.profile?.handle || null;
-      const myUserId = auth.user?.id || null;
-      const hugoByUser = {};
-      const nebulaByUser = {};
-      for (const r of byAward) {
-        if (r.award === 'hugo') hugoByUser[r.user_id] = r.read_count;
-        else if (r.award === 'nebula') nebulaByUser[r.user_id] = r.read_count;
-      }
-      // When the leaderboard view returned no rows (e.g. user hasn't added
-      // friends yet, or hasn't opted in), synthesize a self-row from the
-      // signed-in user's local data so the section always has something.
-      let rows = overall;
-      if (rows.length === 0 && meHandle && myUserId) {
-        const ub = auth.userBooks || {};
-        const readIds = Object.keys(ub).filter(id => ub[id]?.status === 'read');
-        const total = DATA.books.length;
-        const readCount = readIds.length;
-        let hugoRead = 0, nebRead = 0;
-        for (const id of readIds) {
-          const b = DATA.books.find(x => x.id === id);
-          if (!b) continue;
-          if ((b.awards || {}).hugo) hugoRead++;
-          if ((b.awards || {}).nebula) nebRead++;
-        }
-        hugoByUser[myUserId] = hugoRead;
-        nebulaByUser[myUserId] = nebRead;
-        rows = [{
-          user_id: myUserId,
-          handle: meHandle,
-          read_count: readCount,
-          total_books: total,
-          pct: total > 0 ? Math.round((readCount / total) * 100) : 0,
-          rank: 1,
-        }];
-      }
-      const totalLabel = rows[0]?.total_books ?? DATA.books.length;
-      const meHandleSlug = meHandle ? encodeURIComponent(meHandle) : 'me';
-      const rowHtml = rows.map(r => {
-        const isMeRow = r.user_id === myUserId;
-        const compareTag = !isMeRow
-          ? `<a class="lb-compare" href="#/stats?u=${meHandleSlug}&u=${encodeURIComponent(r.handle)}">Compare →</a>`
-          : `<span class="lb-me">you</span>`;
-        return `<div class="lb-row${isMeRow ? ' lb-row-me' : ''}">
-          <div class="lb-rank">#${r.rank}</div>
-          <div class="lb-handle"><a href="#/u/${escapeHtml(r.handle)}">@${escapeHtml(r.handle)}</a></div>
-          <div class="lb-stat"><strong>${r.read_count}</strong> <span class="lb-of">/ ${r.total_books}</span></div>
-          <div class="lb-stat-sub" style="color:var(--sf)"><strong>${hugoByUser[r.user_id] ?? 0}</strong> Hugo</div>
-          <div class="lb-stat-sub" style="color:var(--fantasy)"><strong>${nebulaByUser[r.user_id] ?? 0}</strong> Nebula</div>
-          <div class="lb-pct">${r.pct ?? 0}%</div>
-          <div class="lb-action">${compareTag}</div>
-        </div>`;
-      }).join('');
-      const onLeaderboard = auth.profile?.on_leaderboard;
-      const noFriendsNote = overall.length === 0
-        ? `<p style="color:var(--muted);font-size:13px;">No friends yet — add one above to start comparing reads.</p>`
-        : '';
-      return `<div class="progress-section" id="stats-friends-section">
-        <h2>Friends</h2>
-        <p style="color:var(--muted);font-size:13px;">You and your friends, ranked by reads from the ${totalLabel} canonical books. Tap Compare for a head-to-head.</p>
-        ${!onLeaderboard ? `<p style="color:var(--muted);font-size:13px;">You're not on the leaderboard yet. <a href="#/settings">Opt in from Settings</a>.</p>` : ''}
-        <form id="stats-friends-add-form" class="friends-add-form">
-          <input type="text" id="stats-friends-add-handle" placeholder="@handle to add" autocomplete="off">
-          <button type="submit" class="mr-btn-primary">Add friend</button>
-          <span id="stats-friends-add-status" class="settings-inline-status"></span>
-        </form>
-        <div class="lb-table">${rowHtml}</div>
-        ${noFriendsNote}
-      </div>`;
-    })()}
-
   </div>`;
 
   // Dashboard compare widget
@@ -2623,25 +2641,21 @@ function renderStats() {
   dashCompareBtn?.addEventListener('click', doCompare);
   dashCompareInput?.addEventListener('keydown', e => { if (e.key === 'Enter') doCompare(); });
 
-  // Friends add-form in the stats friends section
-  const statsFriendsForm = document.getElementById('stats-friends-add-form');
-  if (statsFriendsForm) {
-    const addStatus = document.getElementById('stats-friends-add-status');
-    statsFriendsForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const input = document.getElementById('stats-friends-add-handle');
-      const v = (input?.value || '').trim();
-      if (!v) return;
-      if (addStatus) { addStatus.textContent = 'Adding…'; addStatus.className = 'settings-inline-status'; }
-      try {
-        const target = await window.MR_AUTH.addFriendByHandle(v);
-        if (addStatus) { addStatus.textContent = `✓ Added @${target.handle}`; addStatus.className = 'settings-inline-status success'; }
-        if (input) input.value = '';
-        setTimeout(() => renderStats(), 200);
-      } catch (err) {
-        if (addStatus) { addStatus.textContent = err.message || String(err); addStatus.className = 'settings-inline-status error'; }
-      }
-    });
+  wireStatsFriendsForm();
+
+  // Friends data is cached from bootstrap and can be stale/empty when arriving
+  // here by SPA navigation. Refresh it on each Stats visit and re-patch just
+  // the friends section (no full re-render, no notify loop) so the list loads
+  // reliably. Guarded so it only runs on the signed-in user's own Stats.
+  if (window.MR_AUTH?.user && !state.viewingProfile && window.MR_AUTH.refreshFriends) {
+    window.MR_AUTH.refreshFriends().then(() => {
+      // Bail if the user navigated away while the refresh was in flight.
+      if (!location.hash.startsWith('#/stats') && location.hash !== '#/' && !location.hash.startsWith('#/u/')) return;
+      const el = document.getElementById('stats-friends-section');
+      if (!el) return;
+      el.outerHTML = friendsSectionHtml();
+      wireStatsFriendsForm();
+    }).catch(() => {});
   }
 
   $$('.recent-read, .swimlane-card', root).forEach(el => {
