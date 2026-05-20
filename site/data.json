@@ -44395,7 +44395,7 @@
       "ol_key": "/works/OL39683628W",
       "first_pub_year": 2010,
       "isbn": "1458170039",
-      "cover_url": "https://covers.openlibrary.org/b/id/8247636-L.jpg",
+      "cover_url": null,
       "author_genders": [
         "female"
       ],
@@ -46462,9 +46462,9 @@
   "meta": {
     "total": 794,
     "by_category": {
-      "Novelette": 78,
+      "Novel": 638,
       "Novella": 78,
-      "Novel": 638
+      "Novelette": 78
     }
   }
 }
