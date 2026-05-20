@@ -3884,15 +3884,6 @@ async function renderSettings() {
     </section>
 
     <section class="settings-section">
-      <h2>Leaderboard</h2>
-      <label class="settings-check">
-        <input type="checkbox" id="settings-leaderboard" ${profile.on_leaderboard ? 'checked' : ''}>
-        <strong>Show me on the Friends leaderboard.</strong>
-      </label>
-      <p style="color: var(--muted); font-size: 12.5px; margin: 6px 0 0 26px;">When on, you appear on the Friends page for everyone you're friends with — they see your handle, read count, and rank. Your profile page at <code>/u/${escapeHtml(profile.handle)}</code> is public either way.</p>
-    </section>
-
-    <section class="settings-section">
       <h2>Session</h2>
       <button type="button" class="mr-btn-ghost" id="settings-signout">Sign out</button>
     </section>
@@ -3958,13 +3949,6 @@ async function renderSettings() {
   });
   handleBtn.addEventListener('click', saveHandle);
   refreshHandleBtn();
-
-  $('#settings-leaderboard').addEventListener('change', async (e) => {
-    try {
-      await window.MR_AUTH.updateProfile({ on_leaderboard: e.target.checked });
-      setMsg(e.target.checked ? "You're on the leaderboard." : "Removed from leaderboard.", 'success');
-    } catch (err) { setMsg('Save failed: ' + err.message, 'error'); }
-  });
 
   $('#settings-signout').addEventListener('click', async () => {
     await window.MR_AUTH.signOut();
