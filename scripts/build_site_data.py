@@ -31,6 +31,7 @@ import pandas as pd
 CATEGORY_FOR_SHEET = {
     "best_novel": "Novel",
     "best_novella_hugo": "Novella",
+    "best_novella_nebula": "Novella",
     "best_novelette_hugo": "Novelette",
     "favorites": "Favorite",
 }
@@ -38,6 +39,7 @@ CATEGORY_FOR_SHEET = {
 TITLE_COL_FOR_SHEET = {
     "best_novel": "Novel",
     "best_novella_hugo": "Novel",
+    "best_novella_nebula": "Novel",
     "best_novelette_hugo": "Novelette",
     "favorites": "Novel",
 }

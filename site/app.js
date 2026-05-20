@@ -386,7 +386,7 @@ function matchesFilters(book) {
   if (state.missingFilter && state.missingFilter.size > 0) {
     const missingDesc = !book.description || !book.description.trim();
     const missingCover = !book.cover_url || !book.cover_url.trim();
-    const missingLink = !book.publication_url || !book.publication_url.trim();
+    const missingLink = !(book.publication_url || book.bookshop_url || '').trim();
     const wantsDesc = state.missingFilter.has('desc');
     const wantsCover = state.missingFilter.has('cover');
     const wantsLink = state.missingFilter.has('link');
@@ -1303,7 +1303,6 @@ function renderMagazines() {
   //   magazines     — Genre magazines block
   //   genres        — Browse by genre swimlanes
   root.innerHTML = `<div class="detail magazines-page">
-    <h1>Collections</h1>
     ${shareRowHtml(`${location.origin}/collections`, 'Collections · Readmore SFF')}
     <div class="collections-toc">
       <span class="collections-toc-label">Jump to:</span>
@@ -1565,6 +1564,26 @@ function featuredBanner(opts) {
     ${makeCoverRow(finalists.Novella, 'Novella')}
     ${howToVoteHtml}
   </div>`;
+}
+
+// Signed-out home overview — what Readmore is + what an account unlocks.
+function unauthOverviewHtml() {
+  const total = DATA.books.length;
+  const feature = (h, p) => `<div class="unauth-feature"><h3>${h}</h3><p>${p}</p></div>`;
+  return `<section class="unauth-overview">
+    <h1 class="unauth-title">Read every Hugo &amp; Nebula winner.</h1>
+    <p class="unauth-lede">Readmore SFF is the complete list of every <strong>Hugo</strong>, <strong>Nebula</strong>, and <strong>Retro Hugo</strong> winner and finalist in Novel, Novella, and Novelette — ${total} books across the decades. The goal is simple: read them all.</p>
+    <div class="unauth-features">
+      ${feature('Track your reads', 'Mark every book Read, Nightstand, or Unread and watch your completion climb.')}
+      ${feature('Sort in minutes', 'The Discover deck lets you triage the whole canon, one swipe at a time.')}
+      ${feature('Compare with friends', 'See your reading head-to-head with friends across eras and subgenres.')}
+      ${feature('Your stats', 'Coverage by era, award, genre, and author — your reading taste, visualized.')}
+    </div>
+    <div class="unauth-cta">
+      <a href="#/signin" class="mr-btn-primary unauth-cta-btn">Create a free account →</a>
+      <span class="unauth-cta-sub">Free · no tracking · friends-only social</span>
+    </div>
+  </section>`;
 }
 
 // Friends list for the Stats page — the signed-in user + friends ranked by
@@ -2311,11 +2330,16 @@ function renderStats() {
     ? `<h1 class="stats-title">@${escapeHtml(headerHandle)}${isOwnHeader ? ' <span class="stats-title-tag">your stats</span>' : ' <span class="stats-title-tag">stats</span>'}</h1>`
     : `<h1 class="stats-title">Stats</h1>`;
 
-  root.innerHTML = `<div class="detail">
-    ${titleHtml}
-    ${state.viewingProfile ? '' : `<p class="dashboard-intro"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>`}
+  // Signed-out home: lead with a product overview + create-account CTA
+  // instead of the personal dashboard widgets.
+  const isAnonHome = !window.MR_AUTH?.user && !state.viewingProfile;
+
+  root.innerHTML = `<div class="detail stats-page">
+    ${isOwnHeader ? '' : titleHtml}
+    ${isAnonHome
+      ? unauthOverviewHtml()
+      : (state.viewingProfile ? '' : `<p class="dashboard-intro"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>`)}
     ${friendsSectionHtml()}
-    ${!HAS_READER ? `<p class="dashboard-sort-cta">New here? Use the <a href="#/discover"><strong>Discover</strong></a> tab to rapidly label every book as Read, Nightstand, or Skip — builds your reading list in minutes.</p>` : ''}
     <div class="stats-filter-row">
       <fieldset class="stats-filter-group">
         <legend>Status</legend>
@@ -5107,6 +5131,9 @@ function applyReaderFilterVisibility() {
   // otherwise leave it stuck hidden.
   const meFs = $('#me-status-fieldset');
   if (meFs) meFs.hidden = !window.MR_AUTH?.user;
+  // The "Debug: missing data" filter is an admin-only tool.
+  const debugFs = $('.debug-filter');
+  if (debugFs) debugFs.hidden = !window.MR_AUTH?.profile?.is_admin;
 }
 
 // Collapsible filter sections — fold state is keyed by legend text and

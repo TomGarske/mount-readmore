@@ -38754,7 +38754,8 @@
       "year": 2026,
       "publisher": "Tordotcom",
       "awards": {
-        "hugo": "nominee"
+        "hugo": "nominee",
+        "nebula": "nominee"
       },
       "tom": "",
       "nika": "",
@@ -38776,7 +38777,8 @@
       "schupp_rating": "",
       "series": "",
       "award_years": {
-        "hugo": 2026
+        "hugo": 2026,
+        "nebula": 2026
       },
       "cover_url": "https://covers.openlibrary.org/b/id/14855941-M.jpg",
       "ol_key": "/works/OL42549528W",
@@ -38897,7 +38899,8 @@
       "year": 2026,
       "publisher": "Tordotcom",
       "awards": {
-        "hugo": "nominee"
+        "hugo": "nominee",
+        "nebula": "nominee"
       },
       "tom": "",
       "nika": "",
@@ -38919,7 +38922,8 @@
       "schupp_rating": "",
       "series": "",
       "award_years": {
-        "hugo": 2026
+        "hugo": 2026,
+        "nebula": 2026
       },
       "cover_url": "https://covers.openlibrary.org/b/id/15120978-M.jpg",
       "ol_key": "/works/OL42425109W",
@@ -42830,6 +42834,166 @@
       "primary_author_gender": "male"
     },
     {
+      "id": "disgraced-return-of-the-kap-s-needle-bernardo-2026-novella",
+      "title": "Disgraced Return of the Kap's Needle",
+      "authors": [
+        "Renan Bernardo"
+      ],
+      "author_raw": "Renan Bernardo",
+      "category": "Novella",
+      "year": 2026,
+      "publisher": "Dark Matter Ink",
+      "awards": {
+        "nebula": "nominee"
+      },
+      "tom": "",
+      "nika": "",
+      "tom_date_read": "",
+      "tom_rating": "",
+      "tom_shelf": "",
+      "nika_shelf": "",
+      "westdac": "",
+      "westdac_shelf": "",
+      "westdac_date_read": "",
+      "westdac_rating": "",
+      "colton": "",
+      "colton_shelf": "",
+      "colton_date_read": "",
+      "colton_rating": "",
+      "schupp": "",
+      "schupp_shelf": "",
+      "schupp_date_read": "",
+      "schupp_rating": "",
+      "series": "",
+      "award_years": {
+        "nebula": 2026
+      },
+      "author_genders": [
+        "unknown"
+      ],
+      "primary_author_gender": "unknown"
+    },
+    {
+      "id": "the-death-of-mountains-kurella-2026-novella",
+      "title": "The Death of Mountains",
+      "authors": [
+        "Jordan Kurella"
+      ],
+      "author_raw": "Jordan Kurella",
+      "category": "Novella",
+      "year": 2026,
+      "publisher": "Lethe Press",
+      "awards": {
+        "nebula": "nominee"
+      },
+      "tom": "",
+      "nika": "",
+      "tom_date_read": "",
+      "tom_rating": "",
+      "tom_shelf": "",
+      "nika_shelf": "",
+      "westdac": "",
+      "westdac_shelf": "",
+      "westdac_date_read": "",
+      "westdac_rating": "",
+      "colton": "",
+      "colton_shelf": "",
+      "colton_date_read": "",
+      "colton_rating": "",
+      "schupp": "",
+      "schupp_shelf": "",
+      "schupp_date_read": "",
+      "schupp_rating": "",
+      "series": "",
+      "award_years": {
+        "nebula": 2026
+      },
+      "author_genders": [
+        "unknown"
+      ],
+      "primary_author_gender": "unknown"
+    },
+    {
+      "id": "but-not-too-bold-pueyo-2026-novella",
+      "title": "But Not Too Bold",
+      "authors": [
+        "Hache Pueyo"
+      ],
+      "author_raw": "Hache Pueyo",
+      "category": "Novella",
+      "year": 2026,
+      "publisher": "Tordotcom",
+      "awards": {
+        "nebula": "nominee"
+      },
+      "tom": "",
+      "nika": "",
+      "tom_date_read": "",
+      "tom_rating": "",
+      "tom_shelf": "",
+      "nika_shelf": "",
+      "westdac": "",
+      "westdac_shelf": "",
+      "westdac_date_read": "",
+      "westdac_rating": "",
+      "colton": "",
+      "colton_shelf": "",
+      "colton_date_read": "",
+      "colton_rating": "",
+      "schupp": "",
+      "schupp_shelf": "",
+      "schupp_date_read": "",
+      "schupp_rating": "",
+      "series": "",
+      "award_years": {
+        "nebula": 2026
+      },
+      "author_genders": [
+        "unknown"
+      ],
+      "primary_author_gender": "unknown"
+    },
+    {
+      "id": "descent-talabi-2026-novella",
+      "title": "Descent",
+      "authors": [
+        "Wole Talabi"
+      ],
+      "author_raw": "Wole Talabi",
+      "category": "Novella",
+      "year": 2026,
+      "publisher": "Clarkesworld, May 2025",
+      "awards": {
+        "nebula": "nominee"
+      },
+      "tom": "",
+      "nika": "",
+      "tom_date_read": "",
+      "tom_rating": "",
+      "tom_shelf": "",
+      "nika_shelf": "",
+      "westdac": "",
+      "westdac_shelf": "",
+      "westdac_date_read": "",
+      "westdac_rating": "",
+      "colton": "",
+      "colton_shelf": "",
+      "colton_date_read": "",
+      "colton_rating": "",
+      "schupp": "",
+      "schupp_shelf": "",
+      "schupp_date_read": "",
+      "schupp_rating": "",
+      "series": "",
+      "award_years": {
+        "nebula": 2026
+      },
+      "author_genders": [
+        "male"
+      ],
+      "primary_author_gender": "male"
+    },
+    {
       "id": "kaiju-agonistes-lynch-2026-novelette",
       "title": "Kaiju Agonistes",
       "authors": [
@@ -46463,11 +46627,11 @@
     }
   ],
   "meta": {
-    "total": 794,
+    "total": 798,
     "by_category": {
-      "Novelette": 78,
       "Novel": 638,
-      "Novella": 78
+      "Novella": 82,
+      "Novelette": 78
     }
   }
 }

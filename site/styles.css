@@ -1205,6 +1205,24 @@ a:hover { text-decoration: underline; }
   border-radius: 999px;
 }
 .stats-filter-projection legend { color: var(--accent); }
+
+/* Stats + Collections span the full Search-tab width (override .detail's
+   900px cap). Two-class selector beats the later `.detail` rule. */
+.detail.stats-page, .detail.magazines-page { max-width: none; }
+
+/* Signed-out home overview */
+.unauth-overview { margin: 8px 0 32px; max-width: 880px; }
+.unauth-title { font-size: 30px; letter-spacing: -0.01em; margin: 0 0 10px; }
+.unauth-lede { font-size: 16px; line-height: 1.55; color: var(--text-2); margin: 0 0 24px; }
+.unauth-features { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+.unauth-feature { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: var(--bg-2); }
+.unauth-feature h3 { margin: 0 0 4px; font-size: 15px; }
+.unauth-feature p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.5; }
+.unauth-cta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.unauth-cta-btn { font-size: 15px; padding: 10px 20px; }
+.unauth-cta-sub { color: var(--muted); font-size: 13px; }
+@media (max-width: 620px) { .unauth-features { grid-template-columns: 1fr; } }
+
 /* Card stack + stats card stay centered within the wider main column (the
    full-width override lives in the Discover block below). */
 .discover-page .discover-stats-card { max-width: 820px; margin-left: auto; margin-right: auto; }
