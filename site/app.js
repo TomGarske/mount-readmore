@@ -2190,7 +2190,7 @@ function renderStats() {
     ${titleHtml}
     ${state.viewingProfile ? '' : `<p class="dashboard-intro"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>`}
     ${compareWidgetHtml}
-    ${!HAS_READER ? `<p class="dashboard-sort-cta">New here? Use the <a href="#/discover"><strong>Sort</strong></a> tab to rapidly label every book as Read, Nightstand, or Skip — builds your reading list in minutes.</p>` : ''}
+    ${!HAS_READER ? `<p class="dashboard-sort-cta">New here? Use the <a href="#/discover"><strong>Discover</strong></a> tab to rapidly label every book as Read, Nightstand, or Skip — builds your reading list in minutes.</p>` : ''}
     <div class="stats-filter-row">
       <fieldset class="stats-filter-group">
         <legend>Status</legend>
@@ -3685,14 +3685,14 @@ function awardFeaturedBannersHtml() {
 async function renderDiscover() {
   const root = $('#view-discover');
   if (!root) return;
-  root.innerHTML = `<div class="detail"><h1>Sort</h1><p style="color: var(--muted);">Loading…</p></div>`;
+  root.innerHTML = `<div class="detail"><h1>Discover</h1><p style="color: var(--muted);">Loading…</p></div>`;
   try {
     await Promise.race([
       window.MR_AUTH?.ready,
       new Promise((_, rej) => setTimeout(() => rej(new Error('Auth bootstrap timed out')), 10000)),
     ]);
   } catch (err) {
-    root.innerHTML = `<div class="detail"><h1>Sort</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
+    root.innerHTML = `<div class="detail"><h1>Discover</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
     return;
   }
 
@@ -4973,7 +4973,7 @@ function _route() {
     renderDiscover().catch(err => {
       console.error('renderDiscover threw:', err);
       const root = document.getElementById('view-discover');
-      if (root) root.innerHTML = `<div class="detail"><h1>Sort</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
+      if (root) root.innerHTML = `<div class="detail"><h1>Discover</h1><p style="color: var(--sf);">Couldn't load: ${escapeHtml(err.message || String(err))}</p></div>`;
     });
     return;
   }
