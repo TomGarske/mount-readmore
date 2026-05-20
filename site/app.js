@@ -232,8 +232,11 @@ let state = {
   progressAwards: new Set(['hugo', 'nebula']),
   // Progress-page category scope (multi-select).
   progressCategories: new Set(['Novel', 'Novella', 'Novelette']),
-  // Single switch: include nightstand books in stats projections everywhere.
-  includeNightstand: false,
+  // Include nightstand books in stats projections everywhere — always on.
+  // Charts render two polygons (actual reads + grey nightstand-projection
+  // ghost). The user-facing toggle was removed; this stays true as the
+  // standard behavior.
+  includeNightstand: true,
   // Home page: time-window for most-awarded authors (years back)
   authorWindow: 30,
   // Home page: which gender slice is currently selected (null = all)
@@ -2116,10 +2119,6 @@ function renderStats() {
         <label><input type="checkbox" data-progress-category="Novella" ${CATEGORIES.has('Novella') ? 'checked' : ''}> Novella</label>
         <label><input type="checkbox" data-progress-category="Novelette" ${CATEGORIES.has('Novelette') ? 'checked' : ''}> Novelette</label>
       </fieldset>
-      ${HAS_READER ? `<fieldset class="stats-filter-group stats-filter-projection">
-        <legend>Projection</legend>
-        <label><input type="checkbox" data-progress-incnight ${state.includeNightstand ? 'checked' : ''}> Include nightstand</label>
-      </fieldset>` : ''}
     </div>
 
     <div class="headline-grid">
@@ -2572,13 +2571,6 @@ function renderStats() {
       if (toggleSet(state.progressCategories, cb.dataset.progressCategory, cb)) renderStats();
     });
   });
-  $$('[data-progress-incnight]', root).forEach(cb => {
-    cb.addEventListener('change', () => {
-      state.includeNightstand = cb.checked;
-      renderStats();
-    });
-  });
-
   // Donut slice click — navigate to filtered Books view
   $$('.donut-seg', root).forEach(seg => {
     seg.addEventListener('click', () => {
@@ -2884,9 +2876,19 @@ async function renderCompare(params) {
     if (g in s.byGender) s.byGender[g]++;
   };
 
+  // Projection = read OR nightstand. Drawn as a grey ghost polygon under the
+  // actual-reads polygon to show where each reader lands after finishing
+  // their nightstand. Mirrors the main Stats page behavior.
+  const isReadStatus = (side, id) => side.statusMap[id]?.status === 'read';
+  const isProjStatus = (side, id) => {
+    const s = side.statusMap[id]?.status;
+    return s === 'read' || s === 'nightstand';
+  };
   for (const book of DATA.books) {
-    const aRead = aSide.statusMap[book.id]?.status === 'read';
-    const bRead = bSide.statusMap[book.id]?.status === 'read';
+    const aRead = isReadStatus(aSide, book.id);
+    const bRead = isReadStatus(bSide, book.id);
+    const aProj = isProjStatus(aSide, book.id);
+    const bProj = isProjStatus(bSide, book.id);
     if (aRead && bRead) both.push(book);
     else if (aRead) aOnly.push(book);
     else if (bRead) bOnly.push(book);
@@ -2894,10 +2896,12 @@ async function renderCompare(params) {
     if (aRead) tallyOne(stats.a, book);
     if (bRead) tallyOne(stats.b, book);
     for (const g of (book.subgenres || [])) {
-      if (!subBuckets[g]) subBuckets[g] = { total: 0, a: 0, b: 0 };
+      if (!subBuckets[g]) subBuckets[g] = { total: 0, a: 0, b: 0, aProj: 0, bProj: 0 };
       subBuckets[g].total++;
       if (aRead) subBuckets[g].a++;
       if (bRead) subBuckets[g].b++;
+      if (aProj) subBuckets[g].aProj++;
+      if (bProj) subBuckets[g].bProj++;
     }
   }
   [both, aOnly, bOnly, neither].forEach(arr => arr.sort((x, y) => (y.year || 0) - (x.year || 0)));
@@ -2926,18 +2930,33 @@ async function renderCompare(params) {
   const decadeBuckets = bucketBooksByDecade(DATA.books);
   const eraDecades = eraRadarAxes(decadeBuckets);
   const eraAxes = eraDecades.map(eraAxisLabel);
-  const eraValsA = eraReaderValues(eraDecades, decadeBuckets, (b) => aSide.statusMap[b.id]?.status === 'read');
-  const eraValsB = eraReaderValues(eraDecades, decadeBuckets, (b) => bSide.statusMap[b.id]?.status === 'read');
+  const eraValsA = eraReaderValues(eraDecades, decadeBuckets, (b) => isReadStatus(aSide, b.id));
+  const eraValsB = eraReaderValues(eraDecades, decadeBuckets, (b) => isReadStatus(bSide, b.id));
+  const eraValsAProj = eraReaderValues(eraDecades, decadeBuckets, (b) => isProjStatus(aSide, b.id));
+  const eraValsBProj = eraReaderValues(eraDecades, decadeBuckets, (b) => isProjStatus(bSide, b.id));
   // Shared keys for both era radar and per-side subgenre radar below — must
-  // be declared before either object literal references them (TDZ).
+  // be declared before either object literal references them (TDZ). __proj
+  // suffixed keys render as grey ghost polygons under the colored actual-reads
+  // polygons.
   const aKey = 'compare_a';
   const bKey = 'compare_b';
+  const aProjKey = aKey + '__proj';
+  const bProjKey = bKey + '__proj';
   const eraRadarConfig = {
+    [aProjKey]: { label: '@' + aSide.label + ' (with nightstand)', colorVar: 'var(--muted)', colorRgb: '120, 120, 120' },
+    [bProjKey]: { label: '@' + bSide.label + ' (with nightstand)', colorVar: 'var(--muted)', colorRgb: '120, 120, 120' },
     [aKey]: { label: '@' + aSide.label, colorVar: aSide.colorVar, colorRgb: aSide.colorRgb },
     [bKey]: { label: '@' + bSide.label, colorVar: bSide.colorVar, colorRgb: bSide.colorRgb },
   };
+  // Order matters: __proj entries first so they render underneath.
+  const eraRadarValues = {
+    [aProjKey]: eraValsAProj,
+    [bProjKey]: eraValsBProj,
+    [aKey]: eraValsA,
+    [bKey]: eraValsB,
+  };
   const eraRadarHtml = eraDecades.length >= 3
-    ? buildRadar(eraAxes, { [aKey]: eraValsA, [bKey]: eraValsB }, eraRadarConfig)
+    ? buildRadar(eraAxes, eraRadarValues, eraRadarConfig)
     : '';
 
   // Build per-side radars — top 8 most-populated subgenres, dropping axes
@@ -2947,23 +2966,27 @@ async function renderCompare(params) {
     .slice(0, 8)
     .map(([name]) => name)
     .filter(g => (subBuckets[g].a + subBuckets[g].b) > 0);
-  const valsFor = side => radarAxes.map(g => {
+  const valsFor = key => radarAxes.map(g => {
     const bucket = subBuckets[g];
-    return bucket.total > 0 ? bucket[side] / bucket.total : 0;
+    return bucket.total > 0 ? bucket[key] / bucket.total : 0;
   });
   const radarConfig = {
+    [aProjKey]: { label: '@' + aSide.label + ' (with nightstand)', colorVar: 'var(--muted)', colorRgb: '120, 120, 120' },
+    [bProjKey]: { label: '@' + bSide.label + ' (with nightstand)', colorVar: 'var(--muted)', colorRgb: '120, 120, 120' },
     [aKey]: { label: '@' + aSide.label, colorVar: aSide.colorVar, colorRgb: aSide.colorRgb },
     [bKey]: { label: '@' + bSide.label, colorVar: bSide.colorVar, colorRgb: bSide.colorRgb },
   };
+  // Order matters: __proj entries first so they render as grey ghosts
+  // underneath the colored actual-reads polygons.
   const radarHtml = radarAxes.length >= 3
     ? `<div class="compare-radar-grid">
         <div class="compare-radar-card">
           <h3 style="color: ${aSide.colorVar}">@${escapeHtml(aSide.label)}</h3>
-          ${buildRadar(radarAxes, { [aKey]: valsFor('a') }, radarConfig)}
+          ${buildRadar(radarAxes, { [aProjKey]: valsFor('aProj'), [aKey]: valsFor('a') }, radarConfig)}
         </div>
         <div class="compare-radar-card">
           <h3 style="color: ${bSide.colorVar}">@${escapeHtml(bSide.label)}</h3>
-          ${buildRadar(radarAxes, { [bKey]: valsFor('b') }, radarConfig)}
+          ${buildRadar(radarAxes, { [bProjKey]: valsFor('bProj'), [bKey]: valsFor('b') }, radarConfig)}
         </div>
       </div>`
     : '';
@@ -3173,7 +3196,7 @@ async function renderCompare(params) {
 
     ${eraRadarHtml ? `<section class="compare-radar-section">
       <h2>Era fingerprint</h2>
-      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Each axis = a decade. Distance from center = share of that decade's winners + finalists each reader has read.</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Each axis = a decade. Distance from center = share of that decade's winners + finalists each reader has read. Grey overlay = where each reader lands after finishing their nightstand.</p>
       ${eraRadarHtml}
       <div class="era-radar-stats">
         <span style="color:${aSide.colorVar}"><strong>@${escapeHtml(aSide.label)}</strong> · avg ${avgYearA ?? '—'}${mrdA ? ` · most-read ${eraAxisLabel(mrdA.decade)} (${mrdA.count})` : ''}</span>
@@ -3183,7 +3206,7 @@ async function renderCompare(params) {
 
     ${radarHtml ? `<section class="compare-radar-section">
       <h2>Subgenre fingerprint</h2>
-      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Each axis = a subgenre. Distance from center = % of that subgenre this reader has finished.</p>
+      <p style="color: var(--muted); font-size: 13px; margin-top: 4px;">Each axis = a subgenre. Distance from center = % of that subgenre this reader has finished. Grey overlay = where they land after finishing their nightstand.</p>
       ${radarHtml}
     </section>` : ''}
 
