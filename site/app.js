@@ -1303,7 +1303,6 @@ function renderMagazines() {
   //   magazines     — Genre magazines block
   //   genres        — Browse by genre swimlanes
   root.innerHTML = `<div class="detail magazines-page">
-    ${shareRowHtml(`${location.origin}/collections`, 'Collections · Readmore SFF')}
     <div class="collections-toc">
       <span class="collections-toc-label">Jump to:</span>
       <a href="#/collections?section=nominees">Nominees</a>
@@ -1511,17 +1510,22 @@ function featuredBanner(opts) {
     const covers = books.map(f => {
       const match = findBook(f.title, f.author, 'Novel')
         || findBook(f.title, f.author, 'Novella');
+      const fallbackInner = `<div class="featured-cover-fallback">
+          <div class="fc-title">${escapeHtml(f.title)}</div>
+          <div class="fc-author">${escapeHtml(f.author)}</div>
+        </div>`;
+      // Matched + has cover → linked cover image.
       if (match && match.cover_url) {
         return `<a class="featured-cover" href="#/books/${escapeHtml(match.id)}" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">
           <img src="${escapeHtml(match.cover_url)}" alt="" loading="lazy" onload="__coverFallback(this)" onerror="__coverFallback(this)">
         </a>`;
       }
-      return `<div class="featured-cover featured-cover-stub" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">
-        <div class="featured-cover-fallback">
-          <div class="fc-title">${escapeHtml(f.title)}</div>
-          <div class="fc-author">${escapeHtml(f.author)}</div>
-        </div>
-      </div>`;
+      // Matched but no cover → still link to the detail page (typographic tile).
+      if (match) {
+        return `<a class="featured-cover featured-cover-stub" href="#/books/${escapeHtml(match.id)}" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">${fallbackInner}</a>`;
+      }
+      // Not in the dataset → non-clickable stub.
+      return `<div class="featured-cover featured-cover-stub" title="${escapeHtml(f.title)} — ${escapeHtml(f.author)}">${fallbackInner}</div>`;
     }).join('');
     return `<div class="featured-category-label">${escapeHtml(rowLabel)} <span class="featured-category-count">· ${books.length}</span></div>
       <div class="featured-cover-strip">${covers}</div>`;
@@ -3705,7 +3709,6 @@ function awardFeaturedBannersHtml() {
   return `<div class="featured-banners featured-banners-full">
       ${featuredBanner({
         theme: 'hugo',
-        anchorId: 'hugo-nominees',
         name: 'Hugo Awards',
         audience: 'Fans',
         since: '1953',
@@ -3742,7 +3745,6 @@ function awardFeaturedBannersHtml() {
       })}
       ${featuredBanner({
         theme: 'nebula',
-        anchorId: 'nebula-nominees',
         name: 'Nebula Awards',
         audience: 'Writers',
         since: '1965',
