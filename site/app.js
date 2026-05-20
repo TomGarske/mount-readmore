@@ -682,6 +682,49 @@ function renderList() {
   });
 }
 
+// Shared share/copy control. Real-path URLs (/books, /authors, /collections)
+// are served by Pages Functions that inject page-specific OG tags, so a shared
+// link renders a rich preview. "Share" uses the native sheet where available;
+// "Copy link" is always present.
+function shareRowHtml(shareUrl, shareTitle) {
+  const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+  const u = escapeHtml(shareUrl);
+  const t = escapeHtml(shareTitle || 'Readmore SFF');
+  return `<div class="detail-share-row">
+    ${canNativeShare ? `<button type="button" class="detail-share-btn" data-share-url="${u}" data-share-title="${t}" title="Share">Share</button>` : ''}
+    <button type="button" class="detail-copy-btn" data-share-url="${u}" title="Copy a link">Copy link</button>
+  </div>`;
+}
+
+function wireShareRow(root) {
+  const shareBtn = $('.detail-share-btn', root);
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      try { await navigator.share({ title: shareBtn.dataset.shareTitle || 'Readmore SFF', url: shareBtn.dataset.shareUrl }); }
+      catch (_) { /* user cancelled the share sheet — no-op */ }
+    });
+  }
+  const copyBtn = $('.detail-copy-btn', root);
+  if (copyBtn) {
+    copyBtn.addEventListener('click', async () => {
+      const url = copyBtn.dataset.shareUrl;
+      try {
+        await navigator.clipboard.writeText(url);
+      } catch (_) {
+        const ta = document.createElement('textarea');
+        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch (_) {}
+        ta.remove();
+      }
+      const prev = copyBtn.textContent;
+      copyBtn.textContent = '✓ Copied';
+      copyBtn.classList.add('copied');
+      setTimeout(() => { copyBtn.textContent = prev; copyBtn.classList.remove('copied'); }, 1800);
+    });
+  }
+}
+
 function renderDetail(id) {
   const book = DATA.books.find(b => b.id === id);
   const root = $('#view-detail');
@@ -765,17 +808,12 @@ function renderDetail(id) {
     </div>`;
 
   const shareUrl = `${location.origin}/books/${encodeURIComponent(book.id)}`;
-  const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
-  const shareRow = `<div class="detail-share-row">
-    ${canNativeShare ? `<button type="button" class="detail-share-btn" data-share-url="${escapeHtml(shareUrl)}" title="Share this book">Share</button>` : ''}
-    <button type="button" class="detail-copy-btn" data-share-url="${escapeHtml(shareUrl)}" title="Copy a link to this book">Copy link</button>
-  </div>`;
 
   root.innerHTML = `<div class="detail">
     <a href="#/search" class="back">← back to search</a>
     <h1>${escapeHtml(book.title)}</h1>
     <div class="author-line">by ${(book.authors || []).map(a => `<a href="#/authors/${encodeURIComponent(a)}" class="author-link">${escapeHtml(a)}</a>`).join(', ') || escapeHtml(book.author_raw || '')}${book.series ? ` · <span class="series-inline">${escapeHtml(book.series)}</span>` : ''}</div>
-    ${shareRow}
+    ${shareRowHtml(shareUrl, book.title)}
     <div class="detail-grid">
       <div class="detail-cover">${coverHtml}</div>
       <div class="detail-info">
@@ -825,35 +863,7 @@ function renderDetail(id) {
     ${book.authors && book.authors.length > 0 ? `<div id="detail-author-bio" class="book-section author-bio-section"></div>` : ''}
   </div>`;
   wireUserStatusControls();
-  const titleForShare = book.title;
-  const shareBtn = $('.detail-share-btn', root);
-  if (shareBtn) {
-    shareBtn.addEventListener('click', async () => {
-      try {
-        await navigator.share({ title: titleForShare, url: shareBtn.dataset.shareUrl });
-      } catch (_) { /* user cancelled the share sheet — no-op */ }
-    });
-  }
-  const copyBtn = $('.detail-copy-btn', root);
-  if (copyBtn) {
-    copyBtn.addEventListener('click', async () => {
-      const url = copyBtn.dataset.shareUrl;
-      try {
-        await navigator.clipboard.writeText(url);
-      } catch (_) {
-        // Fallback for browsers/contexts without the async clipboard API.
-        const ta = document.createElement('textarea');
-        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
-        document.body.appendChild(ta); ta.select();
-        try { document.execCommand('copy'); } catch (_) {}
-        ta.remove();
-      }
-      const prev = copyBtn.textContent;
-      copyBtn.textContent = '✓ Copied';
-      copyBtn.classList.add('copied');
-      setTimeout(() => { copyBtn.textContent = prev; copyBtn.classList.remove('copied'); }, 1800);
-    });
-  }
+  wireShareRow(root);
   $$('.swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
   });
@@ -1083,6 +1093,7 @@ function renderAuthorDetail(name) {
       <div class="author-detail-meta">
         <h1 class="author-detail-name">${escapeHtml(name)}</h1>
         <div class="author-detail-stats">${statPills}</div>
+        ${shareRowHtml(`${location.origin}/authors/${encodeURIComponent(name)}`, name)}
         <div id="author-detail-bio" class="author-detail-bio">
           <p class="author-detail-bio-loading" style="color:var(--muted);font-size:13px;">Loading bio…</p>
         </div>
@@ -1098,6 +1109,7 @@ function renderAuthorDetail(name) {
   $$('.card', root).forEach(el =>
     el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; })
   );
+  wireShareRow(root);
 
   // Async: Wikipedia photo + bio
   fetchWikiAuthor(name).then(wiki => {
@@ -1277,6 +1289,7 @@ function renderMagazines() {
   //   genres        — Browse by genre swimlanes
   root.innerHTML = `<div class="detail magazines-page">
     <h1>Collections</h1>
+    ${shareRowHtml(`${location.origin}/collections`, 'Collections · Readmore SFF')}
     <div class="collections-toc">
       <span class="collections-toc-label">Jump to:</span>
       <a href="#/collections?section=nominees">Nominees</a>
@@ -1299,6 +1312,7 @@ function renderMagazines() {
   $$('.swimlane-card', root).forEach(el =>
     el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; })
   );
+  wireShareRow(root);
 }
 
 // Nightstand visual — books rendered as vertical spines stacked side by
@@ -5317,14 +5331,21 @@ function wireAuthGatedNav() {
 }
 
 async function init() {
-  // Direct-path entry: shareable book URLs like /books/<id> are served by a
-  // Cloudflare Pages Function that injects book-specific OG tags before any
-  // JS runs. We don't change the SPA's hash routing — just convert the entry
-  // pathname to the equivalent hash route so route() picks it up normally.
-  const directPathMatch = location.pathname.match(/^\/books\/([^/?#]+)\/?$/);
-  if (directPathMatch && !location.hash) {
-    const id = decodeURIComponent(directPathMatch[1]);
-    history.replaceState({}, '', '/#/books/' + encodeURIComponent(id));
+  // Direct-path entry: shareable URLs like /books/<id>, /authors/<name>, and
+  // /collections are served by Cloudflare Pages Functions that inject
+  // page-specific OG tags before any JS runs. We don't change the SPA's hash
+  // routing — just convert the entry pathname to the equivalent hash route so
+  // route() picks it up normally.
+  if (!location.hash) {
+    const p = location.pathname;
+    let bookM, authorM;
+    if ((bookM = p.match(/^\/books\/([^/?#]+)\/?$/))) {
+      history.replaceState({}, '', '/#/books/' + encodeURIComponent(decodeURIComponent(bookM[1])));
+    } else if ((authorM = p.match(/^\/authors\/([^/?#]+)\/?$/))) {
+      history.replaceState({}, '', '/#/authors/' + encodeURIComponent(decodeURIComponent(authorM[1])));
+    } else if (/^\/collections\/?$/.test(p)) {
+      history.replaceState({}, '', '/#/collections');
+    }
   }
   recomputeReaders();
   wireAuthGatedNav();
