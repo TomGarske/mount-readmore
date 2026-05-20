@@ -817,7 +817,19 @@ function renderDetail(id) {
 
   const shareUrl = `${location.origin}/books/${encodeURIComponent(book.id)}`;
 
+  // Bookshop referral promo — only on pages whose purchase CTA points to
+  // Bookshop (no free-read link). Dismissable, and the dismissal is remembered
+  // across every book page so it nags at most once.
+  const showBookshopBanner = !book.publication_url
+    && localStorage.getItem('mr-bookshop-banner-dismissed') !== '1';
+  const bookshopBannerHtml = showBookshopBanner ? `
+    <div class="bookshop-banner" id="bookshop-banner">
+      <span class="bookshop-banner-text">Book links go to <strong>Bookshop.org</strong>, which routes every order to independent local bookstores. New to Bookshop? <a href="https://refer.bookshop.org/tomgarske" target="_blank" rel="noopener">Get 20% off your first order &rarr;</a></span>
+      <button type="button" class="bookshop-banner-dismiss" id="bookshop-banner-dismiss" aria-label="Dismiss">&times;</button>
+    </div>` : '';
+
   root.innerHTML = `<div class="detail">
+    ${bookshopBannerHtml}
     <a href="#/search" class="back">← back to search</a>
     <h1>${escapeHtml(book.title)}</h1>
     <div class="author-line">by ${(book.authors || []).map(a => `<a href="#/authors/${encodeURIComponent(a)}" class="author-link">${escapeHtml(a)}</a>`).join(', ') || escapeHtml(book.author_raw || '')}${book.series ? ` · <span class="series-inline">${escapeHtml(book.series)}</span>` : ''}</div>
@@ -872,6 +884,10 @@ function renderDetail(id) {
   </div>`;
   wireUserStatusControls();
   wireShareRow(root);
+  $('#bookshop-banner-dismiss', root)?.addEventListener('click', () => {
+    try { localStorage.setItem('mr-bookshop-banner-dismissed', '1'); } catch {}
+    $('#bookshop-banner', root)?.remove();
+  });
   $$('.swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
   });

@@ -1213,6 +1213,36 @@ a:hover { text-decoration: underline; }
 .about-banner-text { font-size: 15px; line-height: 1.6; color: var(--text-2); margin: 0 auto 12px; max-width: 640px; }
 .about-banner-text:last-child { margin-bottom: 0; }
 
+/* Bookshop referral promo — dismissable banner atop Bookshop-linked book pages */
+.bookshop-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 20px;
+  padding: 12px 16px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--fantasy);
+  border-radius: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.bookshop-banner-text { flex: 1 1 auto; }
+.bookshop-banner-text a { font-weight: 600; }
+.bookshop-banner-dismiss {
+  flex: 0 0 auto;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+.bookshop-banner-dismiss:hover { color: var(--text); background: var(--bg-3); }
+
 /* Signed-out home overview */
 .unauth-overview { margin: 8px 0 32px; max-width: 880px; }
 .unauth-title { font-size: 30px; letter-spacing: -0.01em; margin: 0 0 10px; }
