@@ -3704,9 +3704,13 @@ function drawDiscover() {
       ? `<img src="${escapeHtml(b.cover_url)}" alt="" draggable="false" onload="__coverFallback(this)" onerror="__coverFallback(this)">`
       : `<span class="discover-cover-placeholder">📖</span>`;
     const bookAuthor = (b.authors || [])[0] || b.author_raw || '';
-    const pills = Object.entries(b.awards || {}).map(([a, s]) =>
-      `<span class="rr-pill rr-pill-${a === 'hugo' ? 'h' : 'n'}">${AWARD_LABELS[a]}${s === 'winner' ? ' ★' : ''}</span>`
+    const categoryPill = b.category
+      ? `<span class="rr-pill rr-pill-cat">${escapeHtml(b.category)}</span>`
+      : '';
+    const awardPills = Object.entries(b.awards || {}).map(([a, s]) =>
+      `<span class="rr-pill rr-pill-${a} rr-pill-${s}">${AWARD_LABELS[a]} ${s === 'winner' ? 'Winner ★' : 'Nominee'}</span>`
     ).join('');
+    const pills = categoryPill + awardPills;
     let descTxt = (b.description || '').replace(/\(\[[^\]]+\]\[\d+\]\)/g, '').replace(/^\[\d+\]:.*$/gm, '').trim();
     const descHtml = descTxt
       ? escapeHtml(descTxt).split(/\n\n+/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('')
@@ -3723,7 +3727,7 @@ function drawDiscover() {
       <div class="discover-cover-wrap">${img}</div>
       <div class="discover-card-info">
         <div class="discover-title">${titleHtml}</div>
-        <div class="discover-meta">${authorHtml}${b.year ? ` · ${b.year}` : ''}${b.category ? ` · ${escapeHtml(b.category)}` : ''}</div>
+        <div class="discover-meta">${authorHtml}${b.year ? ` · ${b.year}` : ''}</div>
         ${pills ? `<div class="discover-pills">${pills}</div>` : ''}
         <div class="discover-desc">${descHtml}</div>
       </div>

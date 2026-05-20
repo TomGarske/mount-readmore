@@ -2320,6 +2320,13 @@ a:hover { text-decoration: underline; }
 .rr-pill-w { background: rgba(182, 120, 60, 0.12); color: var(--accent-3); border-color: rgba(182, 120, 60, 0.4); }
 .rr-pill-c { background: rgba(74, 122, 90, 0.12);  color: var(--accent-4); border-color: rgba(74, 122, 90, 0.4); }
 .rr-pill-s { background: rgba(122, 68, 134, 0.12); color: var(--accent-5); border-color: rgba(122, 68, 134, 0.4); }
+/* Award + category pills used on Sort cards and elsewhere. Color comes from
+   the award token (Hugo = --sf / scarlet, Nebula = --fantasy / cobalt). The
+   nominee variant softens to an outline so winners pop. */
+.rr-pill-hugo    { background: rgba(198, 68, 79, 0.12); color: var(--sf);      border-color: rgba(198, 68, 79, 0.45); }
+.rr-pill-nebula  { background: rgba(44, 93, 150, 0.12); color: var(--fantasy); border-color: rgba(44, 93, 150, 0.45); }
+.rr-pill-nominee { background: transparent; }
+.rr-pill-cat     { background: rgba(120, 120, 120, 0.10); color: var(--muted); border-color: rgba(120, 120, 120, 0.35); }
 
 #main { padding: 24px 28px; max-width: 1400px; margin: 0 auto; }
 .view.hidden { display: none !important; }
