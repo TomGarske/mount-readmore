@@ -188,7 +188,11 @@ let ACTIVE_READERS = [];
 const showReader = (id) => READERS.includes(id);
 
 function recomputeReaders() {
-  if (URL_READERS.length) {
+  if (state.viewingProfile) {
+    // Rendering someone else's Stats — treat them as the sole 'me' reader.
+    READERS = ['me'];
+    READER_CONFIG.me.label = state.viewingProfile.handle;
+  } else if (URL_READERS.length) {
     READERS = URL_READERS.slice();
   } else if (window.MR_AUTH && window.MR_AUTH.user) {
     READERS = ['me'];
@@ -248,6 +252,10 @@ let state = {
   meStatus: new Set(['read', 'nightstand', 'neither']),
   // Search view: which sub-tab is active. 'books' | 'authors'.
   searchMode: 'books',
+  // When non-null, render the Stats page as if viewing another user's data.
+  // Shape: { id, handle, userBooksById, profile }. The 'me' reader's
+  // readStatus/onNightstand/shelfStatus look here instead of MR_AUTH.
+  viewingProfile: null,
 };
 
 // Solo mode is in the real query string (?solo=tom). Hash routing preserves it
@@ -256,9 +264,28 @@ let state = {
 const $ = (sel, root = document) => root.querySelector(sel);
 const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
+// Status for the 'me' reader. When state.viewingProfile is set we're rendering
+// someone else's Stats page, so resolve against their loaded user_books map
+// instead of the signed-in user's MR_AUTH.
+function meStatusFor(bookId) {
+  if (state.viewingProfile) {
+    return state.viewingProfile.userBooksById?.[bookId]?.status || null;
+  }
+  return window.MR_AUTH?.statusFor?.(bookId) || null;
+}
+
+// Full user_books map for the 'me' reader. Either the signed-in user's books
+// (default) or the viewed profile's books (when state.viewingProfile is set).
+// Used by renderStats sections that iterate the whole map rather than ask per
+// book — e.g. "Recently read" and "Nightstand" swimlanes.
+function meUserBooks() {
+  if (state.viewingProfile) return state.viewingProfile.userBooksById || {};
+  return window.MR_AUTH?.userBooks || {};
+}
+
 function readStatus(book, who = 'tom') {
   if (who === 'me') {
-    const status = window.MR_AUTH?.statusFor?.(book.id);
+    const status = meStatusFor(book.id);
     if (status === 'read') return 'read';
     if (status === 'started') return 'started';
     return 'unread';
@@ -275,7 +302,7 @@ function readStatus(book, who = 'tom') {
 // that's the legacy *_shelf column.
 function onNightstand(book, who) {
   if (who === 'me') {
-    return window.MR_AUTH?.statusFor?.(book.id) === 'nightstand';
+    return meStatusFor(book.id) === 'nightstand';
   }
   return book[`${who}_shelf`] === 'to-read';
 }
@@ -285,7 +312,7 @@ function shelfStatus(book, who) {
   // or 'nightstand' / 'started' / 'read' for 'me'. Used where the existing UI
   // wants to render a label or compare to a specific shelf.
   if (who === 'me') {
-    return window.MR_AUTH?.statusFor?.(book.id) || null;
+    return meStatusFor(book.id);
   }
   return book[`${who}_shelf`] || null;
 }
@@ -1538,7 +1565,7 @@ function renderStats() {
   const seenRecent = new Set();
   const recentSources = [];
   if (showReader('me')) {
-    const myBooks = window.MR_AUTH?.userBooks || {};
+    const myBooks = meUserBooks();
     const myRead = DATA.books
       .filter(b => myBooks[b.id]?.status === 'read')
       .map(b => ({ ...b, _meDate: myBooks[b.id]?.date_read || '' }))
@@ -1567,7 +1594,7 @@ function renderStats() {
   // === 'to-read' columns.
   const nightstandBooks = [];
   const seenShelf = new Set();
-  const myBooksForShelf = window.MR_AUTH?.userBooks || {};
+  const myBooksForShelf = meUserBooks();
   for (const b of DATA.books) {
     if (seenShelf.has(b.id)) continue;
     let on = false;
@@ -1917,7 +1944,7 @@ function renderStats() {
   // nightstand. When signed in, use MR_AUTH.userBooks; otherwise fall back
   // to the legacy CSV 'tom' columns.
   const upNextReaderId = showReader('me') ? 'me' : (SOLO || 'tom');
-  const meBooksUpNext = window.MR_AUTH?.userBooks || {};
+  const meBooksUpNext = meUserBooks();
   const upNext = winners
     .filter(b => {
       const r = upNextReaderId;
@@ -2039,7 +2066,10 @@ function renderStats() {
     ? window.MR_AUTH.friends.map(f => f.handle)
     : (window.MR_AUTH?.leaderboardOverall || []).map(r => r.handle);
   const dashFriendHandles = rawFriends.filter(h => h && h !== dashMyHandle);
-  const compareWidgetHtml = `<div class="dashboard-compare">
+  // Compare widget only makes sense on the viewer's OWN dashboard — when
+  // viewing another user we hide it to avoid the confusing "compare WITH me"
+  // semantics from someone else's page.
+  const compareWidgetHtml = state.viewingProfile ? '' : `<div class="dashboard-compare">
     <input type="text" id="dashboard-compare-input" class="dashboard-compare-input"
       placeholder="Compare with a friend by @handle…"
       list="dashboard-compare-list"
@@ -2052,19 +2082,21 @@ function renderStats() {
 
   // Profile header — show whose stats you're viewing.
   // SOLO is set by the #/stats?u= router for hardcoded readers; 'me' or null
-  // means own stats (use the signed-in handle if available).
+  // means own stats (use the signed-in handle if available). When
+  // state.viewingProfile is set, we're rendering another user's stats — use
+  // their handle and drop the "your stats" framing.
   const myHandleForHeader = window.MR_AUTH?.profile?.handle || null;
-  const headerHandle = (SOLO && SOLO !== 'me')
-    ? SOLO
-    : (myHandleForHeader || null);
-  const isOwnHeader = !SOLO || SOLO === 'me' || (myHandleForHeader && SOLO?.toLowerCase() === myHandleForHeader.toLowerCase());
+  const headerHandle = state.viewingProfile
+    ? state.viewingProfile.handle
+    : ((SOLO && SOLO !== 'me') ? SOLO : (myHandleForHeader || null));
+  const isOwnHeader = !state.viewingProfile && (!SOLO || SOLO === 'me' || (myHandleForHeader && SOLO?.toLowerCase() === myHandleForHeader.toLowerCase()));
   const titleHtml = headerHandle
     ? `<h1 class="stats-title">@${escapeHtml(headerHandle)}${isOwnHeader ? ' <span class="stats-title-tag">your stats</span>' : ' <span class="stats-title-tag">stats</span>'}</h1>`
     : `<h1 class="stats-title">Stats</h1>`;
 
   root.innerHTML = `<div class="detail">
     ${titleHtml}
-    <p class="dashboard-intro"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>
+    ${state.viewingProfile ? '' : `<p class="dashboard-intro"><strong>Readmore SFF</strong> is a complete list of every <strong>Hugo</strong> and <strong>Nebula</strong> winner and finalist in Novel, Novella, and Novelette. I wanted to set the goal of reading more of the books that set the trends and define my favorite genre of <strong>Sci-Fiction and Fantasy</strong> across the decades. Every year these are the works the field itself decided were worth remembering. The goal is simple: <strong>to read them all</strong>.</p>`}
     ${compareWidgetHtml}
     ${!HAS_READER ? `<p class="dashboard-sort-cta">New here? Use the <a href="#/discover"><strong>Sort</strong></a> tab to rapidly label every book as Read, Nightstand, or Skip — builds your reading list in minutes.</p>` : ''}
     <div class="stats-filter-row">
@@ -2134,7 +2166,7 @@ function renderStats() {
           const avgYearSub = !avgYear ? 'No reads yet'
             : (hasProj && projectedAvgYear !== avgYear
                 ? `Now ${avgYear} → <span class="stat-projection">${projectedAvgYear} projected</span>`
-                : `Across the books you've read`);
+                : (state.viewingProfile ? "Across the books they've read" : "Across the books you've read"));
           const mrdSub = !mrd ? 'No reads yet'
             : (hasProj && projectedMrd && projectedMrd.decade !== mrd.decade
                 ? `${mrd.count} now → <span class="stat-projection">${eraAxisLabel(projectedMrd.decade)} with ${projectedMrd.count} projected</span>`
@@ -2170,7 +2202,7 @@ function renderStats() {
       <div class="featured-shelf-head">
         <div>
           <h2>On the nightstand <span class="featured-shelf-count">${nightstandBooks.length}</span></h2>
-          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Books you have, but haven't finished yet. Toggle <strong>Include nightstand</strong> in the filter row above to project your stats as if you'd read them all.</p>
+          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">${state.viewingProfile ? "Books they have, but haven't finished yet." : "Books you have, but haven't finished yet. Toggle <strong>Include nightstand</strong> in the filter row above to project your stats as if you'd read them all."}</p>
         </div>
       </div>
       <div class="recent-reads">${nightstandHtml}</div>
@@ -2180,7 +2212,7 @@ function renderStats() {
       <div class="featured-shelf-head">
         <div>
           <h2>Up next</h2>
-          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">Recent winners on no nightstand yet. Open one to add it to your shelf.</p>
+          <p style="color: var(--muted); font-size: 13px; margin: 4px 0 0;">${state.viewingProfile ? "Recent winners not yet on their nightstand." : "Recent winners on no nightstand yet. Open one to add it to your shelf."}</p>
         </div>
       </div>
       <div class="recent-reads">${upNextHtml}</div>
@@ -2392,6 +2424,8 @@ function renderStats() {
     ${(() => {
       const auth = window.MR_AUTH;
       if (!auth?.user) return '';
+      // Don't render the signed-in user's friends list on someone else's page.
+      if (state.viewingProfile) return '';
       const overall = auth.leaderboardOverall || [];
       const byAward = auth.leaderboardByAward || [];
       const meHandle = auth.profile?.handle || null;
@@ -4128,7 +4162,50 @@ async function renderAdmin() {
   });
 }
 
-// ===== Public profile page ===========================================
+// ===== Public profile as Stats =======================================
+// Render the full Stats dashboard for another Supabase user. Loads their
+// profile + user_books, populates state.viewingProfile so the 'me' reader
+// resolves against their data, then calls renderStats(). On error or
+// not-found, falls back to a friendly message in the Stats view.
+async function viewStatsForHandle(handle) {
+  const root = $('#view-stats');
+  if (!root) return;
+  root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><p style="color: var(--muted);">Loading @${escapeHtml(handle)}…</p></div>`;
+  showView('stats');
+
+  await window.MR_AUTH?.ready;
+  const client = window.MR_AUTH?.client;
+  if (!client) {
+    root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><p style="color: var(--sf);">Auth client not ready.</p></div>`;
+    return;
+  }
+  const withTimeout = (p, ms, label) => Promise.race([
+    p,
+    new Promise(res => setTimeout(() => res({ data: null, error: { message: `${label} timed out after ${ms}ms` } }), ms)),
+  ]);
+  const { data: profile, error } = await withTimeout(
+    client.from('profiles')
+      .select('id, handle, profile_visibility, on_leaderboard, created_at, is_admin')
+      .ilike('handle', handle).maybeSingle(),
+    8000, 'profile lookup');
+  if (error || !profile) {
+    root.innerHTML = `<div class="detail"><a href="#/" class="back">← back</a><h1>Not found</h1><p>No profile @${escapeHtml(handle)}.</p></div>`;
+    return;
+  }
+  const { data: ub } = await withTimeout(
+    client.from('user_books').select('book_id, status, date_read').eq('user_id', profile.id),
+    8000, 'user_books lookup');
+  const userBooksById = {};
+  for (const row of (ub || [])) {
+    userBooksById[row.book_id] = { status: row.status, date_read: row.date_read };
+  }
+  state.viewingProfile = { id: profile.id, handle: profile.handle, userBooksById, profile };
+  // Recompute reader state so the viewed user becomes the sole 'me' reader.
+  recomputeReaders();
+  renderStats();
+}
+
+// ===== Public profile page (legacy condensed view) ===================
 async function renderProfile(handle) {
   const root = $('#view-profile');
   if (!root) return;
@@ -4595,6 +4672,9 @@ function _route() {
       return;
     }
   }
+  // Default: clear any cross-user viewing context. The Supabase-stats branch
+  // below repopulates it after loading the target user's books.
+  state.viewingProfile = null;
   const [path, qs] = h.split('?');
   if (path.startsWith('#/books/')) {
     const id = path.slice('#/books/'.length);
@@ -4679,10 +4759,9 @@ function _route() {
         renderStats();
         showView('stats');
       } else if (uHandle && (!myHandle || uHandle !== myHandle) && !ALL_READER_IDS.includes(uHandle)) {
-        // Supabase user that is neither a hardcoded reader nor the signed-in user
-        // → show their public profile
-        renderProfile(uHandle);
-        showView('profile');
+        // Supabase user that is neither a hardcoded reader nor the signed-in
+        // user → render the full Stats dashboard as if viewing their data.
+        viewStatsForHandle(uHandle);
       } else {
         // Own handle, no handle, or signed-in user's handle → own stats
         recomputeReaders();
