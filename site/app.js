@@ -3651,6 +3651,31 @@ function drawDiscover() {
 
   const book = discoverNextBook();
 
+  // Status/award filter toggles. Rendered in BOTH the active-card view and the
+  // empty state so the user can switch scope (e.g. winners → nominees) after
+  // finishing one filtered queue without leaving the Sort page.
+  const togglesHtml = (() => {
+    const dStatus = __discoverState.status || 'winner';
+    const dAward  = __discoverState.award  || 'both';
+    const allW = DATA.books.filter(b => Object.values(b.awards||{}).includes('winner')).length;
+    const allN = DATA.books.filter(b => !Object.values(b.awards||{}).includes('winner') && Object.keys(b.awards||{}).length > 0).length;
+    const allB = allW + allN;
+    const hugoAll = DATA.books.filter(b => (b.awards||{}).hugo).length;
+    const nebAll  = DATA.books.filter(b => (b.awards||{}).nebula).length;
+    return `<div class="discover-toggles">
+      <div class="status-toggle" data-discover-status="${dStatus}">
+        <button class="status-tab${dStatus==='winner'?' active':''}" data-discover-status="winner">Winners <span class="status-count">${allW}</span></button>
+        <button class="status-tab${dStatus==='nominee'?' active':''}" data-discover-status="nominee">Nominees <span class="status-count">${allN}</span></button>
+        <button class="status-tab${dStatus==='both'?' active':''}" data-discover-status="both">Both <span class="status-count">${allB}</span></button>
+      </div>
+      <div class="status-toggle award-toggle" data-discover-award="${dAward}">
+        <button class="status-tab${dAward==='both'?' active':''}" data-discover-award="both">Both <span class="status-count">${allB}</span></button>
+        <button class="status-tab status-tab-hugo${dAward==='hugo'?' active':''}" data-discover-award="hugo">Hugo <span class="status-count">${hugoAll}</span></button>
+        <button class="status-tab status-tab-nebula${dAward==='nebula'?' active':''}" data-discover-award="nebula">Nebula <span class="status-count">${nebAll}</span></button>
+      </div>
+    </div>`;
+  })();
+
   const statsRow = `<div class="discover-stats-card">
     <div class="discover-stats-row">
       <div class="discover-stat">
@@ -3684,16 +3709,25 @@ function drawDiscover() {
   </div>`;
 
   if (!book) {
+    // Scope label so the empty message reflects the active filter, not "every
+    // book" — the user may have only finished e.g. Hugo winners.
+    const dStatus = __discoverState.status || 'winner';
+    const dAward = __discoverState.award || 'both';
+    const statusWord = dStatus === 'winner' ? 'winner' : dStatus === 'nominee' ? 'nominee' : 'book';
+    const awardWord = dAward === 'hugo' ? 'Hugo ' : dAward === 'nebula' ? 'Nebula ' : '';
+    const scopeLabel = `${awardWord}${statusWord}`;
     root.innerHTML = `<div class="detail discover-page">
+      ${togglesHtml}
       ${statsRow}
       <div class="discover-empty">
-        <p style="font-size: 18px;"><strong>You've labeled every book.</strong></p>
-        <p style="color: var(--muted);">Nice work. Hit <a href="#/search">Search</a> to browse, or <a href="#/">Home</a> to see your progress.</p>
+        <p style="font-size: 18px;"><strong>You've sorted every ${escapeHtml(scopeLabel)}.</strong></p>
+        <p style="color: var(--muted);">Switch the filters above to keep sorting${dStatus !== 'both' || dAward !== 'both' ? ' — try Nominees or Both' : ''}, or hit <a href="#/search">Search</a> to browse and <a href="#/">Home</a> for your progress.</p>
         ${__discoverState && __discoverState.skipped.size > 0
           ? `<p style="margin-top: 18px;"><button type="button" id="discover-replay" class="user-status-btn">Replay ${__discoverState.skipped.size} skipped</button></p>`
           : ''}
       </div>
     </div>`;
+    wireDiscover();
     $('#discover-replay')?.addEventListener('click', () => {
       __discoverState.skipped.clear();
       __discoverState.queue = buildDiscoverQueue();
@@ -3783,27 +3817,7 @@ function drawDiscover() {
   };
 
   root.innerHTML = `<div class="detail discover-page">
-    ${(() => {
-      const dStatus = __discoverState.status || 'winner';
-      const dAward  = __discoverState.award  || 'both';
-      const allW = DATA.books.filter(b => Object.values(b.awards||{}).includes('winner')).length;
-      const allN = DATA.books.filter(b => !Object.values(b.awards||{}).includes('winner') && Object.keys(b.awards||{}).length > 0).length;
-      const allB = allW + allN;
-      const hugoAll = DATA.books.filter(b => (b.awards||{}).hugo).length;
-      const nebAll  = DATA.books.filter(b => (b.awards||{}).nebula).length;
-      return `<div class="discover-toggles">
-        <div class="status-toggle" data-discover-status="${dStatus}">
-          <button class="status-tab${dStatus==='winner'?' active':''}" data-discover-status="winner">Winners <span class="status-count">${allW}</span></button>
-          <button class="status-tab${dStatus==='nominee'?' active':''}" data-discover-status="nominee">Nominees <span class="status-count">${allN}</span></button>
-          <button class="status-tab${dStatus==='both'?' active':''}" data-discover-status="both">Both <span class="status-count">${allB}</span></button>
-        </div>
-        <div class="status-toggle award-toggle" data-discover-award="${dAward}">
-          <button class="status-tab${dAward==='both'?' active':''}" data-discover-award="both">Both <span class="status-count">${allB}</span></button>
-          <button class="status-tab status-tab-hugo${dAward==='hugo'?' active':''}" data-discover-award="hugo">Hugo <span class="status-count">${hugoAll}</span></button>
-          <button class="status-tab status-tab-nebula${dAward==='nebula'?' active':''}" data-discover-award="nebula">Nebula <span class="status-count">${nebAll}</span></button>
-        </div>
-      </div>`;
-    })()}
+    ${togglesHtml}
     <div class="discover-actionbar">
       <div class="discover-actions">
         <button type="button" class="discover-action discover-action-read" data-action="read">✓ Read</button>
@@ -3833,8 +3847,11 @@ function wireDiscover() {
   const root = $('#view-discover');
   if (!root) return;
 
-  // Status/award toggle buttons (Winners / Nominees / Both, Hugo / Nebula)
-  root.querySelectorAll('[data-discover-status]').forEach(btn => {
+  // Status/award toggle buttons (Winners / Nominees / Both, Hugo / Nebula).
+  // Scope to <button> only — the wrapping .status-toggle div also carries a
+  // data-discover-* attribute (for state/styling), and matching it here would
+  // double-fire on bubble and revert the user's pick.
+  root.querySelectorAll('button[data-discover-status]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const val = btn.dataset.discoverStatus;
       if (!val || val === __discoverState.status) return;
@@ -3844,7 +3861,7 @@ function wireDiscover() {
       drawDiscover();
     });
   });
-  root.querySelectorAll('[data-discover-award]').forEach(btn => {
+  root.querySelectorAll('button[data-discover-award]').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const val = btn.dataset.discoverAward;
       if (!val || val === __discoverState.award) return;
