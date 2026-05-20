@@ -2697,15 +2697,19 @@ fieldset label input { margin-right: 8px; }
   flex-wrap: wrap;
   gap: 8px;
 }
-.detail-links-buttons a {
+.detail-links-buttons a,
+.detail-links-buttons .detail-share-btn {
   padding: 7px 14px;
   background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   font-size: 13px;
   color: var(--text);
+  cursor: pointer;
+  font-family: inherit;
 }
-.detail-links-buttons a:hover { border-color: var(--accent); text-decoration: none; }
+.detail-links-buttons a:hover,
+.detail-links-buttons .detail-share-btn:hover { border-color: var(--accent); text-decoration: none; }
 .detail-links-buttons .detail-link-read {
   display: inline-flex;
   align-items: center;

@@ -789,7 +789,8 @@ function renderDetail(id) {
                 ? `Originally published in <strong>${escapeHtml(magazine)}</strong>`
                 : 'Find or purchase this book on Bookshop.org';
             }
-            return `<div class="detail-link-read-label">${label}</div><div class="detail-links-buttons"><a href="${escapeHtml(readUrl)}" target="_blank" rel="noopener" class="detail-link-read">${cta} <img src="${favicon}" alt="${escapeHtml(host)}" class="detail-link-favicon"></a><a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a><a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a></div>`;
+            const shareUrl = `${location.origin}/books/${encodeURIComponent(book.id)}`;
+            return `<div class="detail-link-read-label">${label}</div><div class="detail-links-buttons"><a href="${escapeHtml(readUrl)}" target="_blank" rel="noopener" class="detail-link-read">${cta} <img src="${favicon}" alt="${escapeHtml(host)}" class="detail-link-favicon"></a><a href="${escapeHtml(goodreadsUrl)}" target="_blank" rel="noopener">Goodreads</a><a href="https://app.thestorygraph.com/browse?search_term=${searchQ}" target="_blank" rel="noopener">StoryGraph</a><button type="button" class="detail-share-btn" data-share-url="${escapeHtml(shareUrl)}" title="Copy a shareable link to this book">Share link</button></div>`;
           })()}
         </div>
       </div>
@@ -801,6 +802,23 @@ function renderDetail(id) {
     ${book.authors && book.authors.length > 0 ? `<div id="detail-author-bio" class="book-section author-bio-section"></div>` : ''}
   </div>`;
   wireUserStatusControls();
+  const shareBtn = $('.detail-share-btn', root);
+  if (shareBtn) {
+    shareBtn.addEventListener('click', async () => {
+      const shareUrl = shareBtn.dataset.shareUrl;
+      const title = shareBtn.closest('.detail')?.querySelector('h1')?.textContent || 'Readmore SFF';
+      try {
+        if (navigator.share) {
+          await navigator.share({ title, url: shareUrl });
+        } else {
+          await navigator.clipboard.writeText(shareUrl);
+          const prev = shareBtn.textContent;
+          shareBtn.textContent = '✓ Link copied';
+          setTimeout(() => { shareBtn.textContent = prev; }, 1800);
+        }
+      } catch (_) { /* user cancelled share sheet — no-op */ }
+    });
+  }
   $$('.swimlane-card', root).forEach(el => {
     el.addEventListener('click', () => { location.hash = `#/books/${el.dataset.id}`; });
   });
@@ -5130,11 +5148,20 @@ function wireAuthGatedNav() {
 }
 
 async function init() {
+  // Direct-path entry: shareable book URLs like /books/<id> are served by a
+  // Cloudflare Pages Function that injects book-specific OG tags before any
+  // JS runs. We don't change the SPA's hash routing — just convert the entry
+  // pathname to the equivalent hash route so route() picks it up normally.
+  const directPathMatch = location.pathname.match(/^\/books\/([^/?#]+)\/?$/);
+  if (directPathMatch && !location.hash) {
+    const id = decodeURIComponent(directPathMatch[1]);
+    history.replaceState({}, '', '/#/books/' + encodeURIComponent(id));
+  }
   recomputeReaders();
   wireAuthGatedNav();
   applySoloUI();
   try {
-    const res = await fetch('data.json');
+    const res = await fetch('/data.json');
     DATA = await res.json();
     // Normalize award statuses — the source CSV occasionally annotates a
     // winner row with a pseudonym ("winner (as lewis padgett)"), which
