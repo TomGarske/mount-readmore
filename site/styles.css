@@ -1213,24 +1213,6 @@ a:hover { text-decoration: underline; }
 .about-banner-text { font-size: 15px; line-height: 1.6; color: var(--text-2); margin: 0 auto 12px; max-width: 640px; }
 .about-banner-text:last-child { margin-bottom: 0; }
 
-/* Epigraph quote atop the stats page */
-.stats-quote {
-  margin: 0 0 24px;
-  padding: 20px 28px;
-  text-align: center;
-  background: var(--bg-2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-.stats-quote blockquote {
-  margin: 0 auto;
-  max-width: 720px;
-  font-size: 18px;
-  line-height: 1.55;
-  font-style: italic;
-  color: var(--text-2);
-}
-
 /* Bookshop referral promo — dismissable banner atop Bookshop-linked book pages */
 .bookshop-banner {
   display: flex;
