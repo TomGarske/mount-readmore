@@ -27,7 +27,6 @@ TITLE_COLS = {
     "best_novella_hugo": "Novel",
     "best_novelette_hugo": "Novelette",
     "best_series_hugo": "Series",
-    "sandbox": "Title",
 }
 
 

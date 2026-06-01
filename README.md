@@ -51,5 +51,4 @@ The caches are populated by helper scripts run on demand:
 - `retry_openlibrary.py` — second-pass OL lookup for books missing a cover or description
 - `fetch_descriptions.py` — Wikipedia descriptions for books OL didn't have (strict author + title gating)
 - `fetch_links.py` — Bookshop.org product links by ISBN, with an OL alternate-edition fallback
-- `fetch_goodreads_metadata.py` / `harvest_goodreads_ids.py` — Goodreads scrape helpers
 - `sync_books_to_supabase.py` — sync canonical data into the `books` table

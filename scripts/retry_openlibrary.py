@@ -1,14 +1,13 @@
-"""Second-pass Open Library lookup for books missing a cover / description.
+"""Open Library lookup for books missing a cover / description.
 
-The primary enrichment pass (scripts/enrich_metadata.py) queries Open Library
-with the raw title + author as they appear in the awards CSVs. Many older or
-multi-titled works fail to match because:
+Queries Open Library with cleaned title / author variants. Many older or
+multi-titled works fail a naive raw-title+author match because:
 
   * Title contains '(also known as X)' or '(UK: X)' — OL has the base title.
   * Author has a '(as <pseudonym>)' annotation — OL has the pseudonym or base.
 
-This script reads site/data.json, finds every book without a cover_url, and
-retries OL with cleaned title / author variants. Hits get written back to
+Reads site/data.json, finds every book without a cover_url, and queries OL
+with cleaned title / author variants. Hits get written back to
 data/openlib_cache.json and data/openlib_descriptions.json so the next
 build_site_data run picks them up.
 
