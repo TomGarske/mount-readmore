@@ -1,11 +1,11 @@
-"""Merge Goodreads CSV into the award sheets' Tom column.
+"""Merge a Goodreads / StoryGraph export into the award sheets' reader-status columns.
 
 For each sheet CSV in data/:
-  1. Append its *_additions.csv if one exists (so 2025/2026 rows are included)
-  2. Match each row against the Goodreads "read" shelf
-  3. Populate the Tom column where empty; leave existing notes alone
+  1. Append its *_additions.csv if one exists (so newest-year rows are included)
+  2. Match each row against the export's "read" shelf
+  3. Populate the corresponding reader column where empty; leave existing notes alone
 
-Outputs `*_updated.csv` files in data/ for review before regenerating the xlsx.
+Outputs `*_updated.csv` files in data/ for review.
 
 Usage:
     python scripts/merge_read_status.py --data data --goodreads exports/goodreads_export.csv

@@ -1,6 +1,6 @@
-# Readmore
+# Readmore SFF
 
-Personal tracker for Hugo and Nebula winners and finalists, comparing Tom's and Nika's reading progress. Read status comes from the awards spreadsheet plus Tom's exported Goodreads "read" shelf. Live at [readmoresff.org](https://readmoresff.org/).
+A tracker for Hugo and Nebula award winners and finalists in Novel, Novella, and Novelette — plus the Retrospective Hugos that filled in the genre's earliest years. Live at [readmoresff.org](https://readmoresff.org/).
 
 ## Why
 
@@ -9,11 +9,12 @@ Goodreads' public API is deprecated (no new keys since Dec 2020) and StoryGraph 
 ## Layout
 
 ```
-award-books-tracker/
-├── data/             # source per-sheet CSVs, additions, merged outputs, cache
+mount-readmore/
+├── data/             # source per-sheet CSVs, additions, merged outputs, caches
 ├── exports/          # raw exports from Goodreads / StoryGraph (gitignored)
-├── scripts/          # Python pipeline (merge, build xlsx, build site JSON, enrich)
+├── scripts/          # Python pipeline (merge, enrich, build site JSON)
 ├── site/             # static SPA — index.html, app.js, styles.css, data.json
+├── functions/        # Cloudflare Pages Functions (per-route OG tag injection)
 └── .github/workflows # Cloudflare Pages deploy on push to main
 ```
 
@@ -28,28 +29,27 @@ award-books-tracker/
 
 ## Awards tracked
 
-- Hugo Award — Best Novel, Best Novella, Best Novelette, Best Short Story
-- Nebula Award — Best Novel, Best Novella, Best Novelette, Best Short Story
-- World Fantasy Award — Best Novel
-- Locus Award — Best SF Novel, Best Fantasy Novel
-- Arthur C. Clarke Award
-- Philip K. Dick Award
+- Hugo Award — Best Novel, Best Novella, Best Novelette
+- Nebula Award — Best Novel, Best Novella, Best Novelette
+- Retrospective Hugo Award — same three categories
 
-## Workflow
+## Data pipeline
 
-1. Export Goodreads CSV: My Books → Import and export → Export Library
-2. Export StoryGraph CSV: Manage Account → Export Data
-3. Drop both into `exports/`
-4. Run `scripts/merge_read_status.py` — updates `data/awards-master.csv` with a `read` column
-5. Run `scripts/enrich_metadata.py` (optional) — fills missing covers, page counts, pub dates from Open Library
+`scripts/build_site_data.py` (run by CI on every push to `main`) assembles `site/data.json` from:
 
-## Roadmap
+- `data/*_updated.csv` — per-category award sheets with reader-status columns
+- `data/manual_overrides.json` — hand-curated per-book field overrides (always wins)
+- `data/openlib_cache.json` + `openlib_descriptions.json` — Open Library covers and descriptions
+- `data/goodreads_metadata.json` + `goodreads_ids.json` — Goodreads covers and ids
+- `data/supplemental_descriptions.json` — Wikipedia-fetched descriptions (filled only when empty)
+- `data/auto_links.json` — Bookshop.org product links resolved by ISBN (filled only when empty)
+- `data/author_gender.json` — author gender annotations
 
-- [ ] Seed `data/awards-master.csv` from existing Google Sheet
-- [ ] Add 2025 winners
-- [ ] Add 2026 winners and finalists (where announced)
-- [ ] Goodreads CSV reader
-- [ ] StoryGraph CSV reader
-- [ ] Reconciliation by ISBN, fallback to title+author fuzzy match
-- [ ] Open Library enrichment for missing metadata
-- [ ] Optional: write back to Google Sheet via gspread
+The caches are populated by helper scripts run on demand:
+
+- `merge_read_status.py` — merge a Goodreads / StoryGraph export into the per-sheet CSVs (produces `*_updated.csv`)
+- `retry_openlibrary.py` — second-pass OL lookup for books missing a cover or description
+- `fetch_descriptions.py` — Wikipedia descriptions for books OL didn't have (strict author + title gating)
+- `fetch_links.py` — Bookshop.org product links by ISBN, with an OL alternate-edition fallback
+- `fetch_goodreads_metadata.py` / `harvest_goodreads_ids.py` — Goodreads scrape helpers
+- `sync_books_to_supabase.py` — sync canonical data into the `books` table

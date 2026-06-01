@@ -304,8 +304,8 @@
     if (!currentUser) throw new Error('Not signed in');
     const clean = String(handle || '').replace(/^@/, '').trim().toLowerCase();
     if (!clean) throw new Error('Handle is empty');
-    // Case-insensitive lookup so "Tom" / "tom" / "TOM" all resolve. ilike with
-    // no wildcard chars in the value is just a case-insensitive eq.
+    // Case-insensitive handle lookup — ilike with no wildcards is just a
+    // case-insensitive eq.
     const { data: target, error: lookupErr } = await client.from('profiles')
       .select('id, handle').ilike('handle', clean).maybeSingle();
     if (lookupErr) throw lookupErr;

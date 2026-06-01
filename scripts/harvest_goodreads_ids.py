@@ -162,7 +162,7 @@ def main() -> None:
             }
             seen_book_ids.add(gr_id)
 
-    # Second pass: for canon books we DIDN'T match in Tom's export, query
+    # Second pass: for canon books we DIDN'T match in the export, query
     # Open Library's search.json with fields=id_goodreads. OL has Goodreads
     # IDs threaded onto edition records for a huge fraction of older books
     # (where Goodreads' own search is now WAF-blocked for automation).

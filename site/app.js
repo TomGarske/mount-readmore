@@ -1776,7 +1776,7 @@ function renderStats() {
   const winnersEither = winners.filter(b => ACTIVE_READERS.some(r => readStatus(b, r.id) === 'read'));
   const winnersByReader = { me: winnersMe, tom: winnersTom, nika: winnersNika, westdac: winnersWestdac, colton: winnersColton, schupp: winnersSchupp };
 
-  // Tom shelf overlap (books that are on his Goodreads to-read shelf AND in our list)
+  // Books on the Goodreads to-read shelf AND in our canon
   const onShelf = DATA.books.filter(b => b.tom_shelf === 'to-read' && readStatus(b, 'tom') !== 'read');
   const currentlyReading = DATA.books.filter(b => b.tom_shelf === 'currently-reading');
 
@@ -2906,8 +2906,8 @@ function finalistSection(catLabel, items, theme) {
 // Per-handle results are cached in `__compareSideCache` so re-rendering the
 // compare page (back and forth, picker → comparison) doesn't refetch.
 
-// Cache for "other side" user_books fetches (Westdac's reads when Tom views
-// /compare?u=me&u=westdac). Tom's own side reads MR_AUTH.userBooks directly.
+// Cache for "other side" user_books fetches (the viewed reader on a compare
+// page). The current user's own side reads MR_AUTH.userBooks directly.
 // Friend list + leaderboard counts are preloaded by MR_AUTH bootstrap — no
 // caches needed for those at the app layer.
 const __compareSideCache = new Map();    // handle (lowercased) → side object
@@ -4500,7 +4500,7 @@ async function viewStatsForHandle(handle) {
   renderStats();
 }
 
-// ===== Public profile page (legacy condensed view) ===================
+// ===== Public profile page ===========================================
 async function renderProfile(handle) {
   const root = $('#view-profile');
   if (!root) return;
