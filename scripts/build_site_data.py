@@ -33,6 +33,7 @@ CATEGORY_FOR_SHEET = {
     "best_novella_hugo": "Novella",
     "best_novella_nebula": "Novella",
     "best_novelette_hugo": "Novelette",
+    "best_novelette_nebula": "Novelette",
     "favorites": "Favorite",
 }
 
@@ -41,6 +42,7 @@ TITLE_COL_FOR_SHEET = {
     "best_novella_hugo": "Novel",
     "best_novella_nebula": "Novel",
     "best_novelette_hugo": "Novelette",
+    "best_novelette_nebula": "Novel",
     "favorites": "Novel",
 }
 

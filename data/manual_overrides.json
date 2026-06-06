@@ -219,5 +219,29 @@
   },
   "going-postal-pratchett-2006-novel": {
     "cover_url": "https://covers.openlibrary.org/b/id/15176382-L.jpg"
+  },
+  "our-echoes-drifting-through-the-marsh-croke-2026-novelette": {
+    "publication_url": "https://www.beneath-ceaseless-skies.com/stories/our-echoes-drifting-through-the-marsh/",
+    "publication_label": "Beneath Ceaseless Skies #423"
+  },
+  "uncertain-sons-ha-2026-novelette": {
+    "bookshop_url": "https://bookshop.org/p/books/uncertain-sons-and-other-stories-thomas-ha/22369024?ean=9781988964492",
+    "description": "Uncertain Sons and Other Stories is a weird-horror collection exploring familial trauma, societal anxiety, identity, and alternate near-future settings — stories with a creeping, classics-of-the-uncanny sense of wrongness."
+  },
+  "we-begin-where-infinity-ends-ihezue-2026-novelette": {
+    "publication_url": "https://clarkesworldmagazine.com/ihezue_02_25/",
+    "publication_label": "Clarkesworld Magazine, Feb 2025",
+    "cover_url": "https://clarkesworldmagazine.com/covers/cw_221_350.jpg",
+    "description": "Two young engineers, Naeto and Gozi, secretly recalibrate their town's streetlights to filter harsh light and help save endangered fireflies. When a girl named River joins their project, the three friends' work becomes a groundbreaking conservation effort with far-reaching consequences."
+  },
+  "the-name-ziya-lee-2026-novelette": {
+    "publication_url": "https://reactormag.com/the-name-ziya-wen-yi-lee/",
+    "publication_label": "Reactor Magazine"
+  },
+  "the-life-and-times-of-alavira-the-great-as-written-by-titos-pavlou-and-reviewed-by-two-lifelong-friends-triantafyllou-2026-novelette": {
+    "publication_url": "https://www.uncannymagazine.com/article/the-life-and-times-of-alavira-the-great-as-written-by-titos-pavlou-and-reviewed-by-two-lifelong-friends/",
+    "publication_label": "Uncanny Magazine #63",
+    "cover_url": "https://eugeniatriantafyllou.com/wp-content/uploads/2025/04/issue-63-cover-med-683x1024-1.png",
+    "description": "Formatted as a series of Goodreads-style book reviews, the novelette tells a story about friendship, queerness, and self-expression through the lens of readers discussing a fictional work."
   }
 }

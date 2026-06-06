@@ -43415,7 +43415,8 @@
       "year": 2026,
       "publisher": "Clarkesworld",
       "awards": {
-        "hugo": "nominee"
+        "hugo": "nominee",
+        "nebula": "nominee"
       },
       "tom": "",
       "nika": "",
@@ -43437,7 +43438,8 @@
       "schupp_rating": "",
       "series": "",
       "award_years": {
-        "hugo": 2026
+        "hugo": 2026,
+        "nebula": 2026
       },
       "cover_url": "https://m.media-amazon.com/images/S/compressed.photo.goodreads.com/books/1778096219i/251904930.jpg",
       "description": "H.H. Pak's debut Hugo Novelette finalist (Clarkesworld 220, January 2025; also a 2025 Nebula finalist). Told from the point of view of the ship herself — a vast half-organic vessel cradling ten thousand humans across decades of void toward a planet none of them will reach in this body. As she counts the stars and tends her sleeping passengers, she contemplates what hers is and isn't, and what her ten thousand have lost by never having lived.",
@@ -47068,14 +47070,228 @@
         "male"
       ],
       "primary_author_gender": "male"
+    },
+    {
+      "id": "our-echoes-drifting-through-the-marsh-croke-2026-novelette",
+      "title": "Our Echoes Drifting Through the Marsh",
+      "authors": [
+        "Marie Croke"
+      ],
+      "author_raw": "Marie Croke",
+      "category": "Novelette",
+      "year": 2026,
+      "publisher": "Beneath Ceaseless Skies, Jan 2025",
+      "awards": {
+        "nebula": "nominee"
+      },
+      "tom": "",
+      "nika": "",
+      "tom_date_read": "",
+      "tom_rating": "",
+      "tom_shelf": "",
+      "nika_shelf": "",
+      "westdac": "",
+      "westdac_shelf": "",
+      "westdac_date_read": "",
+      "westdac_rating": "",
+      "colton": "",
+      "colton_shelf": "",
+      "colton_date_read": "",
+      "colton_rating": "",
+      "schupp": "",
+      "schupp_shelf": "",
+      "schupp_date_read": "",
+      "schupp_rating": "",
+      "series": "",
+      "award_years": {
+        "nebula": 2026
+      },
+      "publication_url": "https://www.beneath-ceaseless-skies.com/stories/our-echoes-drifting-through-the-marsh/",
+      "publication_label": "Beneath Ceaseless Skies #423",
+      "author_genders": [
+        "unknown"
+      ],
+      "primary_author_gender": "unknown"
+    },
+    {
+      "id": "uncertain-sons-ha-2026-novelette",
+      "title": "Uncertain Sons",
+      "authors": [
+        "Thomas Ha"
+      ],
+      "author_raw": "Thomas Ha",
+      "category": "Novelette",
+      "year": 2026,
+      "publisher": "Uncertain Sons and Other Stories (Undertow, 2025)",
+      "awards": {
+        "nebula": "nominee"
+      },
+      "tom": "",
+      "nika": "",
+      "tom_date_read": "",
+      "tom_rating": "",
+      "tom_shelf": "",
+      "nika_shelf": "",
+      "westdac": "",
+      "westdac_shelf": "",
+      "westdac_date_read": "",
+      "westdac_rating": "",
+      "colton": "",
+      "colton_shelf": "",
+      "colton_date_read": "",
+      "colton_rating": "",
+      "schupp": "",
+      "schupp_shelf": "",
+      "schupp_date_read": "",
+      "schupp_rating": "",
+      "series": "",
+      "award_years": {
+        "nebula": 2026
+      },
+      "bookshop_url": "https://bookshop.org/p/books/uncertain-sons-and-other-stories-thomas-ha/22369024?ean=9781988964492",
+      "description": "Uncertain Sons and Other Stories is a weird-horror collection exploring familial trauma, societal anxiety, identity, and alternate near-future settings — stories with a creeping, classics-of-the-uncanny sense of wrongness.",
+      "author_genders": [
+        "male"
+      ],
+      "primary_author_gender": "male"
+    },
+    {
+      "id": "we-begin-where-infinity-ends-ihezue-2026-novelette",
+      "title": "We Begin Where Infinity Ends",
+      "authors": [
+        "Somto Ihezue"
+      ],
+      "author_raw": "Somto Ihezue",
+      "category": "Novelette",
+      "year": 2026,
+      "publisher": "Clarkesworld, Feb 2025",
+      "awards": {
+        "nebula": "nominee"
+      },
+      "tom": "",
+      "nika": "",
+      "tom_date_read": "",
+      "tom_rating": "",
+      "tom_shelf": "",
+      "nika_shelf": "",
+      "westdac": "",
+      "westdac_shelf": "",
+      "westdac_date_read": "",
+      "westdac_rating": "",
+      "colton": "",
+      "colton_shelf": "",
+      "colton_date_read": "",
+      "colton_rating": "",
+      "schupp": "",
+      "schupp_shelf": "",
+      "schupp_date_read": "",
+      "schupp_rating": "",
+      "series": "",
+      "award_years": {
+        "nebula": 2026
+      },
+      "publication_url": "https://clarkesworldmagazine.com/ihezue_02_25/",
+      "publication_label": "Clarkesworld Magazine, Feb 2025",
+      "cover_url": "https://clarkesworldmagazine.com/covers/cw_221_350.jpg",
+      "description": "Two young engineers, Naeto and Gozi, secretly recalibrate their town's streetlights to filter harsh light and help save endangered fireflies. When a girl named River joins their project, the three friends' work becomes a groundbreaking conservation effort with far-reaching consequences.",
+      "author_genders": [
+        "unknown"
+      ],
+      "primary_author_gender": "unknown"
+    },
+    {
+      "id": "the-name-ziya-lee-2026-novelette",
+      "title": "The Name Ziya",
+      "authors": [
+        "Wen-yi Lee"
+      ],
+      "author_raw": "Wen-yi Lee",
+      "category": "Novelette",
+      "year": 2026,
+      "publisher": "Reactor / Tor.com",
+      "awards": {
+        "nebula": "nominee"
+      },
+      "tom": "",
+      "nika": "",
+      "tom_date_read": "",
+      "tom_rating": "",
+      "tom_shelf": "",
+      "nika_shelf": "",
+      "westdac": "",
+      "westdac_shelf": "",
+      "westdac_date_read": "",
+      "westdac_rating": "",
+      "colton": "",
+      "colton_shelf": "",
+      "colton_date_read": "",
+      "colton_rating": "",
+      "schupp": "",
+      "schupp_shelf": "",
+      "schupp_date_read": "",
+      "schupp_rating": "",
+      "series": "",
+      "award_years": {
+        "nebula": 2026
+      },
+      "publication_url": "https://reactormag.com/the-name-ziya-wen-yi-lee/",
+      "publication_label": "Reactor Magazine",
+      "author_genders": [
+        "unknown"
+      ],
+      "primary_author_gender": "unknown"
+    },
+    {
+      "id": "the-life-and-times-of-alavira-the-great-as-written-by-titos-pavlou-and-reviewed-by-two-lifelong-friends-triantafyllou-2026-novelette",
+      "title": "The Life and Times of Alavira the Great as Written by Titos Pavlou and Reviewed by Two Lifelong Friends",
+      "authors": [
+        "Eugenia Triantafyllou"
+      ],
+      "author_raw": "Eugenia Triantafyllou",
+      "category": "Novelette",
+      "year": 2026,
+      "publisher": "Uncanny Magazine, Mar 2025",
+      "awards": {
+        "nebula": "nominee"
+      },
+      "tom": "",
+      "nika": "",
+      "tom_date_read": "",
+      "tom_rating": "",
+      "tom_shelf": "",
+      "nika_shelf": "",
+      "westdac": "",
+      "westdac_shelf": "",
+      "westdac_date_read": "",
+      "westdac_rating": "",
+      "colton": "",
+      "colton_shelf": "",
+      "colton_date_read": "",
+      "colton_rating": "",
+      "schupp": "",
+      "schupp_shelf": "",
+      "schupp_date_read": "",
+      "schupp_rating": "",
+      "series": "",
+      "award_years": {
+        "nebula": 2026
+      },
+      "publication_url": "https://www.uncannymagazine.com/article/the-life-and-times-of-alavira-the-great-as-written-by-titos-pavlou-and-reviewed-by-two-lifelong-friends/",
+      "publication_label": "Uncanny Magazine #63",
+      "cover_url": "https://eugeniatriantafyllou.com/wp-content/uploads/2025/04/issue-63-cover-med-683x1024-1.png",
+      "description": "Formatted as a series of Goodreads-style book reviews, the novelette tells a story about friendship, queerness, and self-expression through the lens of readers discussing a fictional work.",
+      "author_genders": [
+        "female"
+      ],
+      "primary_author_gender": "female"
     }
   ],
   "meta": {
-    "total": 798,
+    "total": 803,
     "by_category": {
-      "Novel": 638,
       "Novella": 82,
-      "Novelette": 78
+      "Novel": 638,
+      "Novelette": 83
     }
   }
 }
